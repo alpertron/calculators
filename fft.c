@@ -427,7 +427,7 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   int index;
   int sumLen;
   int sumLenBytes;
-  int maxLen = (len1 < len2 ? len2 : len1);
+  int maxLen = (len1 < len2 ? len2 : len1) * 5/4;
   int nbrBits = 0;
   while (maxLen > 0)
   {

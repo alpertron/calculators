@@ -22,7 +22,7 @@
 #define COMPRESSED_POLY_MAX_LENGTH 1000000
 
 #define DEBUG_VANHOEIJ        0
-
+#include "commonstruc.h"
 enum eOutput
 {
   PRETTY_PRINT = 0,
@@ -65,13 +65,6 @@ extern BigInteger operand2;
 extern BigInteger operand3;
 extern BigInteger operand4;
 extern BigInteger operand5;
-extern int values[COMPRESSED_POLY_MAX_LENGTH];
-extern int poly1[COMPRESSED_POLY_MAX_LENGTH];
-extern int poly2[COMPRESSED_POLY_MAX_LENGTH];
-extern int poly3[COMPRESSED_POLY_MAX_LENGTH];
-extern int poly4[COMPRESSED_POLY_MAX_LENGTH];
-extern int polyMultTemp[COMPRESSED_POLY_MAX_LENGTH];
-extern int valuesPrime[COMPRESSED_POLY_MAX_LENGTH];
 extern int nbrFactorsFound;
 extern enum eOutput pretty;
 extern bool onlyEvaluate;
@@ -80,9 +73,6 @@ extern int *ptrOrigPoly;
 extern int degreeOrigPoly;
 extern int polyInvCached;
 extern int valuesIndex;
-extern int poly5[COMPRESSED_POLY_MAX_LENGTH];
-extern int polyNonRepeatedFactors[COMPRESSED_POLY_MAX_LENGTH];
-
 
 typedef void (*powerCback)(int percentage);
 void SortFactors(const BigInteger* modulus);

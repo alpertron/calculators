@@ -95,6 +95,5 @@ extern int indexRoot;
 extern const char *ptrPlusMinus;
 extern const char *ptrMinus;
 extern const char *ptrTimes;
-extern int polyInteger[1000000];
 extern bool teach;
 #endif

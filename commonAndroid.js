@@ -21,6 +21,7 @@
 /* global get */
 /* global processDKey */
 let elementInFocus = null;
+let isProgrammaticFocus = false;
 function setStorage(name, data)
 {
   Android.setStorage(name, data);
@@ -142,13 +143,32 @@ document.addEventListener("keydown", function(event)
 
 window.addEventListener("load", function(event)
 {
-  const elements = document.querySelectorAll("textarea, input, button, p");
+  let elements = document.querySelectorAll("textarea, input, button, p");
   let elementsLength = elements.length;
   for (let index=0; index<elementsLength; index++)
   {
     let element = elements[index];
     element.addEventListener("click", newFocus);
   }
+  elements = document.querySelectorAll("input, textarea");
+  elements.forEach(elem => {
+    const type = elem.type? elem.type.toLowerCase(): null;
+    if (elem.tagName === "TEXTAREA" ||
+        type === "text" || type === "number" || type === "email" ||
+        type === "password" || type === "search" || type === "")
+    {
+      elem.addEventListener("focusin", function (e)
+      {
+        const isCustom = elem.classList.contains("customKbd");
+        Android.onFocus(elem.id, isCustom);
+      });
+      elem.addEventListener("focusout", function (e)
+      {
+        const isCustom = elem.classList.contains("customKbd");
+        Android.onBlur(elem.id, isCustom);
+      });
+    }
+  });
 });
 
 function onShowDivisors()

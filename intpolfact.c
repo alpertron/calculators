@@ -27,6 +27,7 @@
 #include "showtime.h"
 #include "rootseq.h"
 #include "musl.h"
+
 #define MAX_MATRIX_SIZE  200
 char* ptrOutput2;
 #if DEBUG_VANHOEIJ
@@ -61,23 +62,11 @@ static int factorX[] = { 1, 0, 1, 1 }; // Polynomial is x.
 static BigInteger bound;
 static BigInteger trailingCoeff;
 static BigInteger leadingCoeff;
-int polyNonRepeatedFactors[1000000];
 static int tempPoly[1000000];
-int polyBackup[1000000];
 static int polyLiftedRecord[1000000];
 static struct sFactorInfo factorInfoRecord[MAX_DEGREE];
 struct sFactorInfo factorInfoInteger[MAX_DEGREE];
 static int arrNbrFactors[MAX_DEGREE];
-extern int polyLifted[1000000];
-extern int polyS[1000000];
-extern int poly4[1000000];
-extern int poly5[1000000];
-int polyA[1000000];
-int polyB[1000000];
-int polyC[1000000];
-int polyD[1000000];
-int polySqFreeFact[1000000];
-int polyInteger[1000000];
 int primeEisenstein;
 static void GenerateIntegerPolynomial(const int* polyMod, int* polyInt, int degreePoly);
 static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly);
@@ -720,8 +709,8 @@ static bool doStep1(int dividendMod32768[], int divisorMod32768[])
   int currentDegree;
   const int* ptrDest;
 
-  UncompressBigIntegerB(&polyS[1], &operand1);
-  UncompressBigIntegerB(&poly5[1], &operand2);
+  UncompressBigIntegerB(&common.poly.polyS[1], &operand1);
+  UncompressBigIntegerB(&common.poly.poly5[1], &operand2);
   (void)BigIntRemainder(&operand1, &operand2, &operand3);
   if (!BigIntIsZero(&operand3))
   {    // Constant term of product does not divide constant term of
@@ -733,8 +722,8 @@ static bool doStep1(int dividendMod32768[], int divisorMod32768[])
   // coefficients in operand2.
   intToBigInteger(&operand1, 0);
   intToBigInteger(&operand2, 0);
-  ptrDest = &polyS[1];
-  for (currentDegree = 0; currentDegree <= polyS[0]; currentDegree++)
+  ptrDest = &common.poly.polyS[1];
+  for (currentDegree = 0; currentDegree <= common.poly.polyS[0]; currentDegree++)
   {
     UncompressBigIntegerB(ptrDest, &tmp1);
     ptrDest += numLimbs(ptrDest);
@@ -750,8 +739,8 @@ static bool doStep1(int dividendMod32768[], int divisorMod32768[])
   }
   intToBigInteger(&operand3, 0);
   intToBigInteger(&operand4, 0);
-  ptrDest = &poly5[1];
-  for (currentDegree = 0; currentDegree <= poly5[0]; currentDegree++)
+  ptrDest = &common.poly.poly5[1];
+  for (currentDegree = 0; currentDegree <= common.poly.poly5[0]; currentDegree++)
   {
     UncompressBigIntegerB(ptrDest, &tmp1);
     ptrDest += numLimbs(ptrDest);
@@ -803,7 +792,7 @@ static bool doStep1(int dividendMod32768[], int divisorMod32768[])
   // If the leading coefficient of the divisor is odd,
   // divide both polynomials mod 32768. If the remainder is
   // not zero, the integer division will not be performed.
-  if ((divisorMod32768[(2 * poly5[0]) + 1] % 2) != 0)
+  if ((divisorMod32768[(2 * common.poly.poly5[0]) + 1] % 2) != 0)
   {
     enum eExprErr rc;
     const int* ptrMod32768;
@@ -811,12 +800,12 @@ static bool doStep1(int dividendMod32768[], int divisorMod32768[])
     TestNbr[0].x = 32768;
     modulusIsZero = false;
     NumberLength = 1;
-    DividePolynomial(dividendMod32768, polyS[0], divisorMod32768, poly5[0], NULL);
+    DividePolynomial(dividendMod32768, common.poly.polyS[0], divisorMod32768, common.poly.poly5[0], NULL);
     modulusIsZero = true;
     TestNbr[0].x = TestNbr0Bak;
     // Test whether the remainder is zero.
     ptrMod32768 = dividendMod32768;
-    for (currentDegree = 0; currentDegree < poly5[0]; currentDegree++)
+    for (currentDegree = 0; currentDegree < common.poly.poly5[0]; currentDegree++)
     {
       if (*(ptrMod32768 + 1) != 0)
       {
@@ -824,12 +813,12 @@ static bool doStep1(int dividendMod32768[], int divisorMod32768[])
       }
       ptrMod32768 += 2;     // Point to next coefficient.
     }
-    rc = DivideIntegerPolynomial(polyS, poly5, TYPE_MODULUS);
+    rc = DivideIntegerPolynomial(common.poly.polyS, common.poly.poly5, TYPE_MODULUS);
     if (rc == EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER)
     {                       // Cannot perform the division.
       return false;
     }
-    if ((polyS[0] != 0) || (polyS[1] != 1) || (polyS[2] != 0))
+    if ((common.poly.polyS[0] != 0) || (common.poly.polyS[1] != 1) || (common.poly.polyS[2] != 0))
     {                       // Remainder is not zero.
       return false;         // Number to factor does not divide this polynomial.
     }
@@ -840,12 +829,12 @@ static bool doStep1(int dividendMod32768[], int divisorMod32768[])
 static void doStep2(void)
 {
   int degreePoly;
-  // Get principal part of poly5 and store it to poly2.
-  (void)getContent(poly5, &operand4);   // Content of polynomial.
-  poly2[0] = poly5[0];
-  const int *ptrSrc = &poly5[1];
-  int *ptrDest = &poly2[1];
-  for (int currentDegree = 0; currentDegree <= poly5[0]; currentDegree++)
+  // Get principal part of common.poly.poly5 and store it to common.poly.poly2.
+  (void)getContent(common.poly.poly5, &operand4);   // Content of polynomial.
+  common.poly.poly2[0] = common.poly.poly5[0];
+  const int *ptrSrc = &common.poly.poly5[1];
+  int *ptrDest = &common.poly.poly2[1];
+  for (int currentDegree = 0; currentDegree <= common.poly.poly5[0]; currentDegree++)
   {
     UncompressBigIntegerB(ptrSrc, &operand2);
     (void)BigIntDivide(&operand2, &operand4, &operand3);
@@ -856,11 +845,11 @@ static void doStep2(void)
     ptrDest += numLimbs(ptrDest);
     ptrDest++;
   }
-  // Copy this principal part to poly5.
-  (void)CopyPolynomial(&poly5[1], &poly2[1], poly5[0]);
-  (void)DivideIntegerPolynomial(polyNonRepeatedFactors, poly5, TYPE_DIVISION);
-  degreePoly = poly5[0];
-  (void)CopyPolynomial(ptrFactorInteger, &poly5[1], degreePoly);
+  // Copy this principal part to common.poly.poly5.
+  (void)CopyPolynomial(&common.poly.poly5[1], &common.poly.poly2[1], common.poly.poly5[0]);
+  (void)DivideIntegerPolynomial(common.poly.polyNonRepeatedFactors, common.poly.poly5, TYPE_DIVISION);
+  degreePoly = common.poly.poly5[0];
+  (void)CopyPolynomial(ptrFactorInteger, &common.poly.poly5[1], degreePoly);
   InsertIntegerPolynomialFactor(ptrFactorInteger, degreePoly);
 }
 
@@ -872,11 +861,11 @@ static void forEachCurrentFactor(int stepNbr, int* pNbrFactors,
   if (!linkedBigIntIsZero(lambda[nbrVector][currentFactor]))
   {                 // Multiply this polynomial.
     const int* ptrCoeffSrc = pstFactorInfo->ptrPolyLifted;    // Source
-    int* ptrCoeffDest = poly2;                          // Destination
+    int* ptrCoeffDest = common.poly.poly2;                          // Destination
     int nbrLength;
     int degreeFactor = pstFactorInfo->degree;
     int currentDegree;
-    // Reduce coefficients mod powerMod and store them on poly2.
+    // Reduce coefficients mod powerMod and store them on common.poly.poly2.
     for (currentDegree = 0; currentDegree < degreeFactor; currentDegree++)
     {
       int lenBytes;
@@ -906,18 +895,18 @@ static void forEachCurrentFactor(int stepNbr, int* pNbrFactors,
     *ptrCoeffDest = 1;            // Store 1 as the leading coefficient.
     *(ptrCoeffDest + 1) = 1;
     // Convert factor to Montgomery notation.
-    polyToMontgomeryNotation(poly2, degreeFactor + 1);
+    polyToMontgomeryNotation(common.poly.poly2, degreeFactor + 1);
     if (degreeProd == 0)
     {
-      ptrCoeffSrc = poly2;              // Source is the new factor.
+      ptrCoeffSrc = common.poly.poly2;              // Source is the new factor.
     }
     else
     {
-      MultPolynomial(degreeProd, degreeFactor, poly1, poly2);
-      ptrCoeffSrc = polyMultTemp;       // Source is the product
+      MultPolynomial(degreeProd, degreeFactor, common.poly.poly1, common.poly.poly2);
+      ptrCoeffSrc = common.poly.polyMultTemp;       // Source is the product
     }
     degreeProd += degreeFactor;
-    ptrCoeffDest = poly1;               // Destination
+    ptrCoeffDest = common.poly.poly1;               // Destination
     for (currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
     {
       int lenBytes;
@@ -973,9 +962,9 @@ static bool AttemptToFactorStepNbr(int stepNbr, int nbrVectors,
     }
     // Multiply all coefficients by leadingCoeff by using modmult
     // (this converts from Montgomery to standard notation)
-    // and store them in poly2.
-    ptrSrc = poly1;
-    ptrDest = poly2;
+    // and store them in common.poly.poly2.
+    ptrSrc = common.poly.poly1;
+    ptrDest = common.poly.poly2;
     CopyBigInt(&operand3, &leadingCoeff);
     if (operand3.nbrLimbs < NumberLength)
     {
@@ -993,14 +982,14 @@ static bool AttemptToFactorStepNbr(int stepNbr, int nbrVectors,
       ptrDest += numLimbs(ptrDest);
       ptrDest++;
     }
-    GenerateIntegerPolynomial(poly2, poly5, degreeProd);
+    GenerateIntegerPolynomial(common.poly.poly2, common.poly.poly5, degreeProd);
     // Ensure that the absolute value of the coefficients 
     // are less than the bound.
     // In the same loop get the coefficients of the divisor polynomial
     // by computing the coefficient mod 32768.
-    ptrSrc = &poly5[1];
+    ptrSrc = &common.poly.poly5[1];
     ptrMod32768 = divisorMod32768;
-    for (currentDegree = 0; currentDegree <= poly5[0]; currentDegree++)
+    for (currentDegree = 0; currentDegree <= common.poly.poly5[0]; currentDegree++)
     {
       UncompressBigIntegerB(ptrSrc, &operand1);
       BigIntSubt(&operand1, &bound, &operand2);
@@ -1028,13 +1017,13 @@ static bool AttemptToFactorStepNbr(int stepNbr, int nbrVectors,
       ptrSrc++;
     }
     modulusIsZero = true;   // Perform integer division.
-    // Multiply all coefficients by leadingCoeff and store in polyS.
+    // Multiply all coefficients by leadingCoeff and store in common.poly.polyS.
     // In the same loop get the polynomial mod 32768.
     ptrMod32768 = dividendMod32768;
-    polyS[0] = polyNonRepeatedFactors[0];
-    ptrSrc = &polyNonRepeatedFactors[1];
-    ptrDest = &polyS[1];
-    for (currentDegree = 0; currentDegree <= polyS[0]; currentDegree++)
+    common.poly.polyS[0] = common.poly.polyNonRepeatedFactors[0];
+    ptrSrc = &common.poly.polyNonRepeatedFactors[1];
+    ptrDest = &common.poly.polyS[1];
+    for (currentDegree = 0; currentDegree <= common.poly.polyS[0]; currentDegree++)
     {
       UncompressBigIntegerB(ptrSrc, &operand1);
       *ptrMod32768 = 1;
@@ -1100,8 +1089,8 @@ static void ComputeCoeffBounds(void)
   int degree1;
 
   modulusIsZero = true;
-  degreePolyToFactor = polyNonRepeatedFactors[0];
-  ptrSrc = &polyNonRepeatedFactors[1];
+  degreePolyToFactor = common.poly.polyNonRepeatedFactors[0];
+  ptrSrc = &common.poly.polyNonRepeatedFactors[1];
   UncompressBigIntegerB(ptrSrc, &operand1);
   if (degreePolyToFactor < 0)
   {      // Monomial.
@@ -1127,7 +1116,7 @@ static void ComputeCoeffBounds(void)
   }
   // If the absolute value of trailing coefficient is less than the
   // absolute value of leading coefficient (stored in operand3), replace it.
-  UncompressBigIntegerB(&polyNonRepeatedFactors[1], &operand2);
+  UncompressBigIntegerB(&common.poly.polyNonRepeatedFactors[1], &operand2);
   operand2.sign = SIGN_POSITIVE;
   BigIntSubt(&operand3, &operand2, &operand4);
   if (operand4.sign == SIGN_POSITIVE)
@@ -1138,7 +1127,7 @@ static void ComputeCoeffBounds(void)
   // Loop that finds the maximum value of bound for |Bj|.
   intToBigInteger(&operand2, 1);  // binomial(n-1, 0)
   // Set bound to |A0|
-  UncompressBigIntegerB(&polyNonRepeatedFactors[1], &bound);
+  UncompressBigIntegerB(&common.poly.polyNonRepeatedFactors[1], &bound);
   bound.sign = SIGN_POSITIVE;
   for (degree1 = 1; degree1 <= maxDegreeFactor; degree1++)
   {
@@ -1158,7 +1147,7 @@ static void ComputeCoeffBounds(void)
 }
 
 // Perform Van Hoeij algorithm 
-// On input: values = integer polynomial.
+// On input: common.poly.values = integer polynomial.
 // prime: integer prime used for factoring the polynomial
 // primeMod: BigInteger representing prime.
 // exponentMod: Exponent used for Knuth-Cohen bound.
@@ -1186,9 +1175,9 @@ static void vanHoeij(int prime, int numFactors)
   int nbrCol;
   int exponDifference;
   int delta;
-  // Store into polyLifted the polynomial values / lc(values) (mod powerMod).
+  // Store into polyLifted the polynomial common.poly.values / lc(common.poly.values) (mod powerMod).
   double logPrime = log(prime);
-  double b0 = log(2.0 * (double)values[0]) / logPrime;
+  double b0 = log(2.0 * (double)common.poly.values[0]) / logPrime;
   double log_rootbound = logBigNbr(&bound) / logPrime;
   double log_leadingcoeff = logBigNbr(&leadingCoeff) / logPrime;
   int a0;
@@ -1198,7 +1187,7 @@ static void vanHoeij(int prime, int numFactors)
   int rank;
   const int* ptrSrc;
   struct sFactorInfo* pstFactorInfo;
-  int degreePolyToFactor = polyNonRepeatedFactors[0];
+  int degreePolyToFactor = common.poly.polyNonRepeatedFactors[0];
   int newNumberLength;
   int newNbrFactors;
   int ctr1;
@@ -1229,8 +1218,8 @@ static void vanHoeij(int prime, int numFactors)
   ptrDebugOutput++;
 #endif
   (void)memset(arrNbrFactors, 0, sizeof(arrNbrFactors));
-  // Get leading coefficient of polyNonRepeatedFactors.
-  ptrSrc = &polyNonRepeatedFactors[1];
+  // Get leading coefficient of common.poly.polyNonRepeatedFactors.
+  ptrSrc = &common.poly.polyNonRepeatedFactors[1];
   for (int degree1 = 0; degree1 < degreePolyToFactor; degree1++)
   {
     ptrSrc += numLimbs(ptrSrc);
@@ -1239,8 +1228,8 @@ static void vanHoeij(int prime, int numFactors)
   computePower(exponentMod);
   modulusIsZero = false;    // Use modular arithmetic for polynomials.
   intToBigInteger(&operand5, 1);
-  values[0] = polyNonRepeatedFactors[0];
-  (void)getModPolynomial(&values[1], polyNonRepeatedFactors, &operand5);
+  common.poly.values[0] = common.poly.polyNonRepeatedFactors[0];
+  (void)getModPolynomial(&common.poly.values[1], common.poly.polyNonRepeatedFactors, &operand5);
 #if DEBUG_HENSEL_LIFTING
   ptrOutput2 = ptrDebugOutput;
 #endif
@@ -1390,8 +1379,8 @@ static void vanHoeij(int prime, int numFactors)
     copyStr(&ptrDebugOutput, LF);
 #endif
     intToBigInteger(&operand5, 1);
-    values[0] = polyNonRepeatedFactors[0];
-    (void)getModPolynomial(&values[1], polyNonRepeatedFactors, &operand5);
+    common.poly.values[0] = common.poly.polyNonRepeatedFactors[0];
+    (void)getModPolynomial(&common.poly.values[1], common.poly.polyNonRepeatedFactors, &operand5);
     NumberLength = newNumberLength;
     // use exponDifference additional bits instead of a fixed number
 
@@ -1924,7 +1913,7 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
   const int* ptrOldFactor;
 
   if ((degreePoly < 0) || (degreePoly > MAX_DEGREE))
-  {    // Invalid values of degreePoly.
+  {    // Invalid common.poly.values of degreePoly.
     return;
   }
   // Fill indexes to start of each coefficient.
@@ -2006,10 +1995,10 @@ int getNextPrimeNoDuplicatedFactors(int primeIndex)
   const int* ptrSrc;
   int primeIdx = primeIndex;
   int degreeGcdMod;
-  int polyDegree = polyNonRepeatedFactors[0];
+  int polyDegree = common.poly.polyNonRepeatedFactors[0];
   initializeSmallPrimes(smallPrimes);
-  // Get leading coefficient of polyNonRepeatedFactors.
-  ptrSrc = &polyNonRepeatedFactors[1];
+  // Get leading coefficient of common.poly.polyNonRepeatedFactors.
+  ptrSrc = &common.poly.polyNonRepeatedFactors[1];
   for (int currentDegree = 0; currentDegree < polyDegree; currentDegree++)
   {
     ptrSrc += numLimbs(ptrSrc);
@@ -2037,11 +2026,11 @@ int getNextPrimeNoDuplicatedFactors(int primeIndex)
     intToBigInteger(&primeMod, prime);
     computePower(1);
     intToBigInteger(&operand5, 1);
-    degree2 = getModPolynomial(&poly2[1], polyNonRepeatedFactors, &operand5);
-    poly2[0] = degree2;
-    DerPolynomial(poly2);   // This function overwrites poly1.
-    degree1 = getModPolynomial(poly1, polyNonRepeatedFactors, &operand5);
-    PolyModularGcd(poly1, degree1, &poly2[1], poly2[0], poly3, &degreeGcdMod);
+    degree2 = getModPolynomial(&common.poly.poly2[1], common.poly.polyNonRepeatedFactors, &operand5);
+    common.poly.poly2[0] = degree2;
+    DerPolynomial(common.poly.poly2);   // This function overwrites common.poly.poly1.
+    degree1 = getModPolynomial(common.poly.poly1, common.poly.polyNonRepeatedFactors, &operand5);
+    PolyModularGcd(common.poly.poly1, degree1, &common.poly.poly2[1], common.poly.poly2[0], common.poly.poly3, &degreeGcdMod);
   } while (degreeGcdMod > 0);
   return primeIdx;
 }
@@ -2054,12 +2043,12 @@ static void initFactorModularPoly(int prime)
   computePower(1);
   exponentMod = 1;
   intToBigInteger(&operand5, 1);
-  degreePolyToFactor = getModPolynomial(&poly1[1], polyNonRepeatedFactors, &operand5);
-  poly1[0] = degreePolyToFactor;
-  polyBackup[0] = values[0];
-  (void)CopyPolynomial(&polyBackup[1], &values[1], (values[0] >= 0)? values[0] : 0);
-  values[0] = degreePolyToFactor;
-  (void)CopyPolynomial(&values[1], &poly1[1], degreePolyToFactor);
+  degreePolyToFactor = getModPolynomial(&common.poly.poly1[1], common.poly.polyNonRepeatedFactors, &operand5);
+  common.poly.poly1[0] = degreePolyToFactor;
+  common.poly.polyBackup[0] = common.poly.values[0];
+  (void)CopyPolynomial(&common.poly.polyBackup[1], &common.poly.values[1], (common.poly.values[0] >= 0)? common.poly.values[0] : 0);
+  common.poly.values[0] = degreePolyToFactor;
+  (void)CopyPolynomial(&common.poly.values[1], &common.poly.poly1[1], degreePolyToFactor);
   modulusIsZero = false;
 }
 
@@ -2113,47 +2102,47 @@ static void CopyFactorsFoundToRecord(void)
 // until a = b.
 // f = PolyToFactor.
 // Store polynomial factors in array pointed by pstFactorInfoInteger.
-// poly1 = a
-// poly2 = b
-// poly3 = c
-// poly4 = d
+// common.poly.poly1 = a
+// common.poly.poly2 = b
+// common.poly.poly3 = c
+// common.poly.poly4 = d
 
 static int IntegerSquarefreeFactorization(void)
 {
-  int* ptrPolySqFreeFact = polySqFreeFact;
+  int* ptrPolySqFreeFact = common.poly.polySqFreeFact;
   int multiplicity = 1;
   int nbrFactors = 0;
-  polyB[0] = polyToFactor[0];
-  (void)CopyPolynomial(&polyB[1], &polyToFactor[1], polyToFactor[0]); // b <- f
-  polyD[0] = polyToFactor[0];
-  (void)CopyPolynomial(&polyD[1], &polyToFactor[1], polyToFactor[0]); // d <- f
-  DerPolynomial(polyD);                                            // d <- f'
-  PolynomialGcd(polyB, polyD, polyA);                              // a <- gcd(b, d)
-  (void)DivideIntegerPolynomial(polyB, polyA, TYPE_DIVISION);      // b <- b/a
+  common.poly.polyB[0] = polyToFactor[0];
+  (void)CopyPolynomial(&common.poly.polyB[1], &polyToFactor[1], polyToFactor[0]); // b <- f
+  common.poly.polyD[0] = polyToFactor[0];
+  (void)CopyPolynomial(&common.poly.polyD[1], &polyToFactor[1], polyToFactor[0]); // d <- f
+  DerPolynomial(common.poly.polyD);                                            // d <- f'
+  PolynomialGcd(common.poly.polyB, common.poly.polyD, common.poly.polyA);                              // a <- gcd(b, d)
+  (void)DivideIntegerPolynomial(common.poly.polyB, common.poly.polyA, TYPE_DIVISION);      // b <- b/a
   do
   {
-    polyC[0] = polyD[0];
-    (void)CopyPolynomial(&polyC[1], &polyD[1], polyD[0]);          // c <- d
-    (void)DivideIntegerPolynomial(polyC, polyA, TYPE_DIVISION);    // c <- d/a
-    tempPoly[0] = polyB[0];
-    (void)CopyPolynomial(&tempPoly[1], &polyB[1], polyB[0]);       // temp <- b
+    common.poly.polyC[0] = common.poly.polyD[0];
+    (void)CopyPolynomial(&common.poly.polyC[1], &common.poly.polyD[1], common.poly.polyD[0]);          // c <- d
+    (void)DivideIntegerPolynomial(common.poly.polyC, common.poly.polyA, TYPE_DIVISION);    // c <- d/a
+    tempPoly[0] = common.poly.polyB[0];
+    (void)CopyPolynomial(&tempPoly[1], &common.poly.polyB[1], common.poly.polyB[0]);       // temp <- b
     DerPolynomial(tempPoly);                                       // temp <- b'
-    SubtractIntegerPolynomial(polyC, tempPoly, polyD);             // d <- c - b'
-    PolynomialGcd(polyB, polyD, polyA);                            // a <- gcd(b, d)
-    if (polyA[0] != 0)
+    SubtractIntegerPolynomial(common.poly.polyC, tempPoly, common.poly.polyD);             // d <- c - b'
+    PolynomialGcd(common.poly.polyB, common.poly.polyD, common.poly.polyA);                            // a <- gcd(b, d)
+    if (common.poly.polyA[0] != 0)
     {
-      // Copy polynomial polyA to factor array if its degree is not zero.
+      // Copy polynomial common.poly.polyA to factor array if its degree is not zero.
       *ptrPolySqFreeFact = multiplicity;
       ptrPolySqFreeFact++;
-      *ptrPolySqFreeFact = polyA[0];
+      *ptrPolySqFreeFact = common.poly.polyA[0];
       ptrPolySqFreeFact++;
-      ptrPolySqFreeFact = CopyPolynomial(ptrPolySqFreeFact, &polyA[1], polyA[0]);
+      ptrPolySqFreeFact = CopyPolynomial(ptrPolySqFreeFact, &common.poly.polyA[1], common.poly.polyA[0]);
       nbrFactors++;
     }
     multiplicity++;
-    (void)DivideIntegerPolynomial(polyB, polyA, TYPE_DIVISION);    // b <- b/a
+    (void)DivideIntegerPolynomial(common.poly.polyB, common.poly.polyA, TYPE_DIVISION);    // b <- b/a
     // Continue loop if b does not equal 1.
-  } while ((polyB[0] != 0) || (polyB[1] != 1) || (polyB[2] != 1));
+  } while ((common.poly.polyB[0] != 0) || (common.poly.polyB[1] != 1) || (common.poly.polyB[2] != 1));
   return nbrFactors;
 }
 
@@ -2288,12 +2277,12 @@ static void factorDifferentModuli(int *pNbrFactorsRecord, int *pPrimeRecord)
   *pPrimeRecord = primeRecord;
 }
 
-// Input: values = degree, coefficient degree 0, coefficient degree 1, etc.
+// Input: common.poly.values = degree, coefficient degree 0, coefficient degree 1, etc.
 // Output: factorInfo = structure that holds the factors.
 int FactorPolyOverIntegers(void)
 {
-  const int* ptrPolySqFreeFact = polySqFreeFact;
-  int degreePolyToFactor = values[0];
+  const int* ptrPolySqFreeFact = common.poly.polySqFreeFact;
+  int degreePolyToFactor = common.poly.values[0];
   int primeRecord = 0;
   const int* ptrSrc;
   int* ptrDest;
@@ -2306,11 +2295,11 @@ int FactorPolyOverIntegers(void)
   struct sFactorInfo* pstFactorInfoInteger = factorInfoInteger;
   nbrFactorsFound = 0;
   initLinkedBigInt();
-  ptrFactorInteger = polyInteger;
+  ptrFactorInteger = common.poly.polyInteger;
   modulusIsZero = true;
   (void)memset(factorInfoInteger, 0, sizeof(factorInfoInteger));
-  (void)getContent(values, &contentPolyToFactor);
-  (void)CopyPolynomial(&origPolyToFactor[1], &values[1], degreePolyToFactor);
+  (void)getContent(common.poly.values, &contentPolyToFactor);
+  (void)CopyPolynomial(&origPolyToFactor[1], &common.poly.values[1], degreePolyToFactor);
   origPolyToFactor[0] = degreePolyToFactor;
   // polyToFactor -> original polynomial / content of polynomial.
   // Let n be the degree of the least coefficient different from zero.
@@ -2385,10 +2374,10 @@ int FactorPolyOverIntegers(void)
     modulusIsZero = true;
     intPolyMultiplicity = *ptrPolySqFreeFact;
     ptrPolySqFreeFact++;
-    polyNonRepeatedFactors[0] = *ptrPolySqFreeFact;
+    common.poly.polyNonRepeatedFactors[0] = *ptrPolySqFreeFact;
     ptrPolySqFreeFact++;
-    ptrDest = &polyNonRepeatedFactors[1];
-    for (int currentDegree = 0; currentDegree <= polyNonRepeatedFactors[0]; currentDegree++)
+    ptrDest = &common.poly.polyNonRepeatedFactors[1];
+    for (int currentDegree = 0; currentDegree <= common.poly.polyNonRepeatedFactors[0]; currentDegree++)
     {         // Copy polynomial.
       int numLength = numLimbs(ptrPolySqFreeFact) + 1;
       int lenBytes = numLength * (int)sizeof(int);
@@ -2397,10 +2386,10 @@ int FactorPolyOverIntegers(void)
       ptrDest += numLength;
     }
     // Get trailing coefficient.
-    ptrSrc = &polyNonRepeatedFactors[1];
+    ptrSrc = &common.poly.polyNonRepeatedFactors[1];
     UncompressBigIntegerB(ptrSrc, &operand1);
     // Get leading coefficient.
-    for (int degree1 = 0; degree1 < polyNonRepeatedFactors[0]; degree1++)
+    for (int degree1 = 0; degree1 < common.poly.polyNonRepeatedFactors[0]; degree1++)
     {
       ptrSrc += numLimbs(ptrSrc);
       ptrSrc++;
@@ -2417,7 +2406,7 @@ int FactorPolyOverIntegers(void)
       int prime;
       const struct sFactorInfo* pstFactorInfoRecord = factorInfoRecord;
       pstFactorInfoOrig = factorInfo;
-      ptrPolyLiftedOrig = polyLifted;
+      ptrPolyLiftedOrig = common.poly.polyLifted;
       for (factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
       {
         if (pstFactorInfoRecord->ptr == NULL)
@@ -2440,18 +2429,18 @@ int FactorPolyOverIntegers(void)
       vanHoeij(prime, nbrFactorsRecord);
     }
     // Polynomial is irreducible.
-    if (polyNonRepeatedFactors[0] > 0)
+    if (common.poly.polyNonRepeatedFactors[0] > 0)
     {    // Degree is greater than zero. Copy it to integer polynomial factor array.
-      ptrFactorIntegerBak = CopyPolynomial(ptrFactorInteger, &polyNonRepeatedFactors[1],
-        polyNonRepeatedFactors[0]);
-      InsertIntegerPolynomialFactor(ptrFactorInteger, polyNonRepeatedFactors[0]);
+      ptrFactorIntegerBak = CopyPolynomial(ptrFactorInteger, &common.poly.polyNonRepeatedFactors[1],
+        common.poly.polyNonRepeatedFactors[0]);
+      InsertIntegerPolynomialFactor(ptrFactorInteger, common.poly.polyNonRepeatedFactors[0]);
       ptrFactorInteger = ptrFactorIntegerBak;
       pstFactorInfoInteger++;
     }
   }
   modulusIsZero = true;
-  (void)CopyPolynomial(&values[1], &origPolyToFactor[1], origPolyToFactor[0]);
-  values[0] = origPolyToFactor[0];
+  (void)CopyPolynomial(&common.poly.values[1], &origPolyToFactor[1], origPolyToFactor[0]);
+  common.poly.values[0] = origPolyToFactor[0];
   CopyBigInt(&operand5, &contentPolyToFactor);
   // Find number of factors.
   for (nbrFactorsFound = 0; nbrFactorsFound < MAX_DEGREE; nbrFactorsFound++)

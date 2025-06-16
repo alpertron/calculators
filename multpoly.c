@@ -41,12 +41,7 @@ struct stKaratsubaStack
 #define ADJUST_MODULUS(sum, modulus) (sum += modulus & (sum >> 31))
 static struct stKaratsubaStack astKaratsubaStack[10];
 static BigInteger coeff[2 * KARATSUBA_POLY_CUTOFF];
-int polyInv[COMPRESSED_POLY_MAX_LENGTH];
 int polyInvCached;
-static int polyMultM[COMPRESSED_POLY_MAX_LENGTH];
-static int polyMultT[COMPRESSED_POLY_MAX_LENGTH];
-extern int poly4[COMPRESSED_POLY_MAX_LENGTH];
-extern int poly5[COMPRESSED_POLY_MAX_LENGTH];
 extern int powerOf2Exponent;
 limb subst1Limbs[MAX_LEN_MULT];
 limb subst2Limbs[MAX_LEN_MULT];
@@ -73,14 +68,14 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
     int lenBytes;
     if (i < coeffLen)
     {   // Processing first half (least significant) of product.
-      ptrFactor2 = &polyMultTemp[(idxFactor2 + i) * nbrLimbs];
-      ptrFactor1 = &polyMultTemp[idxFactor1 * nbrLimbs];
+      ptrFactor2 = &common.poly.polyMultTemp[(idxFactor2 + i) * nbrLimbs];
+      ptrFactor1 = &common.poly.polyMultTemp[idxFactor1 * nbrLimbs];
       j = i;
     }
     else
     {  // Processing second half (most significant) of product.
-      ptrFactor2 = &polyMultTemp[(idxFactor2 + coeffLen - 1) * nbrLimbs];
-      ptrFactor1 = &polyMultTemp[(idxFactor1 + i - coeffLen + 1) * nbrLimbs];
+      ptrFactor2 = &common.poly.polyMultTemp[(idxFactor2 + coeffLen - 1) * nbrLimbs];
+      ptrFactor1 = &common.poly.polyMultTemp[(idxFactor1 + i - coeffLen + 1) * nbrLimbs];
       j = 2 * (coeffLen - 1) - i;
     }
     lenBytes = nbrLimbs * (int)sizeof(limb);
@@ -199,7 +194,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
       }
     }
   }
-  ptrFactor1 = &polyMultTemp[idxFactor1 * nbrLimbs];
+  ptrFactor1 = &common.poly.polyMultTemp[idxFactor1 * nbrLimbs];
   if (nbrLimbs == 2)
   {    // Optimization for the case when there is only one limb.
     for (i = 0; i < (2 * coeffLen) - 1; i++)
@@ -336,10 +331,10 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
       if (nbrLength <= KARATSUBA_POLY_CUTOFF)
       {
         // Check if one of the factors is equal to zero.
-        ptrResult = &polyMultTemp[(idxFactor1 * nbrLimbs) + 1];
+        ptrResult = &common.poly.polyMultTemp[(idxFactor1 * nbrLimbs) + 1];
         if (isFactorEqualToZero(ptrResult, nbrLimbs, nbrLength))
         {      // First factor is zero. Initialize second to zero.
-          ptrResult = &polyMultTemp[(idxFactor2 * nbrLimbs) + 1];
+          ptrResult = &common.poly.polyMultTemp[(idxFactor2 * nbrLimbs) + 1];
           if (nbrLimbs == 2)
           {
             for (i = nbrLength; i > 0; i--)
@@ -360,11 +355,11 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
         }
         else
         {     // First factor is not zero. Check second.
-          ptrResult = &polyMultTemp[(idxFactor2 * nbrLimbs) + 1];
+          ptrResult = &common.poly.polyMultTemp[(idxFactor2 * nbrLimbs) + 1];
           assert(idxFactor2 >= 0);
           if (isFactorEqualToZero(ptrResult, nbrLimbs, nbrLength))
           {    // Second factor is zero. Initialize first to zero.
-            ptrResult = &polyMultTemp[(idxFactor1 * nbrLimbs) + 1];
+            ptrResult = &common.poly.polyMultTemp[(idxFactor1 * nbrLimbs) + 1];
             if (nbrLimbs == 2)
             {
               for (i = nbrLength; i > 0; i--)
@@ -405,8 +400,8 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
       // At this moment the order is: xL, xH, yL, yH.
       // Exchange high part of first factor with low part of 2nd factor.
       halfLength = nbrLength / 2;
-      int* ptrHighFirstFactor = &polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
-      int* ptrLowSecondFactor = &polyMultTemp[idxFactor2 * nbrLimbs];
+      int* ptrHighFirstFactor = &common.poly.polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
+      int* ptrLowSecondFactor = &common.poly.polyMultTemp[idxFactor2 * nbrLimbs];
       if (nbrLimbs == 2)
       {                        // Coefficients have only one limb.
         ptrHighFirstFactor++;  // Point to limb to be exchanged.
@@ -434,9 +429,9 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
       }
       // At this moment the order is: xL, yL, xH, yH.
       // Compute (xH-xL) and (yL-yH) and store them starting from index diffIndex.
-      ptr1 = &polyMultTemp[idxFactor1 * nbrLimbs];
-      ptr2 = &polyMultTemp[idxFactor2 * nbrLimbs];
-      ptrResult = &polyMultTemp[diffIndex * nbrLimbs];
+      ptr1 = &common.poly.polyMultTemp[idxFactor1 * nbrLimbs];
+      ptr2 = &common.poly.polyMultTemp[idxFactor2 * nbrLimbs];
+      ptrResult = &common.poly.polyMultTemp[diffIndex * nbrLimbs];
       if (nbrLimbs == 2)
       {    // Small modulus.
         modulus = TestNbr[0].x;
@@ -518,7 +513,7 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
       // Obtain (b+1)(xH*yH*b + xL*yL) = xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
       // The first and last terms are already in correct locations.
       // Add (xL*yL+xH*yH)*b.
-      ptrResult = &polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
+      ptrResult = &common.poly.polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
       if (nbrLimbs == 2)
       {        // Optimization for small numbers.
         int nbrLen2 = nbrLength * 2;
@@ -575,9 +570,9 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
         }
       }
       // Compute final product by adding (xH - xL)*(yL - yH)*b.
-      ptrHigh = &polyMultTemp[diffIndex * nbrLimbs];
+      ptrHigh = &common.poly.polyMultTemp[diffIndex * nbrLimbs];
       assert(diffIndex >= 0);
-      ptrResult = &polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
+      ptrResult = &common.poly.polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
       if (nbrLimbs == 2)
       {        // Optimization for small numbers.
         modulus = TestNbr[0].x;
@@ -627,7 +622,7 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
   } while (stage >= 0);
 }
 
-// Multiply factor1 by factor2.The result will be stored in polyMultTemp.
+// Multiply factor1 by factor2.The result will be stored in common.poly.polyMultTemp.
 static void MultIntegerPolynomial(int deg1, int deg2,
   const int* fact1, const int* fact2)
 {
@@ -675,7 +670,7 @@ static void MultIntegerPolynomial(int deg1, int deg2,
     ptrIndex++;
     index += numLimbs(factor2 + index) + 1;
   }
-  piDest = polyMultTemp;
+  piDest = common.poly.polyMultTemp;
   for (currentDegree = 0; currentDegree < degree2; currentDegree++)
   {
     intToBigInteger(&operand4, 0);
@@ -848,7 +843,7 @@ static bool MultiplyUsingKroneckerSubst(int degree1, int degree2,
   // Get each coefficient and get their remainders modulo TestNbr.
   // These numbers will be the coefficients of the polynomial multiplication.
   operand2.nbrLimbs = NumberLength;
-  ptrDest = polyMultTemp;
+  ptrDest = common.poly.polyMultTemp;
   if (powerOf2Exponent != 0)
   {          // TestNbr is even.
     lenBitsCoeffToProcess = powerOf2Exponent;
@@ -944,7 +939,7 @@ static bool MultiplyUsingKroneckerSubst(int degree1, int degree2,
   return true;
 }
 
-// Multiply factor1 by factor2. The result will be stored in polyMultTemp.
+// Multiply factor1 by factor2. The result will be stored in common.poly.polyMultTemp.
 void MultPolynomial(int degree1, int degree2,
   const int* factor1, const int* factor2)
 {
@@ -967,7 +962,7 @@ void MultPolynomial(int degree1, int degree2,
     int currentDegree1;
     int currentDegree2;
     // Initialize product to zero.
-    int* ptrDest = polyMultTemp;
+    int* ptrDest = common.poly.polyMultTemp;
     for (currentDegree1 = 0; currentDegree1 <= degreeProd; currentDegree1++)
     {
       *ptrDest = 1;
@@ -981,7 +976,7 @@ void MultPolynomial(int degree1, int degree2,
       {       // Only process factor if it is not zero.
         IntArray2BigInteger(ptrSrc1, &operand3);
         ptrSrc2 = factor2;
-        ptrDest = &polyMultTemp[currentDegree1 * nbrLimbs];
+        ptrDest = &common.poly.polyMultTemp[currentDegree1 * nbrLimbs];
         if ((NumberLength == 1) && (TestNbr[0].x <= 32768))
         {
           int mod = TestNbr[0].x;
@@ -1020,7 +1015,7 @@ void MultPolynomial(int degree1, int degree2,
   if ((NumberLength == 1) && (karatDegree > 50) &&
     (karatDegree < (1000000 / TestNbr[0].x / TestNbr[0].x)))
   {
-    fftPolyMult(factor1, factor2, polyMultTemp, degree1+1, degree2+1);
+    fftPolyMult(factor1, factor2, common.poly.polyMultTemp, degree1+1, degree2+1);
     return;
   }
   if ((NumberLength > 1) && (degree1 > 5) && (degree2 > 5) &&
@@ -1040,7 +1035,7 @@ void MultPolynomial(int degree1, int degree2,
     karatDegree *= div;
   }
   // Initialize Karatsuba polynomial.
-  ptrValue1 = polyMultTemp;
+  ptrValue1 = common.poly.polyMultTemp;
   for (int currentDegree = 3 * karatDegree; currentDegree > 0; currentDegree--)
   {
     *ptrValue1 = 1;        // Initialize coefficient to zero.
@@ -1048,14 +1043,14 @@ void MultPolynomial(int degree1, int degree2,
     ptrValue1 += nbrLimbs;
   }
   lenBytes = (degree1 + 1) * nbrLimbs * (int)sizeof(limb);
-  (void)memcpy(polyMultTemp, factor1, lenBytes);
+  (void)memcpy(common.poly.polyMultTemp, factor1, lenBytes);
   lenBytes = (degree2 + 1) * nbrLimbs * (int)sizeof(limb);
-  (void)memcpy(&polyMultTemp[karatDegree * nbrLimbs], factor2, lenBytes);
+  (void)memcpy(&common.poly.polyMultTemp[karatDegree * nbrLimbs], factor2, lenBytes);
   KaratsubaPoly(0, karatDegree, nbrLimbs);
 }
 
-// Compute the polynomial polyInv as:
-// polyInv = x^(2*polyDegree) / polymod
+// Compute the polynomial common.poly.polyInv as:
+// common.poly.polyInv = x^(2*polyDegree) / polymod
 void GetPolyInvParm(int polyDegree, const int* polyMod)
 {
   int degrees[15];
@@ -1074,20 +1069,20 @@ void GetPolyInvParm(int polyDegree, const int* polyMod)
   }
 
   // Point to leading coefficient of polyMod.
-  // Initialize polyInv as x - K
+  // Initialize common.poly.polyInv as x - K
   // where K is the coefficient of x^(polyDegree-1) of polyMod.
-  SetNumberToOne(&polyInv[nbrLimbs]);
+  SetNumberToOne(&common.poly.polyInv[nbrLimbs]);
   LenAndLimbs2ArrLimbs(polyMod + (polyDegree - 1) * nbrLimbs, operand1.limbs, nbrLimbs);
   lenBytes = nbrLimbs * (int)sizeof(limb);
   (void)memset(operand2.limbs, 0, lenBytes);
   SubtBigNbrMod(operand2.limbs, operand1.limbs, operand1.limbs);
-  ArrLimbs2LenAndLimbs(polyInv, operand1.limbs, nbrLimbs);
+  ArrLimbs2LenAndLimbs(common.poly.polyInv, operand1.limbs, nbrLimbs);
   newtonDegree = 1;
 
   // Use Newton iteration: F_{2n}(x) = F_n(x)*(2-D(x)*F_n(x))
-  // where F = polyInv (degree newtonDegree)
+  // where F = common.poly.polyInv (degree newtonDegree)
   // and D = polyMod (degree nextDegree).
-  // Use poly5 as temporary polynomial 2-D(x)*F_n(x) (degree nextDegree).
+  // Use common.poly.poly5 as temporary polynomial 2-D(x)*F_n(x) (degree nextDegree).
   nbrDegrees--;
   while (nbrDegrees >= 0)
   {  
@@ -1095,15 +1090,15 @@ void GetPolyInvParm(int polyDegree, const int* polyMod)
     const int* ptrCoeff2;
     const int *ptrPolyMod;
     int nextDegree = degrees[nbrDegrees];
-    // Initialize poly4 with the nextDegree most significant coefficients.
+    // Initialize common.poly.poly4 with the nextDegree most significant coefficients.
     ptrPolyMod = polyMod + (nbrLimbs * (polyDegree - nextDegree));
     lenBytes = nextDegree * nbrLimbs * (int)sizeof(limb);
-    (void)memcpy(poly4, ptrPolyMod, lenBytes);
-    SetNumberToOne(&poly4[nextDegree * nbrLimbs]);
+    (void)memcpy(common.poly.poly4, ptrPolyMod, lenBytes);
+    SetNumberToOne(&common.poly.poly4[nextDegree * nbrLimbs]);
     polyInvCached = NBR_READY_TO_BE_CACHED;
-    MultPolynomial(nextDegree, newtonDegree, poly4, polyInv);
-    ptrCoeff = poly5;   // Destination of 2-D(x)*F_n(x).
-    ptrCoeff2 = &polyMultTemp[newtonDegree * nbrLimbs];  // Source of D(x)*F_n(x).
+    MultPolynomial(nextDegree, newtonDegree, common.poly.poly4, common.poly.polyInv);
+    ptrCoeff = common.poly.poly5;   // Destination of 2-D(x)*F_n(x).
+    ptrCoeff2 = &common.poly.polyMultTemp[newtonDegree * nbrLimbs];  // Source of D(x)*F_n(x).
     int nbrLimbsBytes = nbrLimbs * sizeof(limb);
     (void)memset(operand2.limbs, 0, nbrLimbsBytes);
     for (int deg = 0; deg < nextDegree; deg++)
@@ -1115,19 +1110,19 @@ void GetPolyInvParm(int polyDegree, const int* polyMod)
       ptrCoeff2 += nbrLimbs;
     }
     SetNumberToOne(ptrCoeff);
-    MultPolynomial(nextDegree, newtonDegree, poly5, polyInv);
+    MultPolynomial(nextDegree, newtonDegree, common.poly.poly5, common.poly.polyInv);
     lenBytes = (nextDegree + 1) * nbrLimbs * (int)sizeof(limb);
-    (void)memcpy(polyInv, &polyMultTemp[newtonDegree * nbrLimbs], lenBytes);
+    (void)memcpy(common.poly.polyInv, &common.poly.polyMultTemp[newtonDegree * nbrLimbs], lenBytes);
     newtonDegree = nextDegree;
     nbrDegrees--;
   }
   polyInvCached = NBR_READY_TO_BE_CACHED;
 }
 
-// Multiply two polynomials mod polyMod using inverse polynomial polyInv.
+// Multiply two polynomials mod polyMod using inverse polynomial common.poly.polyInv.
 // The algorithm is:
 // T <- polyFact1 * polyFact2
-// m <- (T*polyInv)/x^polyDegree
+// m <- (T*common.poly.polyInv)/x^polyDegree
 // return T - m*polyMod
 void multUsingInvPolynomial(const int* polyFact1, const int* polyFact2,
   /*@out@*/int* polyProd,
@@ -1141,13 +1136,13 @@ void multUsingInvPolynomial(const int* polyFact1, const int* polyFact2,
   // Compute T
   MultPolynomial(polyDegree, polyDegree, polyFact1, polyFact2);
   lenBytes = ((2 * polyDegree) + 1) * nbrLimbs * (int)sizeof(limb);
-  (void)memcpy(polyMultT, polyMultTemp, lenBytes);
+  (void)memcpy(common.poly.polyMultT, common.poly.polyMultTemp, lenBytes);
   // Compute m
-  MultPolynomial(polyDegree, polyDegree, &polyMultT[polyDegree * nbrLimbs], polyInv);
+  MultPolynomial(polyDegree, polyDegree, &common.poly.polyMultT[polyDegree * nbrLimbs], common.poly.polyInv);
   lenBytes = (polyDegree + 1) * nbrLimbs * (int)sizeof(limb);
-  (void)memcpy(polyMultM, &polyMultTemp[polyDegree * nbrLimbs], lenBytes);
+  (void)memcpy(common.poly.polyMultM, &common.poly.polyMultTemp[polyDegree * nbrLimbs], lenBytes);
   // Compute m*polyMod
-  MultPolynomial(polyDegree, polyDegree, polyMultM, polyMod);
+  MultPolynomial(polyDegree, polyDegree, common.poly.polyMultM, polyMod);
   // Compute T - mN.
   if (NumberLength == 1)
   {
@@ -1155,7 +1150,7 @@ void multUsingInvPolynomial(const int* polyFact1, const int* polyFact2,
     index = 1;
     for (currentDegree = 0; currentDegree < polyDegree; currentDegree++)
     {
-      int temp = polyMultT[index] - polyMultTemp[index];
+      int temp = common.poly.polyMultT[index] - common.poly.polyMultTemp[index];
       temp += mod & (temp >> 31);
       *(polyProduct + 1) = temp;
       index += nbrLimbs;
@@ -1167,8 +1162,8 @@ void multUsingInvPolynomial(const int* polyFact1, const int* polyFact2,
     index = 0;
     for (currentDegree = 0; currentDegree < polyDegree; currentDegree++)
     {
-      LenAndLimbs2ArrLimbs(&polyMultTemp[index], operand1.limbs, nbrLimbs);
-      LenAndLimbs2ArrLimbs(&polyMultT[index], operand2.limbs, nbrLimbs);
+      LenAndLimbs2ArrLimbs(&common.poly.polyMultTemp[index], operand1.limbs, nbrLimbs);
+      LenAndLimbs2ArrLimbs(&common.poly.polyMultT[index], operand2.limbs, nbrLimbs);
       SubtBigNbrMod(operand2.limbs, operand1.limbs, operand1.limbs);
       ArrLimbs2LenAndLimbs(polyProduct, operand1.limbs, nbrLimbs);
       index += nbrLimbs;
@@ -1188,8 +1183,8 @@ void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
   const int* ptrPoly2;
   int* ptrPolyTemp;
   int lenBytes;
-  // Initialize polyMultTemp with the most significant half of product.
-  ptrPolyTemp = polyMultTemp + (polyDegree - 1) * nbrLimbs;
+  // Initialize common.poly.polyMultTemp with the most significant half of product.
+  ptrPolyTemp = common.poly.polyMultTemp + (polyDegree - 1) * nbrLimbs;
   for (index1 = polyDegree - 1; index1 >= 0; index1--)
   {
     ptrPoly1 = polyFact1 + (index1 * nbrLimbs);
@@ -1212,7 +1207,7 @@ void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
   // Get remainder of long division by polyMod and append next limbs of the product.
   for (index1 = polyDegree - 2; index1 >= 0; index1--)
   {
-    int* ptrPoly3 = &polyMultTemp[(polyDegree - 1) * nbrLimbs];
+    int* ptrPoly3 = &common.poly.polyMultTemp[(polyDegree - 1) * nbrLimbs];
     // Back up leading coefficient.
     lenBytes = nbrLimbs * (int)sizeof(int);
     (void)memcpy(ptrPoly3 + nbrLimbs, ptrPoly3, lenBytes);
@@ -1243,11 +1238,11 @@ void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
       AddBigNbrMod(operand2.limbs, operand1.limbs, operand1.limbs);
     }
     IntArray2BigInteger(polyMod, &operand2);
-    IntArray2BigInteger(&polyMultTemp[polyDegree * nbrLimbs], &operand3);
+    IntArray2BigInteger(&common.poly.polyMultTemp[polyDegree * nbrLimbs], &operand3);
     modmult(operand3.limbs, operand2.limbs, operand2.limbs);
     SubtBigNbrMod(operand1.limbs, operand2.limbs, operand1.limbs);
-    BigInteger2IntArray(polyMultTemp, &operand1);
+    BigInteger2IntArray(common.poly.polyMultTemp, &operand1);
   }
   lenBytes = polyDegree * nbrLimbs * (int)sizeof(int);
-  (void)memcpy(polyProduct, polyMultTemp, lenBytes);
+  (void)memcpy(polyProduct, common.poly.polyMultTemp, lenBytes);
 }

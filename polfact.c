@@ -28,10 +28,8 @@
 #ifdef FACTORIZATION_APP
 #include "factor.h"
 #endif
-extern int denom[COMPRESSED_POLY_MAX_LENGTH];
 extern int primeEisenstein;
 extern char* ptrOutput;
-extern int polyBackup[];
 extern int eqNbr;
 int grpLen;
 bool teachMod;
@@ -105,7 +103,7 @@ void SortFactors(const BigInteger *modulus)
 
 static int FactorPolynomial(void)
 {
-  // At this moment the array "values" contains the polynomial.
+  // At this moment the array "common.poly.values" contains the polynomial.
   if (onlyEvaluate)
   {
     if (!modulusIsZero)
@@ -124,8 +122,8 @@ static int FactorPolynomial(void)
     return FactorPolyOverIntegers();
   }
   // Back up input polynomial.
-  polyBackup[0] = values[0];
-  (void)CopyPolynomial(&polyBackup[1], &values[1], (values[0] >= 0) ? values[0] : 0);
+  common.poly.polyBackup[0] = common.poly.values[0];
+  (void)CopyPolynomial(&common.poly.polyBackup[1], &common.poly.values[1], (common.poly.values[0] >= 0) ? common.poly.values[0] : 0);
   // Input is in Montgomery notation.
   teachMod = teach;
   return FactorModularPolynomial(true, false);
@@ -190,7 +188,7 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
     if (rc == EXPR_OK)
     {
       isFraction = true;
-      if ((denom[0] == 0) && (((denom[1] == 1) && (denom[2] == 1)) || !modulusIsZero))
+      if ((common.poly.denom[0] == 0) && (((common.poly.denom[1] == 1) && (common.poly.denom[2] == 1)) || !modulusIsZero))
       {    // If modulus is zero: denominator is one.
            // If modulus is not zero: degree is zero.
         isFraction = false;
@@ -234,7 +232,7 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
   }
   else
   {
-    degree = values[0];
+    degree = common.poly.values[0];
     if (!onlyEvaluate)
     {
       int nbrFactor;
@@ -247,7 +245,7 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
       {
         pstFactorInfo = factorInfo;
         // Get leading coefficient if using modular arithmetic.
-        const int* ptrCoeff = &values[1];
+        const int* ptrCoeff = &common.poly.values[1];
         for (int currDegree = 0; currDegree < degree; currDegree++)
         {
           ptrCoeff += numLimbs(ptrCoeff) + 1;

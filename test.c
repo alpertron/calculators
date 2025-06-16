@@ -29,13 +29,16 @@
 #include "fromBlockly.h"
 #include "isprime.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 12
+#define DEBUG_CODE 13
 #endif
 #ifdef __EMSCRIPTEN__
 extern char inputString[];
 #endif
 #if (DEBUG_CODE == 9) || (DEBUG_CODE == 17)
 extern bool teach;
+#endif
+#if DEBUG_CODE == 13
+extern bool doShowPrime;
 #endif
 #if DEBUG_CODE == 22
 static char bufferXML[1000000];
@@ -55,7 +58,7 @@ int factor7[2002];
 int factor8[2002];
 int factors[5000];
 int quotientPoly[20];
-char results[1000];
+char results[300000];
 struct sFactors astFactors[1000];
 extern int number[MAX_LEN];
 extern int nbrLimbs;
@@ -289,7 +292,8 @@ int main(int argc, char* argv[])
       "flags = 3: hexadecimal output, use SIQS\n"
       "flags = 4: decimal output, do not use SIQS\n"
       "dofact = 0: do not factor, just show expression result\n"
-      "dofact = 1: factor expression (default)\n");
+      "dofact = 1: factor expression (default)\n"
+      "dofact = 2: show whether the expression is prime\n");
     return 0;
   }
   if (argc == 3)
@@ -303,9 +307,17 @@ int main(int argc, char* argv[])
       ptrCurveNbr = "!";    // Use SIQS.
     }
   }
-  if ((argc == 4) && (argv[3][0] == '0'))
+  if (argc == 4)
   {
-    doFactorization = false;
+    if (argv[3][0] == '0')
+    {
+      doFactorization = false;
+    }
+    if (argv[3][0] == '2')
+    {
+      doShowPrime = true;
+      doFactorization = false;
+    }
   }
   copyStr(&ptrText, argv[1]);
   copyStr(&ptrText, "\n");
@@ -443,7 +455,7 @@ int main(int argc, char* argv[])
     factor8[2 * ctr] = 1;
     factor8[2 * ctr + 1] = 10;
   }
-  fftPolyMult(factor7, factor8, polyMultTemp, 127, 64);
+  fftPolyMult(factor7, factor8, common.poly.polyMultTemp, 127, 64);
   for (ctr = 0; ctr < 501; ctr++)
   {
     factor7[2 * ctr] = 1;
@@ -451,7 +463,7 @@ int main(int argc, char* argv[])
     factor8[2 * ctr] = 1;
     factor8[2 * ctr + 1] = 10;
   }
-  fftPolyMult(factor7, factor8, polyMultTemp, 501, 501);
+  fftPolyMult(factor7, factor8, common.poly.polyMultTemp, 501, 501);
 #elif DEBUG_CODE == 21
   //  int dividendPoly[] = {1, 15, 1, 14, 1, 13, 1, 12, 1, 11, 1, 10, 1, 9, 1, 8,
   //    1, 7, 1, 6, 1, 5, 1, 4, 1, 3, 1, 2, 1, 1};
@@ -589,9 +601,9 @@ int main(int argc, char* argv[])
   *ptrResults = 0;
   (void)printf("%s\n", results);
 #elif DEBUG_CODE == 29
-  BigInteger multiplier;
-  BigInteger multiplicand;
-  BigInteger modulus;
+  static BigInteger multiplier;
+  static BigInteger multiplicand;
+  static BigInteger modulus;
   if (argc != 4)
   {
     printf("modmult {multiplicand} {multiplier} {modulus}\n");
@@ -651,10 +663,10 @@ int main(int argc, char* argv[])
   *ptrResults = 0;     // Add string terminator.
   (void)printf("%s\n", results);
 #elif DEBUG_CODE == 30
-  BigInteger multiplier;
-  BigInteger multiplicand;
-  BigInteger modulus;
-  BigInteger power;
+  static BigInteger multiplier;
+  static BigInteger multiplicand;
+  static BigInteger modulus;
+  static BigInteger power;
   intToBigInteger(&multiplier, 10);
   BigIntPowerIntExp(&multiplier, 100, &power);
   for (int exponent = 100; exponent < 100000; exponent += 10)
@@ -708,6 +720,31 @@ int main(int argc, char* argv[])
       (void)printf("Exponent = %d, Result = %s\n", exponent, results);
     }
   }
+#elif DEBUG_CODE == 31
+  static BigInteger multiplier;
+  static BigInteger multiplicand;
+  if (argc != 3)
+  {
+    printf("mult {multiplicand} {multiplier}\n");
+    return 1;
+  }
+  int rc = ComputeExpression(argv[1], &multiplicand);
+  if (rc != EXPR_OK)
+  {
+    printf("Error in the multiplicand: %s\n", argv[1]);
+    return 1;
+  }
+  rc = ComputeExpression(argv[2], &multiplier);
+  if (rc != EXPR_OK)
+  {
+    printf("Error in the multiplier: %s\n", argv[2]);
+    return 1;
+  }
+  BigIntMultiply(&multiplicand, &multiplier, &multiplier);
+  char* ptrResults = results;
+  Bin2Dec(&ptrResults, multiplier.limbs, multiplier.nbrLimbs, 0);
+  *ptrResults = 0;     // Add string terminator.
+  (void)printf("%s\n", results);
 #endif
   return 0;
 }

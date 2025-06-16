@@ -182,8 +182,8 @@ static void FactorPolynomialF20(void)
   unsigned int ctr;
   int* ptrValues;
   const struct stQuinticF20* pstQuinticF20;
-  values[0] = 6;          // Degree of polynomial to factor.
-  ptrValues = &values[1];
+  common.poly.values[0] = 6;          // Degree of polynomial to factor.
+  ptrValues = &common.poly.values[1];
 
   intToBigInteger(&Rat1.numerator, 0);
   intToBigInteger(&Rat1.denominator, 1);
@@ -584,7 +584,7 @@ static void ShowQuinticsRootsRealR(int multiplicity)
   }
   else
   {
-    showExpr("(R4 - R1) +");
+    showExpr("(R_4 - R_1) +");
   }
   if (pretty == PARI_GP)
   {
@@ -947,6 +947,7 @@ static void showRnGroup10Or20(int groupOrder, int ctr, double dFifthRootArgument
     showRationalNoParen(&Rat4);
   }
   end5thRoot();
+  endLine();
 }
 
 static void GaloisGroupHasOrder10Or20(int groupOrder)

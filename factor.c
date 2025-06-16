@@ -122,7 +122,7 @@ static int *coeffPlus[] =
   coeffPlus18
 };
 
-static void GetYieldFrequency(void)
+void GetYieldFrequency(void)
 {
   yieldFreq = 1000000 / (NumberLength * NumberLength) + 1;
   if (yieldFreq > 100000)
@@ -1613,7 +1613,7 @@ static void insertBigFactor(struct sFactors *pstFactors, const BigInteger *divis
   SortFactors(pstFactors);
 }
 #ifdef __EMSCRIPTEN__
-static void showECMStatus(void)
+void showECMStatus(void)
 {
   char status[200];
   int elapsedTime;

@@ -46,7 +46,6 @@ static BigInteger expon;
 static bool ProcessExpon[(MAX_LEN*BITS_PER_GROUP) + 1000];
 static bool primes[(MAX_LEN*BITS_PER_GROUP) + 1000];
 extern limb Mult1[MAX_LEN];
-extern limb Mult2[MAX_LEN];
 extern limb Mult3[MAX_LEN];
 extern limb Mult4[MAX_LEN];
 extern int valueQ[MAX_LEN];
@@ -58,6 +57,9 @@ int smallPrimes[SMALL_PRIMES_ARRLEN+1];
 int percentageBPSW;
 #ifdef FACTORIZATION_APP
 static int savedSecond;
+extern mmCback modmultCallback;
+void showECMStatus(void);
+void GetYieldFrequency(void);
 #endif
 #endif
 
@@ -1916,6 +1918,7 @@ static void Halve(limb *pValue)
   }
   else
   {    // Number to halve is odd. Add modulus and then divide by 2.
+    (pValue + NumberLength)->x = 0;
     AddBigNbr(pValue, TestNbr, pValue, NumberLength + 1);
     DivBigNbrByInt(pValue, 2, pValue, NumberLength + 1);
   }
@@ -1963,6 +1966,8 @@ static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
   int lenBytes;
 #ifdef __EMSCRIPTEN__
 #ifdef FACTORIZATION_APP
+  mmCback modmultCallbackBak = modmultCallback;
+  modmultCallback = NULL;
   if (nbrLimbs > 5)
   {   // Show text only if testing primality time is noticeable.
     char* ptrText;
@@ -1971,6 +1976,12 @@ static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
     (void)strcpy(ptrText, lang ? "<p>Paso 1 del algoritmo BPSW de primos probables: Miller-Rabin fuerte con base 2.</p>" :
       "<p>Step 1 of BPSW probable prime algorithm: Strong Miller-Rabin with base 2.</p>");
     ShowLowerText();
+    if (nbrLimbs > 30)
+    {
+      NumberLength = nbrLimbs;
+      GetYieldFrequency();
+      modmultCallback = showECMStatus;
+    }
   }
   else
   {
@@ -2034,11 +2045,16 @@ static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
       {  // Current value is 1 but previous value is not 1 or -1: composite
 #if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
         StepECM = 0;    // Do not show progress.
+        modmultCallback = modmultCallbackBak;
 #endif
         return 2;       // Composite. Not 2-strong probable prime.
       }
       if (checkMinusOne(Mult4, nbrLimbs) != 0)
       {
+#if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+        StepECM = 0;    // Do not show progress.
+        modmultCallback = modmultCallbackBak;
+#endif
         return 0;         // Number is strong pseudoprime.
       }
       lenBytes = nbrLimbs * (int)sizeof(limb);
@@ -2048,39 +2064,63 @@ static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
     {
 #if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
       StepECM = 0;      // Do not show progress.
+      modmultCallback = modmultCallbackBak;
 #endif
       return 1;         // Not 2-Fermat probable prime.
     }
 #if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
     StepECM = 0;      // Do not show progress.
+    modmultCallback = modmultCallbackBak;
 #endif
     return 2;         // Composite. Not 2-strong probable prime.
   }
+#if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+  StepECM = 0;        // Do not show progress.
+  modmultCallback = modmultCallbackBak;
+#endif
   return 0;
 }
 
+// Use the following formulas for duplicating Lucas numbers:
+// For sequence U: U_{2k} = U_k * V_k
+// For sequence V: V_{2k} = ((V_k)^2 + D*(U_k)^2)/2
+static void duplicateUandV(int D, int signD, int nbrLimbs)
+{
+  modmult(Mult3, Mult3, Temp2.limbs);    // (U_k)^2 <- U_k * U_k
+  modmult(Mult3, Mult4, Mult3);          // U_{2k} <- U_k * V_k
+  modmult(Mult4, Mult4, Mult4);          // V <- V_k * V_k
+  MultBigNbrByIntModN(Temp2.limbs, D, Mult1, TestNbr, nbrLimbs); // D*(U_k)^2
+  if (signD > 0)
+  {
+    AddBigNbrMod(Mult4, Mult1, Mult4);   // V <- (V_k)^2 + D*(U_k)^2
+  }
+  else
+  {
+    SubtBigNbrMod(Mult4, Mult1, Mult4);  // V <- (V_k)^2 + D*(U_k)^2
+  }
+  Halve(Mult4);                          // Get value of V_{2k}
+}
 // Perform strong Lucas primality test on n with parameters D, P=1, Q just found.
 // Let d*2^s = n+1 where d is odd.
-// Then U_d = 0 or v_{d*2^r} = 0 for some r < s.
+// Then U_d = 0 or V_{d*2^r} = 0 for some r < s.
 // Use the following recurrences:
 // U_0 = 0, V_0 = 2.
 // U_{2k} = U_k * V_k
-// V_{2k} = (V_k)^2 - 2*Q^K
+// V_{2k} = ((V_k)^2 + D*(U_k)^2)/2
 // U_{2k+1} = (U_{2k} + V_{2k})/2
 // V_{2k+1} = (D*U_{2k} + V_{2k})/2
 // Use the following temporary variables:
-// Mult1 for Q^n, Mult3 for U, Mult4 for V, Mult2 for temporary.
+// Mult3 for U, Mult4 for V, Mult1 & Mult2 for temporary.
 
 #if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
-static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int signD,
+static int PerformStrongLucasTest(const BigInteger* pValue, int D, int signD,
   const struct sFactors* pstFactors)
 #else
-static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int signD)
+static int PerformStrongLucasTest(const BigInteger* pValue, int D, int signD)
 #endif
 {
   int nbrLimbsBytes;
   int index;
-  int signPowQ;
   bool insidePowering = false;
   int ctr;
   int nbrLimbs = pValue->nbrLimbs;
@@ -2088,6 +2128,8 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int
 #ifdef __EMSCRIPTEN__
   char* ptrText;
 #ifdef FACTORIZATION_APP
+  mmCback modmultCallbackBak = modmultCallback;
+  modmultCallback = NULL;
   StepECM = 0;
 #endif
   if (nbrLimbs > 5)
@@ -2112,22 +2154,29 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int
     if (signD > 0)
     {
       copyStr(&ptrText, "&minus;");
+      int2dec(&ptrText, (D-1)/4);
     }
-    int2dec(&ptrText, absQ);
+    else
+    {
+      int2dec(&ptrText, (D+1)/4);
+    }
     copyStr(&ptrText, "</p>");
 #ifdef FACTORIZATION_APP
     ShowLowerText();
+    if (nbrLimbs > 30)
+    {
+      NumberLength = nbrLimbs;
+      GetYieldFrequency();
+      modmultCallback = showECMStatus;
+    }
 #else
     databack(text);
 #endif
   }
 #endif
   nbrLimbsBytes = (nbrLimbs + 1) * (int)sizeof(limb);
-  (void)memcpy(Mult1, MontgomeryMultR1, nbrLimbsBytes); // Q^0 <- 1.
-  signPowQ = 1;
   (void)memset(Mult3, 0, nbrLimbsBytes);                // U_0 <- 0.
-  (void)memcpy(Mult4, MontgomeryMultR1, nbrLimbsBytes);
-  AddBigNbrMod(Mult4, Mult4, Mult4);                    // V_0 <- 2.
+  AddBigNbrMod(Mult1, Mult1, Mult4);                    // V_0 <- 2.
   CopyBigInt(&expon, pValue);
   addbigint(&expon, 1);                                 // expon <- n + 1.
   Temp.limbs[nbrLimbs].x = 0;
@@ -2137,30 +2186,14 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int
   for (index = expon.nbrLimbs - 1; index >= 0; index--)
   {
 #ifdef __EMSCRIPTEN__
-    percentageBPSW = (expon.nbrLimbs - index) * 100 / expon.nbrLimbs;
+    percentageBPSW = (expon.nbrLimbs - index) * 100 / (expon.nbrLimbs + ctr);
 #endif
     int groupExp = expon.limbs[index].x;
     for (unsigned int mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
     {
       if (insidePowering)
       {
-        // Use the following formulas for duplicating Lucas numbers:
-        // For sequence U: U_{2k} = U_k * V_k
-        // For sequence V: V_{2k} = (V_k)^2 - 2*Q^K
-        modmult(Mult3, Mult4, Mult3);          // U <- U * V
-        modmult(Mult4, Mult4, Mult4);          // V <- V * V
-        if (signPowQ > 0)
-        {
-          SubtBigNbrMod(Mult4, Mult1, Mult4);  // V <- V - Q^k
-          SubtBigNbrMod(Mult4, Mult1, Mult4);  // V <- V - Q^k
-        }
-        else
-        {
-          AddBigNbrMod(Mult4, Mult1, Mult4);   // V <- V - Q^k
-          AddBigNbrMod(Mult4, Mult1, Mult4);   // V <- V - Q^k
-        }
-        signPowQ = 1;                          // Indicate it is positive. 
-        modmult(Mult1, Mult1, Mult1);          // Square power of Q.
+        duplicateUandV(D, signD, nbrLimbs);
       }
       if (((unsigned int)groupExp & mask) != 0U)
       {        // Bit of exponent is equal to 1.
@@ -2180,11 +2213,9 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int
         {      // D is negative.
           SubtBigNbrMod(Mult4, Temp2.limbs, Mult4);
         }
-        Halve(Mult4);                       // V <- (V +/- U*D)/2
+        Halve(Mult4);                        // V <- (V +/- U*D)/2
         lenBytes = NumberLength * (int)sizeof(limb);
         (void)memcpy(Mult3, Temp.limbs, lenBytes);
-        modmultInt(Mult1, absQ, Mult1); // Multiply power of Q by Q.
-        signPowQ = -signD;                   // Attach correct sign to power.
         insidePowering = true;
       }
     }
@@ -2194,35 +2225,29 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int
   {
 #if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
     StepECM = 0;      // Do not show progress.
+    modmultCallback = modmultCallbackBak;
 #endif
     return 0;         // Indicate number is probable prime.
   }
   for (index = 0; index < ctr; index++)
   {
+#ifdef __EMSCRIPTEN__
+    percentageBPSW = (expon.nbrLimbs + index) * 100 / (expon.nbrLimbs + ctr);
+#endif
     // If V is zero, the number passes the BPSW primality test.
     if (BigNbrIsZero(Mult4))
     {
 #if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
       StepECM = 0;    // Do not show progress.
+      modmultCallback = modmultCallbackBak;
 #endif
       return 0;       // Indicate number is probable prime.
     }
-    modmult(Mult4, Mult4, Mult4);          // V <- V * V
-    if (signPowQ > 0)
-    {
-      SubtBigNbrMod(Mult4, Mult1, Mult4);  // V <- V - Q^k
-      SubtBigNbrMod(Mult4, Mult1, Mult4);  // V <- V - Q^k
-    }
-    else
-    {
-      AddBigNbrMod(Mult4, Mult1, Mult4);   // V <- V - Q^k
-      AddBigNbrMod(Mult4, Mult1, Mult4);   // V <- V - Q^k
-    }
-    modmult(Mult1, Mult1, Mult1);          // Square power of Q.
-    signPowQ = 1;                          // Indicate it is positive.
+    duplicateUandV(D, signD, nbrLimbs);
   }
 #if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
   StepECM = 0;     // Do not show progress.
+  modmultCallback = modmultCallbackBak;
 #endif
   return 3;        // Number does not pass strong Lucas test.
 }
@@ -2249,7 +2274,6 @@ int BpswPrimalityTest(const BigInteger *pValue)
   (void)pstFactors;    // Parameter is not used.
 #endif
   int D;
-  int absQ;
   int signD;
   int retcode;
   int nbrLimbs = pValue->nbrLimbs;
@@ -2334,8 +2358,8 @@ int BpswPrimalityTest(const BigInteger *pValue)
     return 3;        // Indicate number does not pass strong Lucas test.
   }
   // At this point, the number is not perfect square, so find value of D.
-  signD = -1;
-  D = 7;
+  signD = 1;
+  D = 5;
   for (;;)
   {
     int rem = getRemainder(pValue, D);
@@ -2346,15 +2370,10 @@ int BpswPrimalityTest(const BigInteger *pValue)
     signD = -signD;
     D += 2;
   }
-  absQ = (1 - (D*signD)) / 4;   // Compute Q <- (1 - D)/4
-  if (absQ < 0)
-  {
-    absQ = -absQ;
-  }
 #if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
-  return PerformStrongLucasTest(pValue, D, absQ, signD, pstFactors);
+  return PerformStrongLucasTest(pValue, D, signD, pstFactors);
 #else
-  return PerformStrongLucasTest(pValue, D, absQ, signD);
+  return PerformStrongLucasTest(pValue, D, signD);
 #endif
 }
 

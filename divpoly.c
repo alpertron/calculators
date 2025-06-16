@@ -30,10 +30,6 @@
 
 extern int valuesIndex;
 extern int NumberLength;
-extern int poly4[COMPRESSED_POLY_MAX_LENGTH];
-static int revDividend[COMPRESSED_POLY_MAX_LENGTH];
-static int inverseDivisor[COMPRESSED_POLY_MAX_LENGTH];
-static int polyTmp[COMPRESSED_POLY_MAX_LENGTH];
 
 // Decompress polynomial.
 static void ToPoly(int polyDegree, const int* polySrc, int* polyDest)
@@ -164,10 +160,10 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
   int* ptrQuotient;
   // Move arguments to temporary storage with most significant coefficient
   // first.
-  ReversePolynomial(poly1, pDividend, NULL);
-  ReversePolynomial(poly2, pDivisor, NULL);
-  degreeDividend = poly1[0];
-  degreeDivisor = poly2[0];
+  ReversePolynomial(common.poly.poly1, pDividend, NULL);
+  ReversePolynomial(common.poly.poly2, pDivisor, NULL);
+  degreeDividend = common.poly.poly1[0];
+  degreeDivisor = common.poly.poly2[0];
   if (degreeDividend < degreeDivisor)
   {      // Degree of dividend is less than degree of divisor.
     if (type == TYPE_DIVISION)
@@ -180,15 +176,15 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
     // is already in the dividend location.
     return EXPR_OK;
   }
-  ptrQuotient = poly3;
+  ptrQuotient = common.poly.poly3;
   *ptrQuotient = degreeDividend - degreeDivisor;
   ptrQuotient++;
   for (int degreeQuotient = degreeDividend - degreeDivisor;
     degreeQuotient >= 0; degreeQuotient--)
   {
-    const int* ptrDividend = &poly1[1];
-    const int* ptrDivisor = &poly2[1];
-    int* ptrRemainder = &poly4[1];
+    const int* ptrDividend = &common.poly.poly1[1];
+    const int* ptrDivisor = &common.poly.poly2[1];
+    int* ptrRemainder = &common.poly.poly4[1];
     UncompressBigIntegerB(ptrDividend, &operand1);
     UncompressBigIntegerB(ptrDivisor, &operand2);
     (void)BigIntRemainder(&operand1, &operand2, &operand3);
@@ -205,7 +201,7 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
     if (degreeDivisor == 0)
     {     // Strip leading coefficient of dividend.
       int numLength = 1 + numLimbs(ptrDividend);
-      ptrRemainder = &poly1[1];
+      ptrRemainder = &common.poly.poly1[1];
 
       for (degree = degreeDividend; degree > 0; degree--)
       {
@@ -245,18 +241,18 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
         ptrRemainder += numLength;
       }
       // Copy remainder to dividend.
-      (void)memcpy(&poly1[1], &poly4[1], (char*)ptrRemainder - (char*)&poly4[1]);
+      (void)memcpy(&common.poly.poly1[1], &common.poly.poly4[1], (char*)ptrRemainder - (char*)&common.poly.poly4[1]);
     }
     degreeDividend--;
   }
   if (type == TYPE_DIVISION)
   {    // Get pointer to quotient.
-    ptrResult = poly3;
-    degree = poly1[0] - degreeDivisor;
+    ptrResult = common.poly.poly3;
+    degree = common.poly.poly1[0] - degreeDivisor;
   }
   else
   {    // Get pointer to remainder.
-    ptrResult = poly1;
+    ptrResult = common.poly.poly1;
     degree = degreeDivisor - 1;
   }
   // Compute degree discarding leading coefficients set to zero.
@@ -478,10 +474,10 @@ enum eExprErr DivideRatCoeffPolynomial(int* pDividend, const int* pDivisor, enum
   }
   // Move arguments to temporary storage with most significant coefficient
   // first. Append the divisor for each coefficient.
-  ReversePolynomial(poly1, pDividend, denomin1 + 1);
-  ReversePolynomial(poly2, pDivisor, denomin2 + 1);
-  degreeDividend = poly1[0];
-  degreeDivisor = poly2[0];
+  ReversePolynomial(common.poly.poly1, pDividend, denomin1 + 1);
+  ReversePolynomial(common.poly.poly2, pDivisor, denomin2 + 1);
+  degreeDividend = common.poly.poly1[0];
+  degreeDivisor = common.poly.poly2[0];
   if (degreeDividend < degreeDivisor)
   {      // Degree of dividend is less than degree of divisor.
     if (type == TYPE_DIVISION)
@@ -497,14 +493,14 @@ enum eExprErr DivideRatCoeffPolynomial(int* pDividend, const int* pDivisor, enum
     // is already in the dividend location.
     return EXPR_OK;
   }
-  ptrQuotient = poly3;
+  ptrQuotient = common.poly.poly3;
   *ptrQuotient = degreeDividend - degreeDivisor;
   ptrQuotient++;
   for (int degreeQuotient = degreeDividend - degreeDivisor;
     degreeQuotient >= 0; degreeQuotient--)
   {
-    const int* ptrDividend = &poly1[1];
-    const int* ptrDivisor = &poly2[1];
+    const int* ptrDividend = &common.poly.poly1[1];
+    const int* ptrDivisor = &common.poly.poly2[1];
     int* ptrRemainder;
     const int* ptrDividendDen = ptrDividend + numLimbs(ptrDividend) + 1;
     const int* ptrDivisorDen = ptrDivisor + numLimbs(ptrDivisor) + 1;
@@ -525,7 +521,7 @@ enum eExprErr DivideRatCoeffPolynomial(int* pDividend, const int* pDivisor, enum
     if (degreeDivisor == 0)
     {     // Strip leading coefficient of dividend.
       int numLength = 1 + numLimbs(ptrDividend);
-      ptrRemainder = &poly1[1];
+      ptrRemainder = &common.poly.poly1[1];
 
       for (degree = degreeDividend*2; degree > 0; degree--)
       {   // Degree is multiplied by 2 to move both numerator and denominator.
@@ -539,7 +535,7 @@ enum eExprErr DivideRatCoeffPolynomial(int* pDividend, const int* pDivisor, enum
     }
     else
     {     // Degree of divisor is greater than zero.
-      ptrRemainder = &poly4[1];
+      ptrRemainder = &common.poly.poly4[1];
           // Skip most significant coefficients of dividend and divisor.
       ptrDividendDen = ptrDividend + numLimbs(ptrDividend) + 1;
       ptrDivisorDen = ptrDivisor + numLimbs(ptrDivisor) + 1;
@@ -577,19 +573,19 @@ enum eExprErr DivideRatCoeffPolynomial(int* pDividend, const int* pDivisor, enum
         ptrDividend += numLength;
       }
       // Copy remainder to dividend.
-      (void)memcpy(&poly1[1], &poly4[1], (char*)ptrRemainder - (char*)&poly4[1]);
+      (void)memcpy(&common.poly.poly1[1], &common.poly.poly4[1], (char*)ptrRemainder - (char*)&common.poly.poly4[1]);
     }
     ptrQuotient = ptrQuotientDen + numLimbs(ptrQuotientDen) + 1;
     degreeDividend--;
   }
   if (type == TYPE_DIVISION)
   {    // Get pointer to quotient.
-    degree = poly1[0] - degreeDivisor;
-    return ConvertPolynomialRatCoeffToRatPoly(&poly3[1], pDividend,
+    degree = common.poly.poly1[0] - degreeDivisor;
+    return ConvertPolynomialRatCoeffToRatPoly(&common.poly.poly3[1], pDividend,
       true, degree);
   }
   // Get pointer to remainder.
-  ptrResult = &poly1[1];
+  ptrResult = &common.poly.poly1[1];
   degree = degreeDivisor - 1;
   // Compute degree discarding leading coefficients set to zero.
   while (degree > 0)
@@ -663,7 +659,7 @@ enum eExprErr DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2,
       modmult(operand1.limbs, operand2.limbs, operand1.limbs);
     }
     BigInteger2IntArray(ptrArgument1 + 1, &operand1);
-    diffPtrs = ptrArgument1 - &values[0];
+    diffPtrs = ptrArgument1 - &common.poly.values[0];
     valuesIndex = (int)diffPtrs + 2 + *(ptrArgument1 + 1);
     return EXPR_OK;
   }
@@ -671,8 +667,8 @@ enum eExprErr DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2,
   {
     return DivideIntegerPolynomial(ptrArgument1, ptrArgument2, type);
   }
-  ToPoly(degree1, ptrArgument1, poly1); // Move dividend to poly1.
-  ToPoly(degree2, ptrArgument2, poly2); // Move divisor to poly2.
+  ToPoly(degree1, ptrArgument1, common.poly.poly1); // Move dividend to common.poly.poly1.
+  ToPoly(degree2, ptrArgument2, common.poly.poly2); // Move divisor to common.poly.poly2.
   if (degree1 < 0)
   {
     degree1 = -degree1;
@@ -691,18 +687,18 @@ enum eExprErr DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2,
     }
     return EXPR_OK;
   }
-  DividePolynomial(poly1, degree1, poly2, degree2, poly3); // Set poly3 to quotient.
+  DividePolynomial(common.poly.poly1, degree1, common.poly.poly2, degree2, common.poly.poly3); // Set common.poly.poly3 to quotient.
   if (type == TYPE_DIVISION)
   {
     currentDegree = degree1 - degree2;
     *ptrArgument1 = currentDegree;
-    FromPoly(currentDegree, ptrArgument1, poly3); // Move dividend to poly1.
+    FromPoly(currentDegree, ptrArgument1, common.poly.poly3); // Move dividend to common.poly.poly1.
   }
   else
   {
-    currentDegree = getDegreePoly(poly1, degree2 - 1);
+    currentDegree = getDegreePoly(common.poly.poly1, degree2 - 1);
     *ptrArgument1 = currentDegree;
-    FromPoly(currentDegree, ptrArgument1, poly1); // Move modulus to poly1.
+    FromPoly(currentDegree, ptrArgument1, common.poly.poly1); // Move modulus to common.poly.poly1.
   }
   return EXPR_OK;
 }
@@ -737,11 +733,11 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
   int nbrDegrees = 0;
   int newtonDegree;
 
-  // Use revDividend as temporary storage for f.
-  ReverseModularPolynomial(pDivisor, revDividend, divisorDegree);
+  // Use common.poly.revDividend as temporary storage for f.
+  ReverseModularPolynomial(pDivisor, common.poly.revDividend, divisorDegree);
   if (divisorDegree < quotientDegree)
   {
-    ptrProd = &revDividend[(divisorDegree + 1) * nbrLimbs];
+    ptrProd = &common.poly.revDividend[(divisorDegree + 1) * nbrLimbs];
     for (currentDegree = divisorDegree; currentDegree < quotientDegree; currentDegree++)
     {
       *ptrProd = 1;       // Initialize coefficient to zero.
@@ -760,12 +756,12 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
   // Set polynomial g to 1.
   if (NumberLength == 1)
   {
-    inverseDivisor[0] = 1;
-    inverseDivisor[1] = 1;
+    common.poly.inverseDivisor[0] = 1;
+    common.poly.inverseDivisor[1] = 1;
   }
   else
   {
-    ArrLimbs2LenAndLimbs(inverseDivisor, MontgomeryMultR1, nbrLimbs);
+    ArrLimbs2LenAndLimbs(common.poly.inverseDivisor, MontgomeryMultR1, nbrLimbs);
   }
   newtonDegree = quotientDegree + 1;
   // Compute degrees to use in Newton loop.
@@ -779,8 +775,8 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
   while (--nbrDegrees >= 0)
   {
     // Compute g <- g * (2 - f*g) (mod x^degree)
-    // f is stored in revDividend.
-    // g is stored in inverseDivisor.
+    // f is stored in common.poly.revDividend.
+    // g is stored in common.poly.inverseDivisor.
     // oldDegree = size of g.
     const int* ptrProduct;
     int *ptrDest;
@@ -788,19 +784,19 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
     int lenBytes;
     int newDegree = degrees[nbrDegrees];
     // Compute f*g.
-    MultPolynomial(newDegree - 1, oldDegree - 1, revDividend, inverseDivisor);
+    MultPolynomial(newDegree - 1, oldDegree - 1, common.poly.revDividend, common.poly.inverseDivisor);
     // Set operand1.limbs to 2 in Montgomery notation.
-    ptrProduct = polyMultTemp; // Point to start of f*g.
-    ptrDest = polyTmp;         // Point to start of 2 - f*g.
+    ptrProduct = common.poly.polyMultTemp; // Point to start of f*g.
+    ptrDest = common.poly.polyTmp;         // Point to start of 2 - f*g.
     if (NumberLength == 1)
     {
       int mod = TestNbr[0].x;
       // Subtract 2 minus the trailing coefficient of f*g.
-      polyTmp[0] = 1;
-      polyTmp[1] = 2 - polyMultTemp[1];
-      if (polyTmp[1] < 0)
+      common.poly.polyTmp[0] = 1;
+      common.poly.polyTmp[1] = 2 - common.poly.polyMultTemp[1];
+      if (common.poly.polyTmp[1] < 0)
       {
-        polyTmp[1] += mod;
+        common.poly.polyTmp[1] += mod;
       }
       for (currDegree = 1; currDegree < newDegree; currDegree++)
       {                    // Get the negative of all coefficients of f*g.
@@ -822,9 +818,9 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
       AddBigIntModN(MontgomeryMultR1, MontgomeryMultR1,
         operand1.limbs, TestNbr, NumberLength);
       // Subtract 2 minus the trailing coefficient of f*g.
-      LenAndLimbs2ArrLimbs(polyMultTemp, operand2.limbs, nbrLimbs);
+      LenAndLimbs2ArrLimbs(common.poly.polyMultTemp, operand2.limbs, nbrLimbs);
       SubtBigNbrMod(operand1.limbs, operand2.limbs, operand2.limbs);
-      ArrLimbs2LenAndLimbs(polyTmp, operand2.limbs, nbrLimbs);
+      ArrLimbs2LenAndLimbs(common.poly.polyTmp, operand2.limbs, nbrLimbs);
       lenBytes = nbrLimbs * (int)sizeof(limb);
       (void)memset(operand1.limbs, 0, lenBytes);
       for (currDegree = 1; currDegree < newDegree; currDegree++)
@@ -837,23 +833,23 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
       }
     }
     // Compute g * (2 - f*g).
-    MultPolynomial(oldDegree - 1, newDegree - 1, inverseDivisor, polyTmp);
+    MultPolynomial(oldDegree - 1, newDegree - 1, common.poly.inverseDivisor, common.poly.polyTmp);
     // Store g * (2 - f*g) into g.
     lenBytes = newDegree * nbrLimbs * (int)sizeof(limb);
-    (void)memcpy(inverseDivisor, polyMultTemp, lenBytes);
+    (void)memcpy(common.poly.inverseDivisor, common.poly.polyMultTemp, lenBytes);
     oldDegree = newDegree;
   }
-  ReverseModularPolynomial(pDividend, revDividend, dividendDegree);
+  ReverseModularPolynomial(pDividend, common.poly.revDividend, dividendDegree);
 
-  // reverse quotient <- revDividend * inverse mod x^(difDegrees+1)
-  MultPolynomial(quotientDegree, quotientDegree, revDividend, inverseDivisor);
+  // reverse quotient <- common.poly.revDividend * inverse mod x^(difDegrees+1)
+  MultPolynomial(quotientDegree, quotientDegree, common.poly.revDividend, common.poly.inverseDivisor);
   // Reverse coefficients of quotient.
   // Do not store it in ptrQuotient because it may be NULL.
-  ReverseModularPolynomial(polyMultTemp, polyTmp, quotientDegree);
+  ReverseModularPolynomial(common.poly.polyMultTemp, common.poly.polyTmp, quotientDegree);
   if (ptrQuotient != NULL)
-  {     // Copy polyTmp to ptrQuotient.
+  {     // Copy common.poly.polyTmp to ptrQuotient.
     int lenBytes = (quotientDegree + 1) * nbrLimbs * (int)sizeof(limb);
-    (void)memcpy(ptrQuotient, polyTmp, lenBytes);
+    (void)memcpy(ptrQuotient, common.poly.polyTmp, lenBytes);
   }
   // Compute remainder: pDividend <- pDividend - ptrQuotient * pDivisor.
   // Degree of remainder is at most one less than degree of divisor,
@@ -862,9 +858,9 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
   {
     quotientDegree = divisorDegree;
   }
-  MultPolynomial(quotientDegree, divisorDegree, polyTmp, pDivisor);
+  MultPolynomial(quotientDegree, divisorDegree, common.poly.polyTmp, pDivisor);
   ptrRemainder = pDividend;
-  ptrProd = polyMultTemp;
+  ptrProd = common.poly.polyMultTemp;
   // Degree of remainder is at most one less than degree of divisor.
   for (currentDegree = 0; currentDegree <= divisorDegree; currentDegree++)
   {

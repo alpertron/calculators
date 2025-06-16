@@ -1550,7 +1550,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
   int* ptrCoeffDest;
   factorDegreesCycleP[1] = 0;
   // Compute GCD of all degrees of coefficients different from zero.
-  // Generate polynomial polyNonRepeatedFactors stripping all zero
+  // Generate polynomial common.poly.polyNonRepeatedFactors stripping all zero
   // coefficients with degree not multiple of this GCD.
   ptrCoeff = ptrPolynomial;
   for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
@@ -1614,7 +1614,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
     return true;
   }
   ptrCoeff = ptrPolynomial;
-  ptrCoeffDest = polyNonRepeatedFactors;
+  ptrCoeffDest = common.poly.polyNonRepeatedFactors;
   *ptrCoeffDest = polyDegree;
   ptrCoeffDest++;
   for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
@@ -1995,10 +1995,10 @@ void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* ps
     CubicEquation(pstFactorInfo->ptrPolyLifted, multiplicity);
     break;
   case 4:
-    (void)memcpy(polyIntegerBak, polyInteger, sizeof(polyInteger));
+    (void)memcpy(polyIntegerBak, common.poly.polyInteger, sizeof(common.poly.polyInteger));
     (void)memcpy(factorInfoIntegerBak, factorInfoInteger, sizeof(factorInfoInteger));
     QuarticEquation(pstFactorInfo->ptrPolyLifted, multiplicity);
-    (void)memcpy(polyInteger, polyIntegerBak, sizeof(polyInteger));
+    (void)memcpy(common.poly.polyInteger, polyIntegerBak, sizeof(common.poly.polyInteger));
     (void)memcpy(factorInfoInteger, factorInfoIntegerBak, sizeof(factorInfoInteger));
     break;
   case 5:
@@ -2012,10 +2012,10 @@ void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* ps
     {          // If polynomial is S_n or A_n, indicate that the roots are not solvable.
       break;
     }
-    (void)memcpy(polyIntegerBak, polyInteger, sizeof(polyInteger));
+    (void)memcpy(polyIntegerBak, common.poly.polyInteger, sizeof(common.poly.polyInteger));
     (void)memcpy(factorInfoIntegerBak, factorInfoInteger, sizeof(factorInfoInteger));
     QuinticEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
-    (void)memcpy(polyInteger, polyIntegerBak, sizeof(polyInteger));
+    (void)memcpy(common.poly.polyInteger, polyIntegerBak, sizeof(common.poly.polyInteger));
     (void)memcpy(factorInfoInteger, factorInfoIntegerBak, sizeof(factorInfoInteger));
     break;
   default:

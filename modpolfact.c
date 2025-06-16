@@ -35,8 +35,6 @@ char* ptrPercentageOutput;
 int attemptNbr;
 static bool firstFactor;
 static bool isCharacteristic2;
-extern int poly4[1000000];
-extern int polyBackup[1000000];
 extern char* ptrOutput;
 extern int grpLen;
 extern bool teachMod;
@@ -132,7 +130,7 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
   int* ptrValue1;
   int* ptrValue2;
   int* ptrF = poly;
-  // Generate derivative in poly1.
+  // Generate derivative in common.poly.poly1.
   if (teachMod)
   {
     showText(lang ? "<h3>Separación de factores con factores repetidos</h3>" :
@@ -143,7 +141,7 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
     int lenLimbs;
     char buf[100];
     ptrValue1 = ptrF;
-    ptrValue2 = poly1;
+    ptrValue2 = common.poly.poly1;
     for (currentDegree = 1; currentDegree <= polyDegree; currentDegree++)
     {
       ptrValue1 += nbrLimbs;
@@ -155,7 +153,7 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
     // Check whether the derivative is zero.
     for (currentDegree = polyDegree - 1; currentDegree >= 0; currentDegree--)
     {
-      ptrValue1 = &poly1[(currentDegree * nbrLimbs) + 1];
+      ptrValue1 = &common.poly.poly1[(currentDegree * nbrLimbs) + 1];
       for (index = 1; index < nbrLimbs; index++)
       {
         if (*ptrValue1 != 0)
@@ -174,7 +172,7 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
       showText(lang ? "<p>La derivada de f(x) es:</p><p>" :
         "<p>The derivative of f(x) is:</p><p>");
       showText((pretty == PARI_GP) ? "deriv(f(x))" : "<var>f</var> '(x)");
-      showEquAndPoly(poly1, currentDegree);
+      showEquAndPoly(common.poly.poly1, currentDegree);
       showText("</p>");
     }
     if (currentDegree >= 0)
@@ -183,7 +181,7 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
       int degreeW;
       int i = 1;
 
-      PolyModularGcd(ptrF, polyDegree, poly1, currentDegree, poly2, &degreeC); // poly2 = c
+      PolyModularGcd(ptrF, polyDegree, common.poly.poly1, currentDegree, common.poly.poly2, &degreeC); // common.poly.poly2 = c
       if (teachMod)
       {
         showText("<p>");
@@ -191,19 +189,19 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
         showText(lang ? "(x) = mcd" : "(x) = gcd");
         showText("(f(x), ");
         showText((pretty == PARI_GP)?"deriv(f(x))": "f '(x)");
-        showEquAndPoly(poly2, degreeC);
+        showEquAndPoly(common.poly.poly2, degreeC);
         showText("</p><p>");
       }
       lenBytes = (polyDegree + 1) * nbrLimbs * (int)sizeof(int);
-      (void)memcpy(poly4, ptrF, lenBytes);        // Backup poly
-      SetNumberToOne(&poly2[degreeC * nbrLimbs]);
+      (void)memcpy(common.poly.poly4, ptrF, lenBytes);        // Backup poly
+      SetNumberToOne(&common.poly.poly2[degreeC * nbrLimbs]);
       if (degreeC == 0)
       {
-        (void)memcpy(poly1, ptrF, lenBytes);           // poly1 = w
+        (void)memcpy(common.poly.poly1, ptrF, lenBytes);           // common.poly.poly1 = w
       }
       else
       {
-        DividePolynomial(poly4, polyDegree, poly2, degreeC, poly1);    // poly1 = w
+        DividePolynomial(common.poly.poly4, polyDegree, common.poly.poly2, degreeC, common.poly.poly1);    // common.poly.poly1 = w
       }
       degreeW = polyDegree - degreeC;
       if (teachMod)
@@ -212,14 +210,14 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
         showText("(x) = f(x)/");
         showVarIndex('c', 0);
         showText("(x)");
-        showEquAndPoly(poly1, degreeW);
+        showEquAndPoly(common.poly.poly1, degreeW);
         showText("</p><p>");
       }
       while (degreeW != 0)
       {
         lenBytes = (degreeW + 1) * nbrLimbs * (int)sizeof(int);
-        (void)memcpy(poly4, poly1, lenBytes);        // Backup w.
-        PolyModularGcd(poly2, degreeC, poly1, degreeW, poly3, &degreeY);      // poly3 = y
+        (void)memcpy(common.poly.poly4, common.poly.poly1, lenBytes);        // Backup w.
+        PolyModularGcd(common.poly.poly2, degreeC, common.poly.poly1, degreeW, common.poly.poly3, &degreeY);      // common.poly.poly3 = y
         if (teachMod)
         {
           showText("<p>");
@@ -229,17 +227,17 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
           showText(", ");
           showVarIndex('c', i - 1);
           showText(")");
-          showEquAndPoly(poly3, degreeY);
+          showEquAndPoly(common.poly.poly3, degreeY);
           showText("</p><p>");
         }
-        SetNumberToOne(&poly3[degreeY * nbrLimbs]);
+        SetNumberToOne(&common.poly.poly3[degreeY * nbrLimbs]);
         if (degreeW != degreeY)
         {
           int degreeZ;
           int lengthLimbs;
           struct sFactorInfo* pstFactorInfo;
 
-          DividePolynomial(poly4, degreeW, poly3, degreeY, poly1);     // poly1 = z
+          DividePolynomial(common.poly.poly4, degreeW, common.poly.poly3, degreeY, common.poly.poly1);     // common.poly.poly1 = z
           // z^i is divisor of the original polynomial.
           degreeZ = degreeW - degreeY;
           if (teachMod)
@@ -251,7 +249,7 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
             showText("(x) / ");
             showVarIndex('w', i);
             showText("(x)");
-            showEquAndPoly(poly1, degreeZ);
+            showEquAndPoly(common.poly.poly1, degreeZ);
             showText(lang ? " es un factor de f(x) con multiplicidad " :
               " is a factor of f(x) with multiplicity ");
             int2dec(&ptrOutput, i * expon);
@@ -259,10 +257,10 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
           }
           for (currentDegree = 0; currentDegree < (i * expon); currentDegree++)
           {
-            DividePolynomial(ptrOrigPoly, degreeOrigPoly, poly1, degreeZ, poly4);
+            DividePolynomial(ptrOrigPoly, degreeOrigPoly, common.poly.poly1, degreeZ, common.poly.poly4);
             degreeOrigPoly -= degreeZ;
             lenBytes = (degreeOrigPoly + 1) * nbrLimbs * (int)sizeof(int);
-            (void)memcpy(ptrOrigPoly, poly4, lenBytes);
+            (void)memcpy(ptrOrigPoly, common.poly.poly4, lenBytes);
           }
           pstFactorInfo = &factorInfo[nbrFactorsFound];
           nbrFactorsFound++;
@@ -271,17 +269,17 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
           pstFactorInfo->multiplicity = i * expon;
           pstFactorInfo->expectedDegree = 0;    // Unknown at this moment.
           lenBytes = degreeZ * nbrLimbs * (int)sizeof(int);
-          (void)memcpy(ptrOrigPoly, poly1, lenBytes);
+          (void)memcpy(ptrOrigPoly, common.poly.poly1, lenBytes);
           lengthLimbs = (degreeZ + 1) * nbrLimbs;
           ptrOrigPoly += lengthLimbs;
           lenBytes = (degreeOrigPoly + 1) * nbrLimbs * (int)sizeof(int);
-          (void)memcpy(ptrOrigPoly, poly4, lenBytes);
+          (void)memcpy(ptrOrigPoly, common.poly.poly4, lenBytes);
         }
         i++;
         lenBytes = (degreeY + 1) * nbrLimbs * (int)sizeof(int);
-        (void)memcpy(poly1, poly3, lenBytes);  // Copy y to w.
-        degreeW = getDegreePoly(poly1, degreeY);
-        DividePolynomial(poly2, degreeC, poly1, degreeW, poly4); // Compute c.
+        (void)memcpy(common.poly.poly1, common.poly.poly3, lenBytes);  // Copy y to w.
+        degreeW = getDegreePoly(common.poly.poly1, degreeY);
+        DividePolynomial(common.poly.poly2, degreeC, common.poly.poly1, degreeW, common.poly.poly4); // Compute c.
         degreeC -= degreeW;
         if (teachMod)
         {
@@ -291,11 +289,11 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
           showText("(x) / ");
           showVarIndex('w', i - 1);
           showText("(x)");
-          showEquAndPoly(poly4, degreeC);
+          showEquAndPoly(common.poly.poly4, degreeC);
           showText("</p><p>");
         }
         lenBytes = (degreeC + 1) * nbrLimbs * (int)sizeof(int);
-        (void)memcpy(poly2, poly4, lenBytes);
+        (void)memcpy(common.poly.poly2, common.poly.poly4, lenBytes);
       }
       if (degreeC == 0)
       {     // End of square free factorization.
@@ -303,7 +301,7 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
       }
       // C is a perfect pth-power.
       lenLimbs = (degreeOrigPoly + 1) * nbrLimbs;
-      ptrValue2 = poly2;
+      ptrValue2 = common.poly.poly2;
       char* ptrOutBak = ptrOutput;
       ptrOutput = buf;
       showVarIndex('c', i - 1);
@@ -403,20 +401,20 @@ static void DistinctDegreeFactorization(int polyDeg)
   int* ptrValue1;
   bool showStartOfLoop;
   firstFactor = true;
-  // Set poly1 to x.
+  // Set common.poly.poly1 to x.
   int lenBytes = nbrLimbs * (polyDegree + 1) * (int)sizeof(int);
   if (teachMod)
   {
     showText(lang ? "<h3>Factorización de distintos grados</h3>" :
       "<h3>Distinct degree factorization</h3>");
   }
-  (void)memset(poly1, 0, lenBytes);
+  (void)memset(common.poly.poly1, 0, lenBytes);
   for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
-    poly1[currentDegree * nbrLimbs] = 1;
+    common.poly.poly1[currentDegree * nbrLimbs] = 1;
   }
   NumberLengthR1 = NumberLength;
-  SetNumberToOne(&poly1[nbrLimbs]);
+  SetNumberToOne(&common.poly.poly1[nbrLimbs]);
   pstFactorInfo = factorInfo;
   for (int nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
@@ -510,27 +508,27 @@ static void DistinctDegreeFactorization(int polyDeg)
         databack(outputText);
       }
 #endif
-      // Copy polynomial to factor to poly3 and set leading coefficient to 1.
-      ptrValue1 = &poly3[polyDegree * nbrLimbs];
-      (void)memcpy(poly3, ptrPolyToFactor, (ptrValue1 - &poly3[0]) * sizeof(int));
+      // Copy polynomial to factor to common.poly.poly3 and set leading coefficient to 1.
+      ptrValue1 = &common.poly.poly3[polyDegree * nbrLimbs];
+      (void)memcpy(common.poly.poly3, ptrPolyToFactor, (ptrValue1 - &common.poly.poly3[0]) * sizeof(int));
       SetNumberToOne(ptrValue1);     // Set leading coefficient to 1.
-      powerPolynomial(poly1, poly3,  // Base and polynomial modulus.
+      powerPolynomial(common.poly.poly1, common.poly.poly3,  // Base and polynomial modulus.
         polyDegree, &primeMod,       // Degree of polynomials and exponent.
-        poly2, NULL,                 // Power and pointer to callback.
+        common.poly.poly2, NULL,                 // Power and pointer to callback.
         0, 1);
       lenBytes = polyDegree * nbrLimbs * (int)sizeof(int);
-      (void)memcpy(poly1, poly2, lenBytes);
+      (void)memcpy(common.poly.poly1, common.poly.poly2, lenBytes);
       // Subtract x.
-      IntArray2BigInteger(&poly2[nbrLimbs], &operand1);
+      IntArray2BigInteger(&common.poly.poly2[nbrLimbs], &operand1);
       lenBytes = NumberLength * (int)sizeof(limb);
       (void)memcpy(operand2.limbs, MontgomeryMultR1, lenBytes);
       operand2.nbrLimbs = NumberLengthR1;
       SubtBigNbrMod(operand1.limbs, operand2.limbs, operand1.limbs);
-      BigInteger2IntArray(&poly2[nbrLimbs], &operand1);
+      BigInteger2IntArray(&common.poly.poly2[nbrLimbs], &operand1);
       // Perform Gcd.
-      degreeMin = getDegreePoly(poly2, polyDegree - 1);
-      PolyModularGcd(poly3, polyDegree, poly2, degreeMin,
-        poly4, &degreeGcd);
+      degreeMin = getDegreePoly(common.poly.poly2, polyDegree - 1);
+      PolyModularGcd(common.poly.poly3, polyDegree, common.poly.poly2, degreeMin,
+        common.poly.poly4, &degreeGcd);
       if (teachMod && (degreeGcd > 0))
       {
         char bufExp[100];
@@ -539,7 +537,7 @@ static void DistinctDegreeFactorization(int polyDeg)
         *ptrBufExp = 0;
         showText("<p><strong>");
         showGcdDistinctDegFact(bufExp);
-        showEquAndPoly(poly4, degreeGcd);
+        showEquAndPoly(common.poly.poly4, degreeGcd);
         showText("</strong></p><p>");
         showText(lang ? "Este polinomio tiene " : "This polynomial has ");
         int2dec(&ptrOutput, degreeGcd / currentDegree);
@@ -574,11 +572,11 @@ static void DistinctDegreeFactorization(int polyDeg)
       {         // Non-trivial factor of polynomial has been found.
                 // Divide polynomial by GCD. Put the GCD in the first limbs
                 // and the quotient in the last limbs.
-        ptrValue1 = &poly4[degreeGcd * nbrLimbs];
+        ptrValue1 = &common.poly.poly4[degreeGcd * nbrLimbs];
         SetNumberToOne(ptrValue1);
-        DividePolynomial(poly3, polyDegree,
-          poly4, degreeGcd, poly2);
-        // Quotient located in poly2.
+        DividePolynomial(common.poly.poly3, polyDegree,
+          common.poly.poly4, degreeGcd, common.poly.poly2);
+        // Quotient located in common.poly.poly2.
         pstNewFactorInfo = &factorInfo[nbrFactorsFound];
         nbrFactorsFound++;
         pstNewFactorInfo->ptr = ptrPolyToFactor;
@@ -588,14 +586,14 @@ static void DistinctDegreeFactorization(int polyDeg)
         pstFactorInfo->degree = polyDegree - degreeGcd;
         pstFactorInfo->ptr = &ptrPolyToFactor[degreeGcd * nbrLimbs];
         lenBytes = degreeGcd * nbrLimbs * (int)sizeof(int);
-        (void)memcpy(ptrPolyToFactor, poly4, lenBytes);
+        (void)memcpy(ptrPolyToFactor, common.poly.poly4, lenBytes);
         lenBytes = (polyDegree - degreeGcd + 1) * nbrLimbs * (int)sizeof(int);
-        (void)memcpy(pstFactorInfo->ptr, poly2, lenBytes);
+        (void)memcpy(pstFactorInfo->ptr, common.poly.poly2, lenBytes);
         polyDegree -= degreeGcd;
         ptrPolyToFactor += degreeGcd * nbrLimbs;
-        // Replace poly1 by poly1 mod ptrPolyToFactor
-        DividePolynomial(poly1, polyDegree + degreeGcd - 1,
-          ptrPolyToFactor, polyDegree, poly2);
+        // Replace common.poly.poly1 by common.poly.poly1 mod ptrPolyToFactor
+        DividePolynomial(common.poly.poly1, polyDegree + degreeGcd - 1,
+          ptrPolyToFactor, polyDegree, common.poly.poly2);
         if (polyDegree > 0)
         {
           GetPolyInvParm(polyDegree, ptrPolyToFactor);
@@ -815,7 +813,7 @@ static void showResultEqualDegreeFact(int degreeGcd, int degreeQuot, int expecte
   showText(", ");
   showVariable(&ptrOutput, 'f');
   showText(")");
-  showEquAndPoly(poly4, degreeGcd);
+  showEquAndPoly(common.poly.poly4, degreeGcd);
   if (degreeGcd == expectedDegree)
   {
     showText("</strong>");
@@ -828,7 +826,7 @@ static void showResultEqualDegreeFact(int degreeGcd, int degreeQuot, int expecte
   showVariable(&ptrOutput, 'f');
   showText(" / ");
   showVariable(&ptrOutput, 'r');
-  showEquAndPoly(poly2, degreeQuot);
+  showEquAndPoly(common.poly.poly2, degreeQuot);
   if (degreeQuot == expectedDegree)
   {
     showText("</strong>");
@@ -898,18 +896,18 @@ void SameDegreeFactorization(void)
       copyStr(&ptrOutputText, ".</p><p>");
       ptrPercentageOutput = ptrOutputText;
 #endif
-      // Copy polynomial to factor to poly3 and set leading coefficient to 1.
+      // Copy polynomial to factor to common.poly.poly3 and set leading coefficient to 1.
       // All operations below will be done modulo this polynomial.
-      ptrValue1 = &poly3[pstFactorInfo->degree * nbrLimbs];
-      (void)memcpy(poly3, ptrPolyToFactor, (ptrValue1 - &poly3[0]) * sizeof(int));
+      ptrValue1 = &common.poly.poly3[pstFactorInfo->degree * nbrLimbs];
+      (void)memcpy(common.poly.poly3, ptrPolyToFactor, (ptrValue1 - &common.poly.poly3[0]) * sizeof(int));
       SetNumberToOne(ptrValue1);  // Set leading coefficient to 1.
       if (attemptNbr == 1)
       {
-        GetPolyInvParm(polyDegree, poly3);
+        GetPolyInvParm(polyDegree, common.poly.poly3);
       }
-      // Initialize polynomial poly1 with different values of coefficients
+      // Initialize polynomial common.poly.poly1 with different common.poly.values of coefficients
       // in different iterations.
-      ptrValue1 = poly1;
+      ptrValue1 = common.poly.poly1;
       if (nbrLimbs > 2)
       {    // Coefficient can be any number.
         *ptrValue1 = 1;
@@ -954,73 +952,73 @@ void SameDegreeFactorization(void)
         CopyBigInt(&operand4, &primeMod);
         subtractdivide(&operand4, 1, 2);  // operand4 <- exponent = (p-1)/2.
         // Start by raising base to power (p-1)/2.
-        powerPolynomial(poly1, poly3,   // Base and polynomial modulus.
+        powerPolynomial(common.poly.poly1, common.poly.poly3,   // Base and polynomial modulus.
           polyDegree, &operand4,        // Degree of polynomials and exponent.
-          poly2, percentageCallback,   // Power and pointer to callback.
+          common.poly.poly2, percentageCallback,   // Power and pointer to callback.
           0, degreeFactor);
-        // Save base^((p-1)/2) on poly4.
-        (void)CopyPolynomialFixedCoeffSize(poly4, poly2, polyDegree, nbrLimbs);
+        // Save base^((p-1)/2) on common.poly.poly4.
+        (void)CopyPolynomialFixedCoeffSize(common.poly.poly4, common.poly.poly2, polyDegree, nbrLimbs);
         for (currentDegree = 1; currentDegree < degreeFactor; currentDegree++)
         {
           // Square polynomial and multiply by base to get base^(p^(q-1)).
-          multUsingInvPolynomial(poly2, poly2, // Multiplicands.
-            poly2, polyDegree,                 // Product and degree of poly.
-            poly3);                            // Polynomial modulus.
-          multUsingInvPolynomial(poly2, poly1, // Multiplicands.
-            poly1, polyDegree,                 // Product and degree of poly.
-            poly3);                            // Polynomial modulus.
+          multUsingInvPolynomial(common.poly.poly2, common.poly.poly2, // Multiplicands.
+            common.poly.poly2, polyDegree,                 // Product and degree of poly.
+            common.poly.poly3);                            // Polynomial modulus.
+          multUsingInvPolynomial(common.poly.poly2, common.poly.poly1, // Multiplicands.
+            common.poly.poly1, polyDegree,                 // Product and degree of poly.
+            common.poly.poly3);                            // Polynomial modulus.
           CopyBigInt(&operand4, &primeMod);
           subtractdivide(&operand4, 1, 2);  // operand4 <- exponent = (p-1)/2.
           // Raise previous power to exponent (p-1)/2 to get
           // base^(p^(q-1)*(p-1)/2))
-          powerPolynomial(poly1, poly3,   // Base and polynomial modulus.
+          powerPolynomial(common.poly.poly1, common.poly.poly3,   // Base and polynomial modulus.
             polyDegree, &operand4,        // Degree of polynomials and exponent.
-            poly2, percentageCallback,    // Power and pointer to callback.
+            common.poly.poly2, percentageCallback,    // Power and pointer to callback.
             currentDegree, degreeFactor);
-          // Compute poly4 as the multiplication of base^(p^(q-1)*(p-1)/2)
+          // Compute common.poly.poly4 as the multiplication of base^(p^(q-1)*(p-1)/2)
           // times base^(p^(q-2)*(p-1)/2).
-          multUsingInvPolynomial(poly2, poly4, // Multiplicands.
-            poly4, polyDegree,                 // Product and degree of poly.
-            poly3);                            // Polynomial modulus.
+          multUsingInvPolynomial(common.poly.poly2, common.poly.poly4, // Multiplicands.
+            common.poly.poly4, polyDegree,                 // Product and degree of poly.
+            common.poly.poly3);                            // Polynomial modulus.
         }
-        (void)CopyPolynomialFixedCoeffSize(poly2, poly4, polyDegree, nbrLimbs);
+        (void)CopyPolynomialFixedCoeffSize(common.poly.poly2, common.poly.poly4, polyDegree, nbrLimbs);
         // Subtract 1.
-        IntArray2BigInteger(&poly2[0], &operand1);
+        IntArray2BigInteger(&common.poly.poly2[0], &operand1);
         SubtBigNbrMod(operand1.limbs, MontgomeryMultR1, operand1.limbs);
-        BigInteger2IntArray(&poly2[0], &operand1);
+        BigInteger2IntArray(&common.poly.poly2[0], &operand1);
       }
       else
-      { // If prime is 2, Compute poly2 = T+T^2+T^4+...+T^2^(d-1) mod f(x)
+      { // If prime is 2, Compute common.poly.poly2 = T+T^2+T^4+...+T^2^(d-1) mod f(x)
         // where T is the random polynomial.
         // Z <- T mod F.
         int lenBytes = polyDegree * nbrLimbs * (int)sizeof(int);
-        (void)memcpy(poly2, poly1, lenBytes);
+        (void)memcpy(common.poly.poly2, common.poly.poly1, lenBytes);
         for (currentDegree = 1; currentDegree < pstFactorInfo->expectedDegree; currentDegree++)
         {
-          multPolynomialModPoly(poly1, poly1, poly1, polyDegree, poly3);
+          multPolynomialModPoly(common.poly.poly1, common.poly.poly1, common.poly.poly1, polyDegree, common.poly.poly3);
           for (int index = 0; index < polyDegree; index++)
           {
-            IntArray2BigInteger(&poly1[index * nbrLimbs], &operand1);
-            IntArray2BigInteger(&poly2[index * nbrLimbs], &operand2);
+            IntArray2BigInteger(&common.poly.poly1[index * nbrLimbs], &operand1);
+            IntArray2BigInteger(&common.poly.poly2[index * nbrLimbs], &operand2);
             AddBigNbrMod(operand1.limbs, operand2.limbs, operand1.limbs);
-            BigInteger2IntArray(&poly2[index * nbrLimbs], &operand1);
+            BigInteger2IntArray(&common.poly.poly2[index * nbrLimbs], &operand1);
           }
         }
       }
-      PolyModularGcd(poly3, polyDegree,
-        poly2, getDegreePoly(poly2, polyDegree - 1), poly4, &degreeGcd);
+      PolyModularGcd(common.poly.poly3, polyDegree,
+        common.poly.poly2, getDegreePoly(common.poly.poly2, polyDegree - 1), common.poly.poly4, &degreeGcd);
       if ((degreeGcd != 0) && (degreeGcd != polyDegree))
       {   // Non-trivial factor found.
         int lenBytes;
-        ptrValue1 = &poly4[degreeGcd * nbrLimbs];
+        ptrValue1 = &common.poly.poly4[degreeGcd * nbrLimbs];
         SetNumberToOne(ptrValue1);
-        DividePolynomial(poly3, polyDegree, poly4, degreeGcd, poly2);
+        DividePolynomial(common.poly.poly3, polyDegree, common.poly.poly4, degreeGcd, common.poly.poly2);
         if (teachMod)
         {
           showResultEqualDegreeFact(degreeGcd, polyDegree - degreeGcd,
             pstFactorInfo->expectedDegree);
         }
-        // Quotient located in poly2.
+        // Quotient located in common.poly.poly2.
         pstNewFactorInfo = &factorInfo[nbrFactorsFound];
         nbrFactorsFound++;
         pstNewFactorInfo->ptr = &ptrPolyToFactor[degreeGcd * nbrLimbs];
@@ -1029,9 +1027,9 @@ void SameDegreeFactorization(void)
         pstNewFactorInfo->expectedDegree = pstFactorInfo->expectedDegree;
         pstFactorInfo->degree = degreeGcd;
         lenBytes = degreeGcd * nbrLimbs * (int)sizeof(int);
-        (void)memcpy(ptrPolyToFactor, poly4, lenBytes);
+        (void)memcpy(ptrPolyToFactor, common.poly.poly4, lenBytes);
         lenBytes = (polyDegree - degreeGcd) * nbrLimbs * (int)sizeof(int);
-        (void)memcpy(pstNewFactorInfo->ptr, poly2, lenBytes);
+        (void)memcpy(pstNewFactorInfo->ptr, common.poly.poly2, lenBytes);
         polyDegree = degreeGcd;
         attemptNbr = 0;
         if (pstFactorInfo->expectedDegree == pstFactorInfo->degree)
@@ -1051,7 +1049,7 @@ void SameDegreeFactorization(void)
   }
 }
 
-// Input: values = degree, coefficient degree 0, coefficient degree 1, etc.
+// Input: common.poly.values = degree, coefficient degree 0, coefficient degree 1, etc.
 // Output: factorInfo = structure that holds the factors.
 int FactorModularPolynomial(bool inputMontgomery, bool fromIntPolyFact)
 {
@@ -1060,8 +1058,8 @@ int FactorModularPolynomial(bool inputMontgomery, bool fromIntPolyFact)
   const int* ptrValue1;
   int lenBytes;
   int nbrLimbsPrime = primeMod.nbrLimbs + 1; // Add 1 for length.
-  degree = values[0];
-  ptrValue1 = &values[1];
+  degree = common.poly.values[0];
+  ptrValue1 = &common.poly.values[1];
   for (int currentDegree = 0; currentDegree <= degree; currentDegree++)
   {
     NumberLength = numLimbs(ptrValue1);
@@ -1086,7 +1084,7 @@ int FactorModularPolynomial(bool inputMontgomery, bool fromIntPolyFact)
       return rc;
     }
     NumberLength = primeMod.nbrLimbs;
-    BigInteger2IntArray(&valuesPrime[currentDegree * nbrLimbsPrime], &operand1);
+    BigInteger2IntArray(&common.poly.valuesPrime[currentDegree * nbrLimbsPrime], &operand1);
     ptrValue1 += numLimbs(ptrValue1);
     ptrValue1++;
   }
@@ -1101,22 +1099,22 @@ int FactorModularPolynomial(bool inputMontgomery, bool fromIntPolyFact)
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(primeMod.nbrLimbs);
   // Convert polynomial mod prime to monic (leading coefficient must be 1).
-  ConvertToMonic(valuesPrime, degree);
+  ConvertToMonic(common.poly.valuesPrime, degree);
   if (teachMod)
   {
     showText(lang ? "<p>Dividiendo el polinomio por el coeficiente principal:" :
       "<p>Dividing the polynomial by the leading coefficient:");
     showText("</p><p><var>f</var>(x)");
-    showEquAndPoly(valuesPrime, degree);
+    showEquAndPoly(common.poly.valuesPrime, degree);
     showText("</p>");
   }
   // Perform square free factorization.
-  ptrOrigPoly = valuesPrime;
+  ptrOrigPoly = common.poly.valuesPrime;
   degreeOrigPoly = degree;
   nbrFactorsFound = 0;
   if (degree != 0)
   {
-    SquareFreeFactorization(degree, valuesPrime);
+    SquareFreeFactorization(degree, common.poly.valuesPrime);
     DistinctDegreeFactorization(degree);
     if (inputMontgomery)
     {    // Do not perform same degree factorization if only counting
@@ -1138,7 +1136,7 @@ int FactorModularPolynomial(bool inputMontgomery, bool fromIntPolyFact)
   if (!fromIntPolyFact)
   {
     // Retore input polynomial.
-    (void)CopyPolynomial(&poly4[0], &polyBackup[1], (polyBackup[0] >= 0) ? polyBackup[0] : 0);
+    (void)CopyPolynomial(&common.poly.poly4[0], &common.poly.polyBackup[1], (common.poly.polyBackup[0] >= 0) ? common.poly.polyBackup[0] : 0);
     computePower(exponentMod);
   }
   OrigPolyFromMontgomeryToStandard();

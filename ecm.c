@@ -40,14 +40,36 @@ extern char lowerText[MAX_LEN * 16];
 extern int StepECM;
 extern int maxIndexM;
 extern int indexM;
-static int SmallPrime[670]; /* Primes < 5000 */
+static int SmallPrime[1335]; /* Primes < 11000 */
 static int boundStep1;
-static int boundStep2;
+static int64_t boundStep2;
 static int sqrtBoundStep1;
 static int NumberSizeBytes;
 
+struct sBounds
+{
+  int digitLevel;
+  int nbrCurves;
+  int boundStep1;
+  int sqrtBoundStep1;
+  int nbrPrimes;
+};
+
+const struct sBounds stEcmBounds[] =
+{
+  { 15, 25, 2000, 45, 303 },                // ECM bounds for 15 digits
+  { 20, 90, 11000, 105, 1335 },             // ECM bounds for 20 digits
+  { 25, 300, 50000, 224, 5133 },            // ECM bounds for 25 digits
+  { 30, 700, 250000, 501, 22044 },          // ECM bounds for 30 digits
+  { 35, 1800, 1000000, 1001, 78498 },       // ECM bounds for 35 digits
+  { 40, 5100, 3000000, 1733, 216816 },      // ECM bounds for 40 digits
+  { 45, 10600, 11000000, 3317, 726517 },    // ECM bounds for 45 digits
+  { 50, 19300, 43000000, 6558, 2604535 },   // ECM bounds for 50 digits
+  { 55, 49000, 110000000, 10489, 6303309 }, // ECM bounds for 55 digits
+};
+
 /* ECM limits for 30, 35, ..., 95 digits */
-static int limits[] = { 10, 10, 10, 10, 10, 15, 22, 26, 35, 50, 100, 150, 250 };
+static int limits[] = { 10, 10, 10, 10, 10, 15, 22, 26, 60, 130, 200, 270, 350 };
 
 static void add3(limb* x3, limb* z3, const limb* x2, const limb* z2,
   const limb* x1, const limb* z1, const limb* x, const limb* z);
@@ -759,7 +781,7 @@ static enum eEcmResult ecmStep2(void)
     modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
     modmult(common.ecm.Aux2, common.ecm.UX, common.ecm.Z); // (X:Z) -> 3*SIEVE_SIZE*Q
     Qaux = boundStep1 / (2 * SIEVE_SIZE);
-    maxIndexM = boundStep2 / (2 * SIEVE_SIZE);
+    maxIndexM = (int)(boundStep2 / (2 * SIEVE_SIZE));
     for (indexM = 0; indexM <= maxIndexM; indexM++)
     {
       if (indexM >= Qaux)
@@ -953,50 +975,47 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
         }
       }
     }
-    if (EC < 26)
+    // Compute bounds according to the curve number.
+    int curveNbr = EC;
+    const struct sBounds* pstBounds = &stEcmBounds[0];
+    do
     {
-      boundStep1 = 2000;
-      boundStep2 = 200000;
-      sqrtBoundStep1 = 45;
+      if (curveNbr < pstBounds->nbrCurves)
+      {
+        break;
+      }
+      curveNbr -= pstBounds->nbrCurves;
+      pstBounds++;
+    } while (pstBounds->boundStep1 != 110000000);
+    boundStep1 = pstBounds->boundStep1;
+    boundStep2 = (int64_t)boundStep1 * 100;
+    sqrtBoundStep1 = pstBounds->sqrtBoundStep1;
 #ifdef __EMSCRIPTEN__
-      nbrPrimes = 303; /* Number of primes less than 2000 */
-#endif
-    }
-    else if (EC < 326)
+    nbrPrimes = pstBounds->nbrPrimes;
+    ptrText = ptrLowerText;  // Point after number that is being factored.
+    if (lang)
     {
-      boundStep1 = 50000;
-      boundStep2 = 5000000;
-      sqrtBoundStep1 = 224;
-#ifdef __EMSCRIPTEN__
-      nbrPrimes = 5133; /* Number of primes less than 50000 */
-#endif
-    }
-    else if (EC < 2000)
-    {
-      boundStep1 = 1000000;
-      boundStep2 = 100000000;
-      sqrtBoundStep1 = 1001;
-#ifdef __EMSCRIPTEN__
-      nbrPrimes = 78498; /* Number of primes less than 1000000 */
-#endif
+      copyStr(&ptrText, "<p>Nivel de ");
+      int2dec(&ptrText, pstBounds->digitLevel);
+      copyStr(&ptrText, " dígitos:");
     }
     else
     {
-      boundStep1 = 11000000;
-      boundStep2 = 1100000000;
-      sqrtBoundStep1 = 3316;
-#ifdef __EMSCRIPTEN__
-      nbrPrimes = 726517; /* Number of primes less than 11000000 */
-#endif
+      copyStr(&ptrText, "<p>");
+      int2dec(&ptrText, pstBounds->digitLevel);
+      copyStr(&ptrText, "-digit level:");
     }
-#ifdef __EMSCRIPTEN__
-    ptrText = ptrLowerText;  // Point after number that is being factored.
-    copyStr(&ptrText, lang ? "<p>Curva " : "<p>Curve ");
+    copyStr(&ptrText, " <meter min=\"0\" max=\"");
+    int2dec(&ptrText, pstBounds->nbrCurves);
+    copyStr(&ptrText, "\" value=\"");
+    int2dec(&ptrText, curveNbr);
+    copyStr(&ptrText, "\"</p><p>");
+    copyStr(&ptrText, lang ? "Curva " : "Curve ");
     int2dec(&ptrText, EC);   // Show curve number.
     copyStr(&ptrText, lang ? " usando límites B1=" : " using bounds B1=");
     int2dec(&ptrText, boundStep1);   // Show first bound.
     copyStr(&ptrText, lang ? " y B2=" : " and B2=");
-    int2dec(&ptrText, boundStep2);   // Show second bound.
+    long2dec(&ptrText, boundStep2);   // Show second bound.
     copyStr(&ptrText, "</p>");
     databack(lowerText);
 #endif

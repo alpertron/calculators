@@ -192,6 +192,38 @@ struct stSumSquares
   bool twoOddMultiplicity;
 };
 
+struct stPoly
+{
+  int polyLifted[1000000];
+  int polyNonRepeatedFactors[1000000];
+  int values[1000000];
+  int denom[1000000];
+  int valuesPrime[1000000];
+  int poly1[1000000];
+  int poly2[1000000];
+  int poly3[1000000];
+  int poly4[1000000];
+  int poly5[1000000];
+  int polyS[1000000];
+  int polyT[1000000];
+  int polyMultTemp[1000000];
+  int polyLiftedNew[1000000];
+  int polyBackup[1000000];
+  int polyA[1000000];
+  int polyB[1000000];
+  int polyC[1000000];
+  int polyD[1000000];
+  int polySqFreeFact[1000000];
+  int polyInteger[1000000];
+  int LastAnswerPoly[1000000];
+  int polyMultM[1000000];
+  int polyMultT[1000000];
+  int revDividend[1000000];
+  int inverseDivisor[1000000];
+  int polyTmp[1000000];
+  int polyInv[1000000];
+};
+
 struct stDivisors
 {
   int currentExp[50];
@@ -236,6 +268,7 @@ union uCommon
   struct stQuad quad;
   struct stSaveFactors saveFactors;
   struct stK k;
+  struct stPoly poly;
 };
 
 extern union uCommon common;

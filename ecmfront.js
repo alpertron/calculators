@@ -400,9 +400,9 @@ function performWork(n, valueText)
   }
   param = digits + "," + app + "," + fromFile + config.substring(1) + "," +
           valueText + charSeparator + getStorage("ecmFactors");
-  if (n === -1 || n === -2)
+  if (n === -1 || n === -2 || n === 4)
   {           // Append new curve number typed by user.
-    param += "," + newCurveOrFactor.value;
+    param += "," + getStorage("ecmCurve");
   }
   if (n === -3 || n === -4)
   {           // Append new factor typed by user.
@@ -712,11 +712,14 @@ function startUp()
   };
   get("ncurve").onclick = function()
   {
+    setStorage("ecmCurve", newCurveOrFactor.value);
+    hide("sktest");
     history.back();   // Close "more" mode.
     restartFactorization(-2);
   };
   get("nfactor").onclick = function()
   {
+    hide("sktest");
     history.back();   // Close "more" mode.
     restartFactorization(-4);
   };

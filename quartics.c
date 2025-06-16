@@ -1764,8 +1764,8 @@ void QuarticEquation(const int* polynomial, int multiplicity)
   // Independent term.
   (void)BigIntMultiply(&Rat3.numerator, &Rat1.denominator, &tmp0);
   (void)BigIntMultiply(&tmp0, &Rat2.denominator, &tmp0);
-  values[0] = 3;
-  ptrValues = &values[1];
+  common.poly.values[0] = 3;
+  ptrValues = &common.poly.values[1];
   NumberLength = tmp0.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp0);
   ptrValues += numLimbs(ptrValues);

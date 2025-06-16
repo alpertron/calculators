@@ -18,7 +18,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
 <meta property="og:description" content="This factors numbers using ECM and SIQS algorithms.">
-<meta property="article:published_time" content="2025-05-08">
+<meta property="article:published_time" content="2025-06-15">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/ECMC.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/ECM.HTM">
@@ -788,7 +788,7 @@ button:disabled {color: #808080; background-color: #606060}
 <noscript><p><strong>The calculator does not work with Javascript disabled. Please check your browser settings.</strong></p></noscript>
 <div class="applet" id="valueapp">
 <div id="inputs">
-<label for="value">Value</label><textarea inputmode="numeric" id="value" rows="4" class="input"></textarea>
+<label for="value">Value</label><textarea inputmode="numeric" id="value" rows="4" class="input customKbd"></textarea>
 </div>
 <fieldset id="actions"><legend>Actions</legend>
 <div class="actbtn">
@@ -932,7 +932,7 @@ Since O + O = O, if we multiply any point by a multiple of the group order, we o
 <tr><td>65</td><td>850 000000</td><td>210000</td></tr>
 <tr><td>70</td><td>2900 000000</td><td>340000</td></tr>
 </table></div>
-<p>The program runs 25 curves with limit B1 = 2000, 300 curves with limit B1 = 50000, 1675 curves with limit B1 = 1000000 and finally it uses curves with limit B1 = 11000000 until all factors are found.</p>
+<p>The program process the number of curves indicated in this table up to the limit B1 = 110 000000 until all factors are found.</p>
 </div>
 <h2><button type="button">Factoring a number in several machines</button></h2>
 <div class="panel">
@@ -969,7 +969,7 @@ Since this method needs a large amount of your computer's memory to store relati
 <table>
 <caption>Threshold for switching to SIQS</caption>
 <tr><th scope="row">Digits</th><td>31-55</td><td>56-60</td><td>61-65</td><td>66-70</td><td>71-75</td><td>76-80</td><td>81-85</td><td>86-90</td><td>91-95</td></tr>
-<tr><th scope="row">Curve</th><td>10</td><td>15</td><td>22</td><td>26</td><td>35</td><td>50</td><td>100</td><td>150</td><td>200</td></tr>
+<tr><th scope="row">Curve</th><td>10</td><td>15</td><td>22</td><td>26</td><td>60</td><td>130</td><td>200</td><td>270</td><td>350</td></tr>
 </table>
 </div>
 <h2><button type="button">Configuration</button></h2>
@@ -1033,7 +1033,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
 </div>
-<p>Written by Dario Alpern. Last updated 8 May 2025.</p>
+<p>Written by Dario Alpern. Last updated 15 June 2025.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -1220,8 +1220,8 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
   "name": "Integer factorization calculator",
   "description": "Web application that factors integers using ECM and SIQS algorithms.",
   "image": ["https://www.alpertron.com.ar/ecm.png"],
-  "datePublished": "2025-05-08",
-  "dateModified": "2025-05-08",
+  "datePublished": "2025-06-15",
+  "dateModified": "2025-06-15",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {

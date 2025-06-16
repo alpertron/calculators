@@ -41,7 +41,6 @@ static struct sComplex product[MAX_FFT_LEN];
 static struct sComplex finalProduct[MAX_FFT_LEN];
 static struct sComplex tempFFT[MAX_FFT_LEN];
 static struct sComplex polyInvTransf[MAX_FFT_LEN];
-extern int polyInv[COMPRESSED_POLY_MAX_LENGTH];
 
 // Use formulas sin(A+B) = sin A cos B + cos A sin B
 // and cos(A+B) = cos A cos B - sin A sin B
@@ -388,7 +387,7 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
   power2plus1Bytes = power2plus1 * (int)sizeof(transf[0]);
   if (factor1 != factor2)
   {
-    if ((polyInvCached == NBR_CACHED) && (factor2 == polyInv))
+    if ((polyInvCached == NBR_CACHED) && (factor2 == common.poly.polyInv))
     {   // Get transform of inverse of polynomial from cache.
       (void)memcpy(transf, polyInvTransf, power2plus1Bytes);
     }
@@ -398,7 +397,7 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
       complexPolyFFT(secondFactor, tempFFT, power2);
       ConvertHalfToFullSizeFFT(tempFFT, transf, power2);  // transf <- DFT(secondFactor)
     }
-    if ((polyInvCached == NBR_READY_TO_BE_CACHED) && (factor2 == polyInv))
+    if ((polyInvCached == NBR_READY_TO_BE_CACHED) && (factor2 == common.poly.polyInv))
     {   // Save transform of inverse of polynomial to cache.
       (void)memcpy(polyInvTransf, transf, power2plus1Bytes);
       polyInvCached = NBR_CACHED;
