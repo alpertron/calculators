@@ -285,6 +285,7 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 11 "(2x^4+2)^2" 0 2 >> coverage.out
 ./polfact 11 "ans+x" 0 2 >> coverage.out
 ./polfact 11 "2+x = 3-x^2" 0 2 >> coverage.out
+./polfact 11 "7*x^10 + 9*x^9 + 53*x^8 + 98*x^7 + 174*x^6 + 400*x^5 + 414*x^4 + 726*x^3 + 675*x^2 + 495*x + 405" 1 0 >> coverage.out
 ./polfact 0 "-x^5" 0 2 >> coverage.out
 ./polfact 0 "x**5+x**4-4x**3-3x**2+3x+1" 0 2 >> coverage.out
 ./polfact 0 "(68987*x^2+47773*x+4983)*(61415*x^2+4334*x+343)" 0 2 >> coverage.out

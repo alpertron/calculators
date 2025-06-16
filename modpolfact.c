@@ -394,30 +394,22 @@ static void DistinctDegreeFactorization(int polyDeg)
   struct sFactorInfo* pstNewFactorInfo;
   int polyDegree = polyDeg;
   int nbrLimbs = primeMod.nbrLimbs + 1;
-  int currentDegree;
   int degreeMin;
   int degreeGcd;
   int* ptrPolyToFactor;
   int* ptrValue1;
   bool showStartOfLoop;
   firstFactor = true;
-  // Set common.poly.poly1 to x.
-  int lenBytes = nbrLimbs * (polyDegree + 1) * (int)sizeof(int);
   if (teachMod)
   {
     showText(lang ? "<h3>Factorización de distintos grados</h3>" :
       "<h3>Distinct degree factorization</h3>");
   }
-  (void)memset(common.poly.poly1, 0, lenBytes);
-  for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
-  {
-    common.poly.poly1[currentDegree * nbrLimbs] = 1;
-  }
   NumberLengthR1 = NumberLength;
-  SetNumberToOne(&common.poly.poly1[nbrLimbs]);
   pstFactorInfo = factorInfo;
   for (int nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
+    int currentDegree;
     if ((pstFactorInfo->degree < 2) || (pstFactorInfo->expectedDegree != 0))
     {             // Polynomial is completely factored. Try next one.
       if (pstFactorInfo->expectedDegree == 0)
@@ -427,6 +419,14 @@ static void DistinctDegreeFactorization(int polyDeg)
       pstFactorInfo++;
       continue;
     }
+    // Set common.poly.poly1 to x.
+    int lenBytes = nbrLimbs * (polyDegree + 1) * (int)sizeof(int);
+    (void)memset(common.poly.poly1, 0, lenBytes);
+    for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+    {
+      common.poly.poly1[currentDegree * nbrLimbs] = 1;
+    }
+    SetNumberToOne(&common.poly.poly1[nbrLimbs]);
     ptrPolyToFactor = pstFactorInfo->ptr;
     polyDegree = pstFactorInfo->degree;
     if (teachMod)

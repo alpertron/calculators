@@ -111,7 +111,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__EMSCRIPTEN__;USING_BLOCKLY;_LIB;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USING64BITS_;FACTORIZATION_APP;FACTORIZATION_FUNCTIONS;POLYEXPR</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;USING_BLOCKLY;_LIB;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USING64BITS_;FACTORIZATION_APP;FACTORIZATION_FUNCTIONS;POLYEXPR</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <CompileAs>CompileAsC</CompileAs>
       <EnablePREfast>false</EnablePREfast>

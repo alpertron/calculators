@@ -8,7 +8,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>"-1+2**15141*471547" 0 2</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>11 "7*x^10 + 9*x^9 + 53*x^8 + 98*x^7 + 174*x^6 + 400*x^5 + 414*x^4 + 726*x^3 + 675*x^2 + 495*x + 405" 1 0</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
