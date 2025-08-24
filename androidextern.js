@@ -27,18 +27,16 @@ Android.setStorage = function(key, value)
 
 /**
  * @param {string} id
- * @param {boolean} isCustom
  */
-Android.onFocus = function(id, isCustom)
+Android.onFocus = function(id)
 {
   /* Nothing to be done in extern file */
 };
 
 /**
  * @param {string} id
- * @param {boolean} isCustom
  */
-Android.onBlur = function(id, isCustom)
+Android.onBlur = function(id)
 {
   /* Nothing to be done in extern file */
 };

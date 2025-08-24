@@ -883,8 +883,9 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
   }
   if (BigIntIsZero(coeffY))
   {
-    (void)BigIntRemainder(coeffInd, coeffX, &Aux[0]);
-    if (!BigIntIsZero(&Aux[0]))
+    (void)BigIntDivide(coeffInd, coeffX, &Xind);
+    (void)BigIntMultiply(coeffX, &Xind, &Aux[0]);
+    if (!BigIntEqual(coeffInd, &Aux[0]))
     {
       return NO_SOLUTIONS;             // No solutions
     }
@@ -892,7 +893,6 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
     {
       intToBigInteger(&Yind, 0);
       intToBigInteger(&Ylin, 1);
-      (void)BigIntDivide(coeffInd, coeffX, &Xind);
       BigIntNegate(&Xind, &Xind);
       intToBigInteger(&Xlin, 0);
       return SOLUTION_FOUND;           // Solution found

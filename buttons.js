@@ -27,12 +27,17 @@ function buttonClick(event)
   let start = input.selectionStart;
   let chars = event.target.getAttribute("totalchars");
   if (chars === "\u23CE")
-  {
+  { // Unicode return symbol.
     chars = "\n";
   }
-  let newValue = input.value.substring(0, start) +
+  let str = input.value;
+  if (str == undefined)
+  {
+    str = input.innerText;
+  }
+  let newValue = str.substring(0, start) +
                  chars +
-                 input.value.substring(input.selectionEnd);
+                 str.substring(input.selectionEnd);
     // When appending a function, place the cursor just after
     // the opening paren. Otherwise, place the cursor at the
     // end of the inserted characters.
@@ -42,7 +47,14 @@ function buttonClick(event)
     offset = chars.length;
   }
   input.focus();
-  input.value = newValue;
+  if (input.value == undefined)
+  {
+    input.value = newValue;
+  }
+  else
+  {
+    input.innerText = newValue;
+  }
   setTimeout(() => {  // Required for Android TV.
     input.selectionEnd = start + offset;
     input.selectionStart = input.selectionEnd;

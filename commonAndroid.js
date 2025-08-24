@@ -150,26 +150,63 @@ window.addEventListener("load", function(event)
     let element = elements[index];
     element.addEventListener("click", newFocus);
   }
-  elements = document.querySelectorAll("input, textarea");
-  elements.forEach(elem => {
-    const type = elem.type? elem.type.toLowerCase(): null;
-    if (elem.tagName === "TEXTAREA" ||
-        type === "text" || type === "number" || type === "email" ||
-        type === "password" || type === "search" || type === "")
+  elements = document.querySelectorAll(".customKbd");
+  elements.forEach(elem =>
+  {
+    elem.parentElement.addEventListener("focusin", function (e)
     {
-      elem.addEventListener("focusin", function (e)
-      {
-        const isCustom = elem.classList.contains("customKbd");
-        Android.onFocus(elem.id, isCustom);
-      });
-      elem.addEventListener("focusout", function (e)
-      {
-        const isCustom = elem.classList.contains("customKbd");
-        Android.onBlur(elem.id, isCustom);
-      });
-    }
+      Android.onFocus(elem.id);
+    //  elem.style.pointerEvents = "none";
+    });
+    elem.parentElement.addEventListener("click", placeCaret);
+    elem.parentElement.addEventListener("focusout", function (e)
+    {
+      Android.onBlur(elem.id);
+    //  elem.style.pointerEvents = "auto";
+    });
   });
 });
+
+function placeCaret(event)
+{
+  const range = document.createRange();
+  const selection = window.getSelection();
+  const container = event.target;
+  const textNode = container.children[0];
+  const caret = container.children[1];
+  const textLen = textNode.innerText.length;
+
+  // Compute click position
+  const x = event.clientX;
+  const y = event.clientY;
+
+  // Search for closest caret offset
+  let bestOffset = 0;
+  let minDistance = Infinity;
+  for (let i = 0; i <= textLen; i++) {
+    range.setStart(textNode, i);
+    range.setEnd(textNode, i);
+    const rects = range.getClientRects();
+    if (rects.length === 0) continue;
+    const rect = rects[0];
+    const dx = x - rect.left;
+    const dy = y - rect.top;
+    const distance = dx * dx + dy * dy;
+    if (distance < minDistance) {
+      minDistance = distance;
+      bestOffset = i;
+    }
+  }
+
+  // Set final range and update caret
+  range.setStart(textNode, bestOffset);
+  range.setEnd(textNode, bestOffset);
+  const rect = range.getBoundingClientRect();
+
+  // Position caret
+  caret.style.left = rect.left + "px";
+  caret.style.top = rect.top + "px";
+}
 
 function onShowDivisors()
 {

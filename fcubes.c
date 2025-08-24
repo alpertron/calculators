@@ -23,6 +23,7 @@
 #include "highlevel.h"
 #include "showtime.h"
 #include "batch.h"
+#include "copyStr.h"
 extern bool hexadecimal;
 static BigInteger value;
 static BigInteger Base1;
@@ -67,6 +68,7 @@ static int sums[] =
   432, 380, -3, 64, 3, -80, 2, -29, -2, 65,
   540, 38, 5, -285, -5, 267, 3, -140, -3, 190,
   810, 56, 5, -755, -5, 836, 9, -1445, -9, 1420,
+  810, 164, 3, -26, -3, 1, 5, -21, -5, 30,
   1080, 380, -1, -1438, 1, 1258, -3, -4037, 3, 4057,
   1620, 1334, -5, -3269, 5, 3107, -9, -5714, 9, 5764,
   1620, 1352, -5, 434, 5, -353, 9, -722, -9, 697,
@@ -264,7 +266,84 @@ static void Demjanenko(void)
   BigIntAdd(&tmpP1, &Base4, &Base4);
 }
 
-static int fcubes(const BigInteger *pArgument)
+static void showLinear(char **pptrOutput, int linear, int indep)
+{
+  if (linear == 1)
+  {
+    copyStr(pptrOutput, "x");
+  }
+  else if (linear == -1)
+  {
+    copyStr(pptrOutput, "&minus;x");
+  }
+  else
+  {
+    if (linear >= 0)
+    {
+      int2dec(pptrOutput, linear);
+    }
+    else
+    {
+      copyStr(pptrOutput, "&minus;");
+      int2dec(pptrOutput, -linear);
+    }
+    copyStr(pptrOutput, "&#8290;x");
+  }
+  if (indep < 0)
+  {
+    copyStr(pptrOutput, " &minus; ");
+    int2dec(pptrOutput, -indep);
+  }
+  else if (indep > 0)
+  {
+    copyStr(pptrOutput, " + ");
+    int2dec(pptrOutput, indep);
+  }
+}
+
+static void showCubeOfLinear(char** pptrOutput, int linear, int indep)
+{
+  copyStr(pptrOutput, "(");
+  showLinear(pptrOutput, linear, indep);
+  copyStr(pptrOutput, ")³");
+}
+
+static void showCubeOfQuadratic(char** pptrOutput, int quad, int linear, int indep)
+{
+  copyStr(pptrOutput, "(");
+  if (quad >= 0)
+  {
+    int2dec(pptrOutput, quad);
+  }
+  else
+  {
+    copyStr(pptrOutput, "&minus;");
+    int2dec(pptrOutput, -quad);
+  }
+  if (linear >= 0)
+  {
+    copyStr(pptrOutput, " + ");
+    int2dec(pptrOutput, linear);
+  }
+  else
+  {
+    copyStr(pptrOutput, " &minus; ");
+    int2dec(pptrOutput, -linear);
+  }
+  if (indep >= 0)
+  {
+    copyStr(pptrOutput, " + ");
+    int2dec(pptrOutput, indep);
+  }
+  else
+  {
+    copyStr(pptrOutput, " &minus; ");
+    int2dec(pptrOutput, -indep);
+  }
+  copyStr(pptrOutput, ")³");
+}
+
+static int fcubes(char **pptrOutput, const BigInteger *pArgument)
 {
   int mod18;
   int i;
@@ -291,6 +370,17 @@ static int fcubes(const BigInteger *pArgument)
       multadd(&Base2, sums[i + 4], &value, sums[i + 5]); // Base2 <- sums[i+4]*value+sums[i+5]
       multadd(&Base3, sums[i + 6], &value, sums[i + 7]); // Base3 <- sums[i+6]*value+sums[i+7]
       multadd(&Base4, sums[i + 8], &value, sums[i + 9]); // Base4 <- sums[i+8]*value+sums[i+9]
+      copyStr(pptrOutput, lang ? "<p>Usando la fórmula " : "<p>Using the formula ");
+      showLinear(pptrOutput, modulus, sums[i + 1]);
+      copyStr(pptrOutput, " = ");
+      showCubeOfLinear(pptrOutput, sums[i + 2], sums[i + 3]);
+      copyStr(pptrOutput, " + ");
+      showCubeOfLinear(pptrOutput, sums[i + 4], sums[i + 5]);
+      copyStr(pptrOutput, " + ");
+      showCubeOfLinear(pptrOutput, sums[i + 6], sums[i + 7]);
+      copyStr(pptrOutput, " + ");
+      showCubeOfLinear(pptrOutput, sums[i + 8], sums[i + 9]);
+      copyStr(pptrOutput, ":</p>");
       break;
     }
   }
@@ -303,6 +393,17 @@ static int fcubes(const BigInteger *pArgument)
       EvaluateQuadraticPoly(&Base2, &value, -29484, -2157, -41);
       EvaluateQuadraticPoly(&Base3, &value, 9828, 485, 4);
       EvaluateQuadraticPoly(&Base4, &value, -9828, -971, -22);
+      copyStr(pptrOutput, lang ? "<p>Usando la fórmula " : "</p>Using the formula ");
+      showLinear(pptrOutput, 54, 2);
+      copyStr(pptrOutput, " = ");
+      showCubeOfQuadratic(pptrOutput, 29484, 2211, 43);
+      copyStr(pptrOutput, " + ");
+      showCubeOfQuadratic(pptrOutput, -29484, -2157, -41);
+      copyStr(pptrOutput, " + ");
+      showCubeOfQuadratic(pptrOutput, 9828, 485, 4);
+      copyStr(pptrOutput, " + ");
+      showCubeOfQuadratic(pptrOutput, -9828, -971, -22);
+      copyStr(pptrOutput, ":</p>");
     }
     else if (getRemainder(&value, 83 * 108) == (83 * 46))
     {           // If value == 83*46 (mod 83*108)...
@@ -311,9 +412,22 @@ static int fcubes(const BigInteger *pArgument)
       EvaluateQuadraticPoly(&Base2, &value, -29484, -25089, -5348);
       EvaluateQuadraticPoly(&Base3, &value, 9828, 8129, 1682);
       EvaluateQuadraticPoly(&Base4, &value, -9828, -8615, -1889);
+      copyStr(pptrOutput, lang ? "<p>Usando la fórmula " : "<p>Using the formula ");
+      showLinear(pptrOutput, 83*108, 83*46);
+      copyStr(pptrOutput, " = ");
+      showCubeOfQuadratic(pptrOutput, 29484, 25143, 5371);
+      copyStr(pptrOutput, " + ");
+      showCubeOfQuadratic(pptrOutput, -29484, -25089, -5348);
+      copyStr(pptrOutput, " + ");
+      showCubeOfQuadratic(pptrOutput, 9828, 8129, 1682);
+      copyStr(pptrOutput, " + ");
+      showCubeOfQuadratic(pptrOutput, -9828, -8615, -1889);
+      copyStr(pptrOutput, ":</p>");
     }
     else
     {
+      copyStr(pptrOutput, lang ? "<p>Usando el método de Demjanenko:</p>" :
+        "<p>Using Demjanenko's method:</p>");
       Demjanenko();
     }
   }
@@ -332,15 +446,6 @@ static int fcubes(const BigInteger *pArgument)
   SortBigIntegers(&Base2, &Base3);
   SortBigIntegers(&Base2, &Base4);
   SortBigIntegers(&Base3, &Base4);
-
-  // Validate
-
-  getSumOfCubes();  // tmpP1 = Base1^3 - Base2^3 - Base3^3 - Base4^3
-  BigIntSubt(&tmpP1, pArgument, &tmpQ1);
-  if ((tmpQ1.nbrLimbs != 1) || (tmpQ1.limbs[0].x != 0))
-  {
-    return 1;       // Result does not validate.
-  }
   return 0;
 }
 
@@ -394,7 +499,7 @@ static void batchCubesCallback(char **pptrOutput, int type)
   char *ptrOutput = *pptrOutput;
   NumberLength = toProcess.nbrLimbs;
   if ((type == BATCH_NO_PROCESS_DEC) || (type == BATCH_NO_PROCESS_HEX))
-  {         // Do not compute sum of squares.
+  {         // Do not compute sum of cubes.
     if (hexadecimal)
     {
       BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
@@ -406,7 +511,7 @@ static void batchCubesCallback(char **pptrOutput, int type)
     *pptrOutput = ptrOutput;
     return;
   }
-  result = fcubes(&toProcess);
+  result = fcubes(&ptrOutput, &toProcess);
   // Show the number to be decomposed into sum of cubes.
   if (type == BATCH_NO_QUOTE)
   {
@@ -432,10 +537,6 @@ static void batchCubesCallback(char **pptrOutput, int type)
   case -1:
     copyStr(&ptrOutput, (lang?"El applet no funciona si el número es congruente a 4 o 5 (mod 9)":
       "This applet does not work if the number is congruent to 4 or 5 (mod 9)"));
-    break;
-  case 1:
-    copyStr(&ptrOutput, (lang?"¡Error interno! Por favor envíe este número al autor del applet.":
-      "Internal error! Please send the number to the author of the applet."));
     break;
   case 2:
     copyStr(&ptrOutput, (lang?"El usuario detuvo el cálculo": "User stopped the calculation"));
