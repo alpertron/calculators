@@ -31,7 +31,7 @@ function buttonClick(event)
     chars = "\n";
   }
   let str = input.value;
-  if (str == undefined)
+  if (str === undefined)
   {
     str = input.innerText;
   }
@@ -47,13 +47,13 @@ function buttonClick(event)
     offset = chars.length;
   }
   input.focus();
-  if (input.value == undefined)
+  if (input.value === undefined)
   {
-    input.value = newValue;
+    input.innerText = newValue;
   }
   else
   {
-    input.innerText = newValue;
+    input.value = newValue;
   }
   setTimeout(() => {  // Required for Android TV.
     input.selectionEnd = start + offset;
