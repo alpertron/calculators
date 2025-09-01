@@ -842,14 +842,14 @@ static void paren(const BigInteger *num)
   }
 }
 
-enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger *coeffInd)
+enum eLinearSolution LinearEq(BigInteger* coeffX, BigInteger* coeffY, BigInteger* coeffInd)
 {
   BigInteger q;
   bool showSteps;
   int stepNbr;
   if (teach)
   {
-    showText(lang? "<p>Esta es una ecuación lineal ": "<p>This is a linear equation ");
+    showText(lang ? "<p>Esta es una ecuación lineal " : "<p>This is a linear equation ");
     ShowLin(coeffX, coeffY, coeffInd, "x", "y");
     showText(" = 0</p>");
   }
@@ -903,7 +903,7 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
   {                  // GCD is not 1.
     if (teach)
     {
-      showText(lang? "<p>Para resolverla, debemos hallar el máximo común divisor de los coeficientes lineales, esto es: mcd(" :
+      showText(lang ? "<p>Para resolverla, debemos hallar el máximo común divisor de los coeficientes lineales, esto es: mcd(" :
         "<p>To solve it, we first find the greatest common divisor of the linear coefficients, that is: gcd(");
       shownbr(coeffX);
       showText(", ");
@@ -930,7 +930,7 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
     showText(divgcd);
     ShowLin(coeffX, coeffY, coeffInd, "x", "y");
     showText(" = 0</p>");
-    showText(lang? "<p>Ahora debemos aplicar el algoritmo generalizado de Euclides:</p>" :
+    showText(lang ? "<p>Ahora debemos aplicar el algoritmo generalizado de Euclides:</p>" :
       "<p>Now we must apply the Generalized Euclidean algorithm:</p>");
   }
   intToBigInteger(&U1, 1);    // U1 <- 1
@@ -953,7 +953,7 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
     }
     if (teach && showSteps)
     {
-      showText(lang? "Paso ": "Step ");
+      showText(lang ? "Paso " : "Step ");
       showInt(stepNbr);
       showText(": ");
       paren(&U1);    // U1
@@ -996,7 +996,7 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
   BigIntChSign(&Ylin);
   if (teach)
   {
-    showText(lang? "Paso ": "Step ");
+    showText(lang ? "Paso " : "Step ");
     showInt(stepNbr);
     showText(": ");
     paren(&U1);    // U1
@@ -1012,10 +1012,10 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
     BigIntChSign(&bigTmp);
     if ((q.sign != SIGN_POSITIVE) || (q.nbrLimbs != 1) || (q.limbs[0].x != 1))
     {    // Multiplier is not 1.
-      showText(lang? "</p><p>Multiplicando la última ecuación por ": 
+      showText(lang ? "</p><p>Multiplicando la última ecuación por " :
         "</p><p>Multiplying the last equation by ");
       paren(&q);
-      showText(lang? " obtenemos ": " we obtain:<br>");
+      showText(lang ? " obtenemos " : " we obtain:<br>");
       paren(&Xind);
       showText(" &times; ");
       paren(coeffX);
@@ -1026,7 +1026,7 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
       showText(" = ");
       shownbr(&bigTmp);
     }
-    showText(lang? "</p><p>Sumando y restando ": "</p><p>Adding and subtracting ");
+    showText(lang ? "</p><p>Sumando y restando " : "</p><p>Adding and subtracting ");
     paren(coeffX);
     showText(" &times; ");
     paren(coeffY);
@@ -1046,12 +1046,91 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
     paren(coeffY);
     showText(" = ");
     shownbr(&bigTmp);
-    showText(lang? "</p><p>Así, la solución está dada por el conjunto:</p>":
+    showText(lang ? "</p><p>Así, la solución está dada por el conjunto:</p>" :
       "</p><p>So, the solution is given by the set:</p>");
     PrintLinear(0, "t'");
     showText("</p>");
   }
-
+  if (teach)
+  {
+    BigIntChSign(coeffX);
+    showText(lang ? "<p>Es posible reducir los términos independientes.</p>"
+      "<p>Sustituyendo t = t' + K:</p>":
+      "<p>We can reduce the constant terms.</p><p>Substituting t = t' + K:</p>");
+    enum eLinearSolution t;
+    showText("<p>x = ");
+    t = Show(coeffY, "t", SOLUTION_FOUND);
+    t = Show(coeffY, "K", t);
+    Show1(&Xind, t);
+    showText("<br>y = ");
+    t = Show(coeffX, "t", SOLUTION_FOUND);
+    t = Show(coeffX, "K", t);
+    Show1(&Yind, t);
+    showText(lang?"</p><p>Debemos hallar el valor de K que minimice la suma de cuadrados "
+                  "de los términos independientes:</p>":
+                  "</p><p>We must find the value of K that minimizes the sum of squares "
+                  "of the constant terms:</p>");
+    showText("<p>f(K) = (");
+    t = Show(coeffY, "K", SOLUTION_FOUND);
+    Show1(&Xind, t);
+    showText(")");
+    showText(squareText);
+    showText(" + (");
+    t = Show(coeffX, "K", SOLUTION_FOUND);
+    Show1(&Yind, t);
+    showText(")");
+    showText(squareText);
+    showText(lang ? "</p><p>Para hallar el mínimo, la derivada de f(K) debe ser cero.":
+                    "</p><p>To find the minimum, the derivative of f(K) must be zero.");
+    showText("</p><p>2 &times; (");
+    t = Show(coeffY, "K", SOLUTION_FOUND);
+    Show1(&Xind, t);
+    showText(") &times; ");
+    if (coeffY->sign == SIGN_POSITIVE)
+    {
+      shownbr(coeffY);
+    }
+    else
+    {
+      showText("(");
+      shownbr(coeffY);
+      showText(")");
+    }
+    showText(" + 2 &times; (");
+    t = Show(coeffX, "K", SOLUTION_FOUND);
+    Show1(&Yind, t);
+    showText(") &times; ");
+    if (coeffX->sign == SIGN_POSITIVE)
+    {
+      shownbr(coeffX);
+    }
+    else
+    {
+      showText("(");
+      shownbr(coeffX);
+      showText(")");
+    }
+    showText(" = 0</p><p>");
+    (void)BigIntMultiply(coeffY, &Xind, &U1);
+    BigIntAdd(&U1, &U1, &U1);
+    (void)BigIntMultiply(coeffX, &Yind, &U3);
+    BigIntAdd(&U3, &U3, &U3);
+    (void)BigIntMultiply(coeffY, coeffY, &U2);
+    BigIntAdd(&U2, &U2, &U2);
+    (void)BigIntMultiply(coeffX, coeffX, &V1);
+    BigIntAdd(&V1, &V1, &V1);
+    t = Show(&U2, "K", SOLUTION_FOUND);
+    Show1(&U1, t);
+    t = Show(&V1, "K", NO_SOLUTIONS);
+    Show1(&U3, t);
+    showText(" = 0</p><p>");
+    BigIntAdd(&U1, &U3, &U1);
+    BigIntAdd(&U2, &V1, &U2);
+    t = Show(&U2, "K", SOLUTION_FOUND);
+    Show1(&U1, t);
+    showText(" = 0</p>");
+    BigIntChSign(coeffX);
+  }
   // Substitute variables so the independent coefficients can be minimized.
   // Reuse variables U1, U2, U3, V1, V2, V3.
   (void)BigIntMultiply(coeffX, coeffX, &U1);
