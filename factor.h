@@ -82,9 +82,6 @@ void factor(const BigInteger *toFactor, const int *number, int *factors, struct 
 void factorExt(const BigInteger* toFactor, const int* number,
   int* factors, struct sFactors* pstFactors, char* pcKnownFactors);
 void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor);
-#ifndef lang  
-  extern bool lang;
-#endif
 extern int nbrToFactor[MAX_LEN];
 extern struct sFactors astFactorsMod[MAX_FACTORS];
 extern int factorsMod[20000];

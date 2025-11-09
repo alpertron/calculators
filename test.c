@@ -29,7 +29,7 @@
 #include "fromBlockly.h"
 #include "isprime.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 17
+#define DEBUG_CODE 11
 #endif
 #ifdef __EMSCRIPTEN__
 extern char inputString[];
@@ -278,7 +278,6 @@ int main(int argc, char* argv[])
   (void)printf("%s\n", output);
 #elif DEBUG_CODE == 13
   skipPrimality = false;
-  lang = false;
   hexadecimal = false;
   char text[40000];
   char* ptrText = text;

@@ -19,8 +19,10 @@
 
 #include <string.h>
 #include <stdbool.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
+#include "copyStr.h"
 
 int expressionNbr;
 void textError(char **pptrOutput, enum eExprErr rc)
@@ -29,96 +31,50 @@ void textError(char **pptrOutput, enum eExprErr rc)
   switch (rc)
   {
   case EXPR_NUMBER_TOO_LOW:
-    copyStr(&ptrOut, lang ? "Número muy pequeño" : "Number too low");
+    copyStr(&ptrOut, LITERAL_TEXT_ERROR1);
     break;
   case EXPR_NUMBER_TOO_HIGH:
-#ifdef FACTORIZATION_APP
-    copyStr(&ptrOut, lang ? "Número muy grande (más de 100000 dígitos)" :
-      "Number too high (more than 100000 digits)");
-#else
-    copyStr(&ptrOut, lang ? "Número muy grande (más de 10000 dígitos)" :
-      "Number too high (more than 10000 digits)");
-#endif
+    copyStr(&ptrOut, LITERAL_TEXT_ERROR2);
     break;
   case EXPR_INTERM_TOO_HIGH:
-#ifdef FACTORIZATION_APP
-    copyStr(&ptrOut, lang ? "Número intermedio muy grande (más de 200000 dígitos" :
-      "Intermediate number too high (more than 200000 digits)");
-#else
-    copyStr(&ptrOut, lang ? "Número intermedio muy grande (más de 20000 dígitos" :
-      "Intermediate number too high (more than 20000 digits)");
-#endif
+    copyStr(&ptrOut, LITERAL_TEXT_ERROR3);
     break;
   case EXPR_DIVIDE_BY_ZERO:
-    copyStr(&ptrOut, lang ? "División por cero" : "Division by zero");
+    copyStr(&ptrOut, LITERAL_TEXT_ERROR4);
     break;
   case EXPR_PAREN_MISMATCH:
-    copyStr(&ptrOut, lang ? "Error de paréntesis" : "Parenthesis mismatch");
+    copyStr(&ptrOut, LITERAL_TEXT_ERROR5);
     break;
   case EXPR_LITERAL_NOT_INTEGER:
-    copyStr(&ptrOut, lang ? "Solo se aceptan números enteros" : "Only integer numbers are accepted");
+    copyStr(&ptrOut, LITERAL_TEXT_ERROR6);
     break;
   case EXPR_INTERNAL_ERROR:
-    copyStr(&ptrOut, lang ? "Error interno" : "Internal error");
+    copyStr(&ptrOut, LITERAL_TEXT_ERROR7);
     break;
   case EXPR_SYNTAX_ERROR:
-    if (lang)
-    {
-      copyStr(&ptrOut, "Error de sintaxis");
-      if (expressionNbr > 0)
-      {
-        copyStr(&ptrOut, " en la expresión ");
-        *ptrOut = (char)(expressionNbr + '0');
-        ptrOut++;
-        *ptrOut = ':';
-        ptrOut++;
-        *ptrOut = ' ';
-        ptrOut++;
-        *ptrOut = 0;
-      }
-    }
-    else
-    {
-      copyStr(&ptrOut, "Syntax error");
-      if (expressionNbr > 0)
-      {
-        copyStr(&ptrOut, " in expression #");
-        *ptrOut = (char)(expressionNbr + '0');
-        ptrOut++;
-        *ptrOut = ':';
-        ptrOut++;
-        *ptrOut = ' ';
-        ptrOut++;
-        *ptrOut = 0;
-      }
-    }
+    formatString(&ptrOut, LITERAL_TEXT_ERROR8, expressionNbr);
     break;
   case EXPR_INVALID_PARAM:
-    copyStr(&ptrOut, lang ? "Parámetro inválido" : "Invalid parameter");
+    copyStr(&ptrOut, LITERAL_TEXT_ERROR9);
     break;
   case EXPR_TOO_FEW_ARGUMENTS:
-    copyStr(&ptrOut, lang ? "Muy pocos argumentos" : "Too few arguments");
+    copyStr(&ptrOut, LITERAL_TEXT_ERROR10);
     break;
   case EXPR_TOO_MANY_ARGUMENTS:
-    copyStr(&ptrOut, lang ? "Demasiados argumentos" : "Too many arguments");
+    copyStr(&ptrOut, LITERAL_TEXT_ERROR11);
     break;
   case EXPR_ARGUMENTS_NOT_RELATIVELY_PRIME:
-    copyStr(&ptrOut, lang ? "MCD de los argumentos no es 1" : "GCD of arguments is not 1");
+    copyStr(&ptrOut, LITERAL_TEXT_ERROR12);
     break;
   case EXPR_VAR_OR_COUNTER_REQUIRED:
-    copyStr(&ptrOut, lang ? "La expresión ": "Expression #");
-    *ptrOut = (char)(expressionNbr + '0');
-    ptrOut++;
-    copyStr(&ptrOut, lang? " debe incluir la variable <var>x</var> y/o el contador <var>c</var>":
-      " must include the variable <var>x</var> and/or the counter <var>c</var>");
+    // Expression #$1d must include the variable $2v and/or the counter $3v
+    formatString(&ptrOut, LITERAL_TEXT_ERROR13, expressionNbr, 'x', 'c');
     break;
   case EXPR_VAR_IN_EXPRESSION:
-    copyStr(&ptrOut, lang ? "La expresión no debe incluir variables" :
-      "The expression must not include variables");
+    copyStr(&ptrOut, LITERAL_TEXT_ERROR14);
     break;
   case EXPR_CANNOT_PARSE_EXPRESSION:
-    copyStr(&ptrOut, lang ? "Error interno: no se puede analizar la expresión" :
-      "Internal error: cannot parse expression");
+    copyStr(&ptrOut, LITERAL_TEXT_ERROR15);
     break;
   default:
     break;

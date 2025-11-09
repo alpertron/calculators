@@ -19,8 +19,10 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include "string/strings.h"
 #include "rootseq.h"
 #include "expression.h"
+#include "copyStr.h"
 
 #define NBR_COEFF 6
 
@@ -71,6 +73,10 @@ const char* ptrPi;
 const char* ptrI;
 static int totients[(2 * MAX_DEGREE) + 1];
 extern char* ptrOutput;
+static char Sine[100];
+static char Cosine[100];
+static char ArcCosine[100];
+static char TimesPi[100];
 
 enum toShow
 {
@@ -233,11 +239,20 @@ void showX(int multiplicity)
   }
   if (multiplicity > 2)
   {
+    char from[1000];
+    char to[1000];
+    char* ptrOutputBak = ptrOutput;
     showXindex(indexRoot);
-    showText(lang ? " a " : " to ");
+    memcpy(from, ptrOutputBak, ptrOutput - ptrOutputBak);
+    from[ptrOutput - ptrOutputBak] = 0;
+    ptrOutput = ptrOutputBak;
     indexRoot += multiplicity;
     showXindex(indexRoot - 1);
-    showText(" = ");
+    memcpy(to, ptrOutputBak, ptrOutput - ptrOutputBak);
+    to[ptrOutput - ptrOutputBak] = 0;
+    ptrOutput = ptrOutputBak;
+    // $1s to $2s = 
+    formatString(&ptrOutput, LITERAL_SHOW_X, from, to);
   }
   else
   {    // Multiplicity 1 or 2.
@@ -1387,7 +1402,8 @@ static void showDegrees(const int *factors)
     {
       if (currentFactor == (nbrFactors - 1))
       {
-        showText(lang ? " y " : " and ");
+        // and
+        showText(LITERAL_SHOW_DEGREES);
       }
       else
       {
@@ -1402,7 +1418,7 @@ static void showDegrees(const int *factors)
   }
 }
 
-static void ShowNoSolvableSpanish(const int* firstArray, const int* secondArray,
+static void ShowNoSolvable(const int* firstArray, const int* secondArray,
   int numberDifferentX, int nbrFactor, int gcdDegrees)
 {
   if (firstArray != secondArray)
@@ -1411,65 +1427,27 @@ static void ShowNoSolvableSpanish(const int* firstArray, const int* secondArray,
     {
       showX(numberDifferentX);
       *(ptrOutput - 2) = ':';  // Replace equal sign by colon.
-      showText("Las raíces del polinomio");
-      if (nbrFactor >= 0)
-      {
-        showText(" número ");
-        int2dec(&ptrOutput, nbrFactor + 1);
-      }
-      showText(" no se pueden expresar mediante expresiones radicales");
+      // The roots of the polynomial $1?1+?number $1d ??cannot be expressed by radicals.
+      formatString(&ptrOutput, LITERAL_SHOW_NO_SOLVABLE1, nbrFactor + 1);
       if (gcdDegrees > 1)
       {
-        showText(". Reemplazamos <var>y</var> = ");
+        // We set $1v = 
+        formatString(&ptrOutput, LITERAL_SYMM_OR_ALTER2, 'y');
         showPowerX(&ptrOutput, gcdDegrees);
+        showText(". ");
       }
-      showText(". Los");
+      // The degrees of the factors of polynomial modulo $1d are
+      formatString(&ptrOutput, LITERAL_SHOW_NO_SOLVABLE2, *firstArray);
     }
     else
     {
-      showText(" y los");
+      // and the degrees of the factors of polynomial modulo $1d are
+      formatString(&ptrOutput, LITERAL_SHOW_NO_SOLVABLE3, *firstArray);
     }
-    showText(" grados de los factores del polinomio módulo ");
-    int2dec(&ptrOutput, *firstArray);
-    showText(" son ");
     showDegrees(firstArray);
   }
-  showText(" (el grupo de Galois contiene un ciclo de longitud ");
-}
-
-static void ShowNoSolvableEnglish(const int* firstArray, const int* secondArray,
-  int numberDifferentX, int nbrFactor, int gcdDegrees)
-{
-  if (firstArray != secondArray)
-  {
-    if (secondArray == NULL)
-    {
-      showX(numberDifferentX);
-      *(ptrOutput - 2) = ':';  // Replace equal sign by colon.
-      showText("The roots of the polynomial");
-      if (nbrFactor >= 0)
-      {
-        showText(" number ");
-        int2dec(&ptrOutput, nbrFactor + 1);
-      }
-      showText(" cannot be expressed by radicals");
-      if (gcdDegrees > 1)
-      {
-        showText(". We set <var>y</var> = ");
-        showPowerX(&ptrOutput, gcdDegrees);
-      }
-      showText(". The");
-    }
-    else
-    {
-      showText(" and the");
-    }
-    showText(" degrees of the factors of polynomial modulo ");
-    int2dec(&ptrOutput, *firstArray);
-    showText(" are ");
-    showDegrees(firstArray);
-  }
-  showText(" (the Galois group contains a cycle of ");
+  // (the Galois group contains a cycle of 
+  showText(LITERAL_SHOW_NO_SOLVABLE4);
 }
 
 static void showExplanation(int left, const char* oper1, int middle, const char* oper2, int right)
@@ -1531,8 +1509,6 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
   int polyDeg, int multiplicity)
 {
   int polyDegree = polyDeg;
-  const char* ptrStrPrimeHalfSp = "primo mayor que la mitad del grado del polinomio";
-  const char* ptrStrPrimeHalfEn = "prime length greater than half the degree of polynomial";
   int factorDegreesCycle2Or3[MAX_DEGREE+2];
   int factorDegreesCycleP[MAX_DEGREE + 2];  // n/2 < p
   int factorDegreesCycleOther[MAX_DEGREE + 2]; // n/3 < p < n/2
@@ -1575,42 +1551,17 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
   {     // Polynomial is solvable with radical expressions.
     showX(multiplicity * polyDegree * gcdDegrees);
     *(ptrOutput - 2) = ':';  // Replace equal sign by colon.
-    if (lang)
+    // The roots of the polynomial $1?1+?number $1d ??can be expressed by radicals.
+    formatString(&ptrOutput, LITERAL_SYMM_OR_ALTER1, nbrFactor + 1);
+    if (gcdDegrees > 1)
     {
-      showText("Las raíces del polinomio");
-      if (nbrFactor >= 0)
-      {
-        showText(" número ");
-        int2dec(&ptrOutput, nbrFactor + 1);
-      }
-      showText(" se pueden expresar mediante expresiones radicales");
-      if (gcdDegrees > 1)
-      {
-        showText(". Reemplazamos <var>y</var> = ");
-        showPowerX(&ptrOutput, gcdDegrees);
-      }
-      showText(". El polinomio es de grado ");
-      int2dec(&ptrOutput, polyDegree);
-      showText(" que es menor que 5.");
+      // We set $1v =
+      formatString(&ptrOutput, LITERAL_SYMM_OR_ALTER2, 'y');
+      showPowerX(&ptrOutput, gcdDegrees);
+      showText(". ");
     }
-    else
-    {
-      showText("The roots of the polynomial");
-      if (nbrFactor >= 0)
-      {
-        showText(" number ");
-        int2dec(&ptrOutput, nbrFactor + 1);
-      }
-      showText(" can be expressed by radicals");
-      if (gcdDegrees > 1)
-      {
-        showText(". We set <var>y</var> = ");
-        showPowerX(&ptrOutput, gcdDegrees);
-      }
-      showText(". The polynomial has degree ");
-      int2dec(&ptrOutput, polyDegree);
-      showText(" which is less than 5.");
-    }
+    // The polynomial has degree $1d which is less than 5.
+    formatString(&ptrOutput, LITERAL_SYMM_OR_ALTER3, polyDegree);
     return true;
   }
   ptrCoeff = ptrPolynomial;
@@ -1786,106 +1737,54 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
   int numberDifferentX = multiplicity * polyDegree * gcdDegrees;
   if (cyclePrGtNOver2ToLess2Found != 0)
   {      // Group is very transitive.
-    if (lang)
-    {    // Spanish
-      ShowNoSolvableSpanish(factorDegreesCycleP, NULL, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      showText(ptrStrPrimeHalfSp);
-      showExplanation(cyclePrGtNOver2ToLess2Found, "&gt;", degree, "&divide;", 2);
-      showText(" y menor que el grado menos 2");
-    }
-    else
-    {   // English
-      ShowNoSolvableEnglish(factorDegreesCycleP, NULL, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      showText(ptrStrPrimeHalfEn);
-      showExplanation(cyclePrGtNOver2ToLess2Found, "&gt;", degree, "&divide;", 2);
-      showText(" and less than the degree minus 2");
-    }
+    ShowNoSolvable(factorDegreesCycleP, NULL, numberDifferentX,
+      nbrFactor, gcdDegrees);
+    // prime length greater than half the degree of polynomial
+    showText(LITERAL_SYMM_OR_ALTER4);
+    showExplanation(cyclePrGtNOver2ToLess2Found, "&gt;", degree, "&divide;", 2);
+    // and less than the degree minus 2
+    showText(LITERAL_SYMM_OR_ALTER5);
     showExplanation(cyclePrGtNOver2ToLess2Found, "&lt;", degree, "&minus;", 2);
     *ptrOutput = ')';
     ptrOutput++;
   }
   else if ((cyclePrGtNOver3Found != 0) && ((degree & 0x01) == 0x01))
   {     // Group is very transitive.
-    if (lang)
-    {    // Spanish
-      ShowNoSolvableSpanish(factorDegreesCycleOther, NULL, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      showText("primo mayor que la tercera parte del grado del polinomio");
-      showExplanation(cyclePrGtNOver3Found, "&gt;", degree, "&divide;", 3);
-      showText(" y éste (");
-      int2dec(&ptrOutput, degree);
-      showText(") es impar)");
-    }
-    else
-    {   // English
-      ShowNoSolvableEnglish(factorDegreesCycleOther, NULL, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      showText("prime length greater than a third of the degree of the polynomial");
-      showExplanation(cyclePrGtNOver3Found, "&gt;", degree, "&divide;", 3);
-      showText(" and the latter (");
-      int2dec(&ptrOutput, degree);
-      showText(") is odd)");
-    }
+    ShowNoSolvable(factorDegreesCycleOther, NULL, numberDifferentX,
+      nbrFactor, gcdDegrees);
+    // prime length greater than a third of the degree of the polynomial
+    showText(LITERAL_SYMM_OR_ALTER6);
+    showExplanation(cyclePrGtNOver3Found, "&gt;", degree, "&divide;", 3);
+    // and the latter ($1d) is odd)
+    formatString(&ptrOutput, LITERAL_SYMM_OR_ALTER7, degree);
   }
   else if ((cyclePrGtNOver3Found != 0) && (cycleOddGtNOver2Found != 0))
   {     // Group is very transitive.
-    if (lang)
-    {    // Spanish
-      ShowNoSolvableSpanish(factorDegreesCycleOther, NULL, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      showText("primo mayor que la tercera parte del grado del polinomio");
-      showExplanation(cyclePrGtNOver3Found, "&gt;", degree, "&divide;", 3);
-      *ptrOutput = ')';
-      ptrOutput++;
-      ShowNoSolvableSpanish(factorDegreesCycleP, factorDegreesCycleOther, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      showText("impar mayor que la mitad del grado del polinomio");
-    }
-    else
-    {    // English
-      ShowNoSolvableEnglish(factorDegreesCycleOther, NULL, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      showText("prime length greater than a third of the degree of the polynomial");
-      showExplanation(cyclePrGtNOver3Found, "&gt;", degree, "&divide;", 3);
-      *ptrOutput = ')';
-      ptrOutput++;
-      ShowNoSolvableEnglish(factorDegreesCycleP, factorDegreesCycleOther, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      showText("odd length greater than half the degree of the polynomial");
-    }
+    ShowNoSolvable(factorDegreesCycleOther, NULL, numberDifferentX,
+      nbrFactor, gcdDegrees);
+    // prime length greater than a third of the degree of the polynomial
+    showText(LITERAL_SYMM_OR_ALTER6);
+    showExplanation(cyclePrGtNOver3Found, "&gt;", degree, "&divide;", 3);
+    *ptrOutput = ')';
+    ptrOutput++;
+    ShowNoSolvable(factorDegreesCycleP, factorDegreesCycleOther, numberDifferentX,
+      nbrFactor, gcdDegrees);
+    // odd length greater than half the degree of the polynomial
+    showText(LITERAL_SYMM_OR_ALTER8);
     showExplanation(cycleOddGtNOver2Found, "&gt;", degree, "&divide;", 2);
     *ptrOutput = ')';
     ptrOutput++;
   }
   else if (((cycle2Found != 0) || (cycle3Found != 0)) && (cyclePrGtNOver2Found != 0))
   {
-    if (lang)
-    {    // Spanish
-      ShowNoSolvableSpanish(factorDegreesCycle2Or3, NULL, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      *ptrOutput = (cycle2Found ? '2' : '3');
-      ptrOutput++;
-      *ptrOutput = ')';
-      ptrOutput++;
-      ShowNoSolvableSpanish(factorDegreesCycleP, factorDegreesCycle2Or3, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      showText(ptrStrPrimeHalfSp);
-    }
-    else
-    {    // English
-      ShowNoSolvableEnglish(factorDegreesCycle2Or3, NULL, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      showText("length ");
-      *ptrOutput = (cycle2Found ? '2' : '3');
-      ptrOutput++;
-      *ptrOutput = ')';
-      ptrOutput++;
-      ShowNoSolvableEnglish(factorDegreesCycleP, factorDegreesCycle2Or3, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      showText(ptrStrPrimeHalfEn);
-    }
+    ShowNoSolvable(factorDegreesCycle2Or3, NULL, numberDifferentX,
+      nbrFactor, gcdDegrees);
+    // length 2)    length 3)
+    copyStr(&ptrOutput, (cycle2Found ? LITERAL_SYMM_OR_ALTER9 : LITERAL_SYMM_OR_ALTER10));
+    ShowNoSolvable(factorDegreesCycleP, factorDegreesCycle2Or3, numberDifferentX,
+      nbrFactor, gcdDegrees);
+    // prime length greater than half the degree of polynomial
+    showText(LITERAL_SYMM_OR_ALTER4);
     showExplanation(cyclePrGtNOver2Found, "&gt;", degree, "&divide;", 2);
     *ptrOutput = ')';
     ptrOutput++;
@@ -1903,47 +1802,32 @@ void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* ps
   static struct sFactorInfo factorInfoIntegerBak[MAX_DEGREE];
   static int polyIntegerBak[1000000];
   int multiplicity = pstFactorInfo->multiplicity;
-  if (lang)
-  {       // Spanish
-    if (pretty == PRETTY_PRINT)
-    {
-      ptrSin = "<span role=\"img\" aria-label=\" seno de \">sen</span>";
-      ptrCos = "<span role=\"img\" aria-label=\" coseno de \">cos</span>";
-      ptrACos = "<span role=\"img\" aria-label=\" arco coseno de \">arc cos</span>";
-    }
-    else if (pretty == TEX)
-    {
-      ptrSin = "\\sin{";
-      ptrCos = "\\cos{";
-      ptrACos = "\\arccos";
-    }
-    else
-    {
-      ptrSin = "sen";
-      ptrCos = "cos";
-      ptrACos = "acos";
-    }
+  if (pretty == PRETTY_PRINT)
+  {
+    char *ptr = Sine;
+    formatString(&ptr, "<span role=\"img\" aria-label=\" $1s \">sin</span>",
+      LITERAL_SINE);
+    ptrSin = Sine;
+    ptr = Cosine;
+    formatString(&ptr, "<span role=\"img\" aria-label=\" $1s \">cos</span>",
+      LITERAL_COSINE);
+    ptrCos = Cosine;
+    ptr = ArcCosine;
+    formatString(&ptr, "<span role=\"img\" aria-label=\" $1s \">arc cos</span>",
+      LITERAL_ARC_COSINE);
+    ptrACos = ArcCosine;
+  }
+  else if (pretty == TEX)
+  {
+    ptrSin = "\\sin{";
+    ptrCos = "\\cos{";
+    ptrACos = "\\arccos";
   }
   else
-  {       // English
-    if (pretty == PRETTY_PRINT)
-    {
-      ptrSin = "<span role=\"img\" aria-label=\" sine of \">sin</span>";
-      ptrCos = "<span role=\"img\" aria-label=\" cosine of \">cos</span>";
-      ptrACos = "<span role=\"img\" aria-label=\" arc cosine of \">arc cos</span>";
-    }
-    else if (pretty == TEX)
-    {
-      ptrSin = "\\sin{";
-      ptrCos = "\\cos{";
-      ptrACos = "\\arccos";
-    }
-    else
-    {
-      ptrSin = "sin";
-      ptrCos = "cos";
-      ptrACos = "acos";
-    }
+  {
+    ptrSin = "sin";
+    ptrCos = "cos";
+    ptrACos = "acos";
   }
   groupLen = groupLength;
   ptrOutput = *pptrOutput;
@@ -1951,14 +1835,11 @@ void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* ps
   {
     ptrMinus = "&minus;";
     ptrTimes = "<o-t></o-t>";
-    if (lang)
-    {
-      ptrTimesPi = "<span role=\"img\" aria-label=\" por pi\">π</span>";
-    }
-    else
-    {
-      ptrTimesPi = "<span role=\"img\" aria-label=\" times pi\">π</span>";
-    }
+    ptrTimesPi = TimesPi;
+    char* pTimesPi = TimesPi;
+    formatString(&pTimesPi, "<span role=\"img\" aria-label=\" $1s\">π</span>",
+      LITERAL_TIMES_PI);
+    ptrTimesPi = TimesPi;
     ptrPi = "<span role=\"img\" aria-label=\"pi\">π</span>";
     ptrI = "i";
   }
@@ -1979,7 +1860,8 @@ void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* ps
   if (teach)
   {
     startLine();
-    showText(lang ? "<p>La ecuación a resolver es:</p><p>" : "<p>The equation to solve is:</p><p>");
+    // The equation to solve is:
+    formatString(&ptrOutput, "<p>$1s</p><p>", LITERAL_GET_ROOTS_POLY1);
     outputPolynomialFactor(&ptrOutput, groupLength, pstFactorInfo);
     showText(" = 0</p>");
   }
@@ -2043,26 +1925,9 @@ void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* ps
     }
     showX(multiplicity * pstFactorInfo->degree);
     *(ptrOutput - 2) = ':';
-    if (lang)
-    {
-      showText("No puedo determinar si las raíces del polinomio");
-      if (nbrFactor >= 0)
-      {
-        showText(" número ");
-        int2dec(&ptrOutput, nbrFactor + 1);
-      }
-      showText(" se pueden resolver mediante expresiones radicales o no.");
-    }
-    else
-    {
-      showText("I cannot determine whether the roots of the polynomial");
-      if (nbrFactor >= 0)
-      {
-        showText(" number ");
-        int2dec(&ptrOutput, nbrFactor + 1);
-      }
-      showText(" can be solved using radical expressions or not.");
-    }
+    // I cannot determine whether the roots of the polynomial 
+    // $1?1+?number $1d ??can be solved using radical expressions or not.
+    formatString(&ptrOutput, LITERAL_GET_ROOTS_POLY2, nbrFactor + 1);
     break;
   }
   nbrFactorsFound = nbrFactorsFoundBak;

@@ -20,8 +20,10 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include "string/strings.h"
 #include "rootseq.h"
 #include "expression.h"
+#include "copyStr.h"
 
 extern BigInteger Linear;
 extern BigInteger Independent;
@@ -39,8 +41,7 @@ void LinearEquation(const int* polynomial, int multiplicity)
   CopyBigInt(&Rat1.denominator, &Linear);
   if (teach && !BigIntIsOne(&Linear))
   {
-    showText(lang ? "<p>Dividiendo la ecuación por el coeficiente lineal:</p><p>" :
-      "<p>Dividing the equation by the linear coefficient:</p><p>");
+    formatString(&ptrOutput, "<p>$1s</p><p>", LITERAL_LINEAREQ);
     showVariable(&ptrOutput, 'x');
     showPlusMinusRational(&Rat1);
     showText(" = 0</p>");

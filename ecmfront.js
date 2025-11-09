@@ -42,11 +42,9 @@
 /* global setStorage */
 /* global setWizardStep */
 /* global show */
-/* global showVersion */
 /* global typedOnWizard */
 /* global useBlockly */
 /* global wizardNext */
-/** @define {number} */ const lang = 1;        // Use with Closure compiler.
 const points=[0,6, 2,9, 4,0, 5,6, 7,1, 8,0, 13,9, 14,9, 15,7, 16,7, 17,0, 18,13, 20,5, 22,10, 23,12, 24,6, 27,7];
 let fileContents = null;
 let app;
@@ -101,39 +99,6 @@ let wzdDescText;
 let wzdExamText;
 let wzdInput;
 
-if (lang)
-{
-  funcnames =
-  [
-    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Raíz cuadrada entera,sqrt1,Raíz entera\n\nPrimer argumento: radicando\nSegundo argumento: orden de la raíz,iroot2,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random2,Valor absoluto,Abs1,Signo,Sign1",
-    "Variable,x,Inicializar variable,x=,Variable es menor que,x<,,,Variable es menor o igual que,x<=,Contador,c,Contador es menor que,c<,Contador es menor o igual que,c<=,Separador,;",
-    "Igual,=,Distinto,!=,,,Mayor,>,Menor o igual,<=,Menor,<,Mayor o igual,>=",
-    "Desplazamiento a la izquierda\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHL ,Desplazamiento a la derecha\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHR ,,,Y lógica, AND ,O lógica, OR ,O exclusiva, XOR ,Negación lógica, NOT ",
-    ",,Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD2,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM2,¿El valor es primo?,IsPrime1,,,Cantidad de factores primos,NumFact1,menor divisor primo,MinFact1,mayor divisor primo,MaxFact1,Cantidad de divisores,NumDivs1,Suma de divisores,SumDivs1",
-    "Primo siguiente,N1,Primo anterior,B1,Concatenar factores primos\n\nPrimer argumento: modo\n0: Primos no repetidos en forma ascendente\n1: Primos no repetidos en forma descendente\n2: Primos repetidos en forma ascendente\n3: Primos repetidos en forma descendente\nSegundo argumento: valor a factorizar,ConcatFact2,,,Cantidad de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,NumDigits2,Suma de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,SumDigits2,Invertir dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,RevDigits2",
-    "Parte entera del cociente\n\nPrimer argumento: dividendo\nSegundo argumento: divisor,FloorDiv2,Módulo\n\nPrimer argumento: valor\nSegundo argumento: módulo,Mod2,Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv2,División modular\n\nPrimer argumento: dividendo\nSegundo argumento: divisor\nTercer argumento: módulo,ModDiv3,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow3,Indicador de Euler,Totient1,Símbolo de Jacobi\n\nPrimer argumento: valor superior\nSegundo argumento: valor inferior,Jacobi2",
-    "Factorial,!,,,Primorial,#,Fibonacci,F1,Lucas,L1,Partición,P1",
-    "Suma,+,Resta,-,Multiplicación,*,División,/,,,Prefijo hex,0x,10,A,11,B,12,C,13,D,14,E,15,F"
-  ];
-  parens = "Paréntesis izquierdo,(,Paréntesis derecho,),Nueva línea,\u23CE,";
-}
-else
-{
-  funcnames =
-  [
-    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt1,Integer root\n\nFirst argument: radicand\nSecond argument: root order,iroot2,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random2,Absolute value,Abs1,Sign,Sign1",
-    "Variable,x,Initialize variable,x=,Variable is less than,x<,,,Variable is less or equal than,x<=,Counter,c,Counter is less than,c<,Counter is less or equal than,c<=,Separator,;",
-    "Equal,=,Not equal,!=,,,Greater,>,Not greater,<=,Less,<,Not less,>=",
-    "Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ,,,Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT ",
-    ",,Greatest Common Divisor\n\nOne or more arguments can be used,GCD2,Least Common Multiple\n\nOne or more arguments can be used,LCM2,The value is prime?,IsPrime1,,,Number of prime factors,NumFact1,smallest prime divisor,MinFact1,greatest prime divisor,MaxFact1,Number of divisors,NumDivs1,Sum of divisors,SumDivs1",
-    "Next prime after,N1,Last prime before,B1,Concatenate prime factors\n\nFirst argument: Mode\n0: No repeated primes in ascending order\n1: No repeated primes in descending order\n2: Repeated primes in ascending order\n3: Repeated primes in descending order\nSecond argument: Value to factor,ConcatFact2,,,Number of digits\n\nFirst argument: value\nSecond argument: base,NumDigits2,Sum of digits\n\nFirst argument: value\nSecond argument: base,SumDigits2,Reverse digits\n\nFirst argument: value\nSecond argument: base,RevDigits2",
-    "Integer part of quotient\n\nFirst argument: dividend\nSecond argument: divisor,FloorDiv2,Modulo\n\nFirst argument: value\nSecond argument: modulo,Mod2,Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv2,Modular division\n\nFirst argument: dividend\nSecond argument: divisor\nThird argument: modulus,ModDiv3,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow3,Totient,Totient1,Jacobi symbol\n\nFirst argument: upper value\nSecond argument: lower value,Jacobi2",
-    "Factorial,!,,,Primorial,#,Fibonacci,F1,Lucas,L1,Partition,P1",
-    "Sum,+,Subtraction,-,Multiplication,*,Division,/,,,Hex prefix,0x,10,A,11,B,12,C,13,D,14,E,15,F"
-  ];
-  parens = "Left parenthesis,(,Right parenthesis,),New line,\u23CE,";
-}
-
 function getFuncNames()
 {
   return funcnames;
@@ -146,14 +111,16 @@ function getParens()
 
 function getCalcURLs()
 {
-  return ["ecmW0000.js",
-          "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-180px.png", "ecm-icon-512px.png", "favicon.ico"];
+  return [addLangToFilename("ecmW0000.js"),
+          "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png",
+          "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-180px.png",
+          "ecm-icon-512px.png", "favicon.ico"];
 }
 
 function oneexpr()
 {
-  btnNext.value = (lang? "Hecho": "Done");
-  wzdDescText.innerHTML = (lang? "Paso 1 de 1: Expresión a factorizar": "Step 1 of 1: Expression to factor");
+  btnNext.value = get("done").textContent;
+  wzdDescText.innerHTML = get("wzddesc1").textContent;
   wzdExamText.innerHTML = "&nbsp;";
   clearWizardTextInput();
   setWizardStep(9);
@@ -348,7 +315,7 @@ function comingFromWorker(e)
 function performWork(n, valueText)
 {
   let param;
-  app = lang + n;
+  app = n;
   let charNull = String.fromCharCode(0);
   let charSeparator = String.fromCharCode(1);
   let helphelp = get("helphelp");
@@ -357,22 +324,15 @@ function performWork(n, valueText)
   if (valueText === "")
   {    // Nothing in input box.
     resultDirty = true;
-    resultText = (lang ? "<p>Por favor ingrese una expresión.</p>" :
-                         "<p>Please type an expression.</p>");
+    resultText = get("missing").innerHTML;
     return;
   }
   hide("cont");
   hide("help");
   show("helphelp");
-  let strHelp = (lang ? "<p class=\"pad\">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. También puedes ver <a href=\"/videos/videosEcmc.htm\" target=\"_blank\">videos</a>. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorización.":
-                        "<p class=\"pad\">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. You can also watch <a href=\"/videos/videosEcm.htm\" target=\"_blank\">videos</a>. Keyboard users can press CTRL+ENTER to start factorization.");
-  let strHelp2 = showVersion(lang);
-  if (strHelp2 == null)
-  {
-    return;
-  }
-  strHelp += strHelp2;
-  helphelp.innerHTML = strHelp;
+  const version = (typeof(WebAssembly) === "undefined"? "nowebassy": "webassy");
+  helphelp.innerHTML = "<p>" + get("firstLine").innerHTML + " " +
+                       get(version).innerHTML + "</p>";
   show("result");
   setInterval(function()
   {
@@ -385,14 +345,12 @@ function performWork(n, valueText)
   if (n === 0)
   {
     resultDirty = true;
-    resultText = (lang ? "<p>Evaluando la expresión...</p>" :
-                         "<p>Evaluating expression...</p>");
+    resultText = get("evaluating").innerHTML;
   }
   else
   {
     resultDirty = true;
-    resultText = (lang ? "<p>Factorizando la expresión...</p>" :
-                         "<p>Factoring expression...</p>");
+    resultText = get("factoring").innerHTML;
   }
   if (n < -2)
   {
@@ -496,7 +454,7 @@ function loadScript(scriptUrl)
       {
         document.body.appendChild(script1);
         document.body.appendChild(script2);
-        useBlockly(fromBlocklyRun, lang);  // Init Blockly workspace.
+        useBlockly(fromBlocklyRun);  // Init Blockly workspace.
       }
     }
   };
@@ -508,12 +466,12 @@ function initBlockly()
 {
   if (blocklyLoaded !== 0)
   {
-    useBlockly(null, lang);  // Resize workspace.
+    useBlockly(null);  // Resize workspace.
     return;
   }
   blocklyLoaded = 1;
   script1 = loadScript("blockly0007.js");
-  script2 = loadScript(lang? "es0007.js": "en0007.js");
+  script2 = loadScript(get("blocklyLang").textContent);
 }
 
 function getFormSendValue()
@@ -557,6 +515,19 @@ function popstate(event)
 
 function startUp()
 {
+  funcnames =
+  [
+    get("btn1").textContent,
+    get("btn2").textContent,
+    get("btn3").textContent,
+    get("btn4").textContent,
+    get("btn5").textContent,
+    get("btn6").textContent,
+    get("btn7").textContent,
+    get("btn8").textContent,
+    get("btn9").textContent
+  ];
+  parens = get("parens").textContent;
   value = get("value");
   btnNext = get("next");
   btnEval = get("eval");
@@ -582,7 +553,7 @@ function startUp()
   wzdExamText = get("wzdexam");
   wzdInput = get("wzdinput");
 
-  app = lang;
+  app = 0;
   value.wrap="off";
   btnEval.onclick = function()
   {
@@ -624,16 +595,7 @@ function startUp()
   getFile.onchange = function()
   {
     fileName = getFile.value.replace(/^.*[\\/]/, "");
-    if (lang)
-    {          // Spanish
-      value.value = "Archivo a procesar: " + fileName +
-          "\nApriete uno de los botones \"Solo evaluar\", \"Primo\" o \"Factorizar\" para continuar.";
-    }
-    else
-    {          // English
-      value.value = "File to process: " + fileName +
-          "\nPress \"Only evaluate\", \"Prime\" or \"Factor\" button to continue.";
-    }
+    value.value = get("fileToProcess").textContent.replace("{fileName}", fileName);
   };
   btnBlocklyMode.onclick = function()
   {
@@ -765,8 +727,7 @@ function startUp()
     styleButtons("inline", "none");      // Enable eval and factor
     hide("sktest");    // Hide button if it is present during factorization.
     resultDirty = true;
-    resultText += (lang ? "<p>Cálculo detenido por el usuario.</p>" :
-                          "<p>Calculation stopped by user</p>");
+    resultText += get("stopped").innerHTML;
     statusDirty = true;
     statusText = "";
   };

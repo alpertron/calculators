@@ -59,7 +59,7 @@ nav::after {clear:both}
 }
 input[type=text], input[type=email], input[type=number] {min-height:2em; border-radius:10px}
 input[type=button], button {min-height:2.5em; min-width:2.5em; border-radius:5px}
-#sending, #sentOK, #notSent {display:none}
+#strings, #sending, #sentOK, #notSent {display:none}
 .center {text-align:center}
 #skip a {padding:6px; position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
 #skip a:focus {position:absolute; left:0px; top:0px; outline-color:transparent; transition: top .1s ease-in}
@@ -1204,6 +1204,111 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p>Feedback could not be sent.</p>
 <div class="center"><button type="button" id="btnNotSent">Go back</button></div>
 </aside>
+<div id="strings">
+<div id="btn1">Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt1,Integer root\n\nFirst argument: radicand\nSecond argument: root order,iroot2,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random2,Absolute value,Abs1,Sign,Sign1</div>
+<div id="btn2">Variable,x,Initialize variable,x=,Variable is less than,x&lt;,,,Variable is less or equal than,x&lt;=,Counter,c,Counter is less than,c&lt;,Counter is less or equal than,c&lt;=,Separator,;</div>
+<div id="btn3">Equal,=,Not equal,!=,,,Greater,&gt;,Not greater,&lt;=,Less,&lt;,Not less,&gt;=</div>
+<div id="btn4">Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ,,,Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT </div>
+<div id="btn5">,,Greatest Common Divisor\n\nOne or more arguments can be used,GCD2,Least Common Multiple\n\nOne or more arguments can be used,LCM2,The value is prime?,IsPrime1,,,Number of prime factors,NumFact1,smallest prime divisor,MinFact1,greatest prime divisor,MaxFact1,Number of divisors,NumDivs1,Sum of divisors,SumDivs1</div>
+<div id="btn6">Next prime after,N1,Last prime before,B1,Concatenate prime factors\n\nFirst argument: Mode\n0: No repeated primes in ascending order\n1: No repeated primes in descending order\n2: Repeated primes in ascending order\n3: Repeated primes in descending order\nSecond argument: Value to factor,ConcatFact2,,,Number of digits\n\nFirst argument: value\nSecond argument: base,NumDigits2,Sum of digits\n\nFirst argument: value\nSecond argument: base,SumDigits2,Reverse digits\n\nFirst argument: value\nSecond argument: base,RevDigits2</div>
+<div id="btn7">Integer part of quotient\n\nFirst argument: dividend\nSecond argument: divisor,FloorDiv2,Modulo\n\nFirst argument: value\nSecond argument: modulo,Mod2,Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv2,Modular division\n\nFirst argument: dividend\nSecond argument: divisor\nThird argument: modulus,ModDiv3,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow3,Totient,Totient1,Jacobi symbol\n\nFirst argument: upper value\nSecond argument: lower value,Jacobi2</div>
+<div id="btn8">Factorial,!,,,Primorial,#,Fibonacci,F1,Lucas,L1,Partition,P1</div>
+<div id="btn9">Sum,+,Subtraction,-,Multiplication,*,Division,/,,,Hex prefix,0x,10,A,11,B,12,C,13,D,14,E,15,F</div>
+<div id="parens">Left parenthesis,(,Right parenthesis,),New line,&#x23CE;,</div>
+<div id="done">Done</div>
+<div id="wzddescr1">Step 1 of 1: Expression to process</div>
+<div id="missing"><p>Please type an expression.</p></div>
+<div id="nowebassy">This is the JavaScript version.</div>
+<div id="webassy">This is the WebAssembly version.</div>
+<div id="firstLine">Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation.</div>
+<div id="evaluating"><p>Evaluating expression...</p></div>
+<div id="factoring"><p>Factoring expression...</p></div>
+<div id="blocklyLang">en0007.js</div>
+<div id="fileToProcess">File to process: {fileName}\nPress \"Only evaluate\", \"Prime\" or \"Factor\" button to continue.</div>
+<div id="stopped"><p>Calculation stopped by user.</p></div>
+<div id="wzddesc1">Step 1 of 5: Initial value of x</div>
+<div id="wzddesc2">Step 2 of 5: Value of x for new iteration</div>
+<div id="wzddesc3">Step 3 of 5: End loop condition</div>
+<div id="wzddesc4">Step 4 of 5: Expression to process</div>
+<div id="wzddesc5">Step 5 of 5: Process expression condition</div>
+<div id="next">Next</div>
+<div id="novars">Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code></div>
+<div id="varsreq">Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: </div>
+<div id="polfact">POLFACT.HTM</div>
+<div id="flowctrl">Flow Control</div>
+<div id="basicmath">Basic Math</div>
+<div id="defineblock">
+<span>355;%1 + %2</span>
+<span>355;%1 - %2</span>
+<span>355;%1 × %2</span>
+<span>355;%1 ÷ %2</span>
+<span>355;remainder of %1 ÷ %2</span>
+<span>355;%1 to the %2</span>
+<span>355;square root of %1</span>
+<span>355;%2-th root of %1</span>
+<span>355;random integer from %1 to %2</span>
+<span>355;absolute value of %1</span>
+<span>355;sign of %1</span>
+<span>4263;Comparisons</span>
+<span>263;%1 = %2</span>
+<span>263;%1 ≠ %2</span>
+<span>263;%1 \x3E %2</span>
+<span>263;%1 ≤ %2</span>
+<span>263;%1 \x3C %2</span>
+<span>263;%1 ≥ %2</span>
+<span>4203;Logic</span>
+<span>203;%1 AND %2</span>
+<span>203;%1 OR %2</span>
+<span>203;%1 XOR %2</span>
+<span>203;NOT %1</span>
+<span>203;%1 shifted left by %2 bits</span>
+<span>203;%1 shifted right by %2 bits</span>
+<span>4143;Divisibility</span>
+<span>143;gcd of %1 and %2</span>
+<span>143;lcm of %1 and %2</span>
+<span>143;is %1 prime</span>
+<span>143;number of prime factors of %1</span>
+<span>143;smallest prime factor of %1</span>
+<span>143;greatest prime factor of %1</span>
+<span>143;number of divisors of %1</span>
+<span>143;sum of divisors of %1</span>
+<span>4026;Recreational Math</span>
+<span>26;next prime after %1</span>
+<span>26;last prime before %1</span>
+<span>26;number of digits of %1 in base %2</span>
+<span>26;sum of digits of %1 in base %2</span>
+<span>26;reverse digits of %1 in base %2</span>
+<span>26;concatenate prime factors of %1 %2</span>
+<span>4077;Number Theory</span>
+<span>77;inverse of %1 modulo %2</span>
+<span>77;%1 divided by %2 modulo %3</span>
+<span>77;%1 to the %2 modulo %3</span>
+<span>77;totient of %1</span>
+<span>77;Jacobi symbol of %1 over %2</span>
+<span>4055;Other</span>
+<span>55;factorial of %1</span>
+<span>55;factorial of order %1 of %2</span>
+<span>55;primorial of %1</span>
+<span>55;element %1 of Fibonacci sequence</span>
+<span>55;element %1 of Lucas sequence</span>
+<span>55;partition of %1</span>
+<span>4170;Output</span>
+<span>1170;print %1</span>
+<span>1170;print %1 in hex</span>
+<span>1170;print prime factors of %1</span>
+<span>1170;print prime factors of %1 in hex</span>
+<span>1170;print is %1 prime</span>
+<span>1170;print is %1 prime in hex</span>
+</div>
+<div id="options">
+<span>not repeated in ascending order</span>
+<span>not repeated in descending order</span>
+<span>repeated in ascending order</span>
+<span>repeated in descending order</span>
+</div>
+<div id="inputint">Enter an integer. Precede it by 0x to enter a hex number.</div>
+<div id="sendmail">sendmail</div>
+</div>
 <script type="text/js-worker" id="worker">
 <!--
 //-->

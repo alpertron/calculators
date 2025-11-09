@@ -17,12 +17,15 @@
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include <string.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "highlevel.h"
 #include "showtime.h"
 #include "batch.h"
 #include "tsquares.h"
+#include "output.h"
+#include "copyStr.h"
 static BigInteger Base1;
 static BigInteger Base2;
 static BigInteger Base3;
@@ -142,13 +145,9 @@ void tsqcubesText(char *input, int grpLen, int expon)
     powerStr = bigExponText;
   }
   (void)BatchProcessing(input, &toProcess, &ptrOutput, NULL, batchSqCubesCallback);
-#ifdef __EMSCRIPTEN__
-  copyStr(&ptrOutput, lang ? "<p>Transcurrió " : "<p>Time elapsed: ");
-  int elapsedTime = (int)(tenths() - originalTenthSecond);
-  GetDHMSt(&ptrOutput, elapsedTime);
-#endif
+  showElapsedTime(&ptrOutput);
   copyStr(&ptrOutput, "<p>");
-  copyStr(&ptrOutput, (lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH));
+  showCopyright(&ptrOutput);
   copyStr(&ptrOutput, "</p>");
 }
 
@@ -212,8 +211,9 @@ static void batchSqCubesCallback(char **pptrOutput, int type)
   }
   if (result == 1)
   {
-    copyStr(&ptrOutput, (lang?": ¡Error interno! Por favor envíe este número al autor del applet.</p>":
-      ": Internal error! Please send the number to the author of the applet.</p>"));
+    // Internal error! Please send the number to the author of the calculator.
+    copyStr(&ptrOutput, LITERAL_BATCH_SQCUBE_CBACK);
+    copyStr(&ptrOutput, "</p>");
     *pptrOutput = ptrOutput;
     return;
   }
@@ -293,9 +293,6 @@ EXTERNALIZE void doWork(void)
     ptrData++;
     app = (app * 10) + *ptrData - '0';
   }
-#ifndef lang  
-  lang = ((app & 1) ? true : false);
-#endif
   if ((app & 0x40) != 0)
   {
     hexadecimal = true;

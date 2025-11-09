@@ -18,14 +18,13 @@
 //
 #include <string.h>
 #include <stdbool.h>
+#include "string/strings.h"
 #include "output.h"
 #include "bignbr.h"
+#include "copyStr.h"
 
 char* ptrOutput;
 int eqNbr;
-#ifndef lang  
-extern bool lang;
-#endif
 
 void showText(const char* text)
 {
@@ -47,9 +46,6 @@ void generateEqNbr(void)
 
 void showEqNbrs(int eqNbr1, int eqNbr2)
 {
-  showText("(");
-  int2dec(&ptrOutput, eqNbr1);
-  showText(lang ? ") y (" : ") and (");
-  int2dec(&ptrOutput, eqNbr2);
-  showText(")");
+  // ($1d) and ($2d)
+  formatString(&ptrOutput, LITERAL_SHOW_EQ_NBRS, eqNbr1, eqNbr2);
 }

@@ -46,9 +46,6 @@ EXTERNALIZE void doWork(void)
   {
     flags = (flags * 10) + *ptrData - '0';
   } while (*(++ptrData) != ',');
-#ifndef lang  
-  lang = ((flags & 1)? true: false);
-#endif
   onlyEvaluate = ((flags & 2) != 0);
   teach = ((flags & 4) != 0);
   switch (flags / 8)

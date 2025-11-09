@@ -18,12 +18,14 @@
 //
 #include <string.h>
 #include <stdlib.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "highlevel.h"
 #include "polynomial.h"
 #include "showtime.h"
 #include "rootseq.h"
+#include "copyStr.h"
 #ifdef FACTORIZATION_APP
 #include "factor.h"
 #endif
@@ -81,14 +83,14 @@ static void restartRecursion(const char* ptrPolyName, int degreePoly,
 {
   if (teachMod)
   {
-    showText("<p><var>");
-    showText(ptrPolyName);
-    showText("</var>(x) ");
-    showText(lang ? "es una potencia perfecta de grado " :
-      "is a perfect power of degree ");
-    int2dec(&ptrOutput, primeMod.limbs[0].x);
-    showText(lang ? ". Ejecutando el algoritmo nuevamente con:</p><p>" :
-      ". Executing the algorithm again with:</p><p>");
+    char temp[100];
+    char *ptrTemp = temp;
+    showText("<p>");
+    copyStr(&ptrTemp, "<var>");
+    copyStr(&ptrTemp, ptrPolyName);
+    copyStr(&ptrTemp, "</var>(x)");
+    formatString(&ptrOutput, LITERAL_RESTART_RECURSION1, temp, primeMod.limbs[0].x);
+    copyStr(&ptrTemp, "</p><p>");
     showVarIndex('f', expon);
     showEquAndPoly(poly, degreePoly);
     showText("</p>");
@@ -133,8 +135,7 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
   // Generate derivative in common.poly.poly1.
   if (teachMod)
   {
-    showText(lang ? "<h3>Separación de factores con factores repetidos</h3>" :
-      "<h3>Squarefree factorization</h3>");
+    formatString(&ptrOutput, "<h3>$1s</h3>", LITERAL_SQUAREFREE_FACT1);
   }
   for (;;)
   {
@@ -169,8 +170,7 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
     }
     if (teachMod)
     {
-      showText(lang ? "<p>La derivada de f(x) es:</p><p>" :
-        "<p>The derivative of f(x) is:</p><p>");
+      formatString(&ptrOutput, "<p>$1s</p><p>", LITERAL_SQUAREFREE_FACT2);
       showText((pretty == PARI_GP) ? "deriv(f(x))" : "<var>f</var> '(x)");
       showEquAndPoly(common.poly.poly1, currentDegree);
       showText("</p>");
@@ -186,8 +186,7 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
       {
         showText("<p>");
         showVarIndex('c', 0);
-        showText(lang ? "(x) = mcd" : "(x) = gcd");
-        showText("(f(x), ");
+        formatString(&ptrOutput, "(x) = $1s(f(x), ", LITERAL_GCD);
         showText((pretty == PARI_GP)?"deriv(f(x))": "f '(x)");
         showEquAndPoly(common.poly.poly2, degreeC);
         showText("</p><p>");
@@ -222,7 +221,7 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
         {
           showText("<p>");
           showVarIndex('w', i);
-          showText(lang ? "(x) = mcd(" : "(x) = gcd(");
+          formatString(&ptrOutput, "(x) = $1s(", LITERAL_GCD);
           showVarIndex('w', i - 1);
           showText(", ");
           showVarIndex('c', i - 1);
@@ -250,9 +249,8 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
             showVarIndex('w', i);
             showText("(x)");
             showEquAndPoly(common.poly.poly1, degreeZ);
-            showText(lang ? " es un factor de f(x) con multiplicidad " :
-              " is a factor of f(x) with multiplicity ");
-            int2dec(&ptrOutput, i * expon);
+            // is a factor of f(x) with multiplicity
+            formatString(&ptrOutput, LITERAL_SQUAREFREE_FACT3, i * expon);
             showText("</strong></p>");
           }
           for (currentDegree = 0; currentDegree < (i * expon); currentDegree++)
@@ -337,9 +335,7 @@ static void SquareFreeFactorization(int polyDegr, int* poly)
 
 static void showGcdDistinctDegFact(const char* ptrExp)
 {
-  showText(lang ? "mcd(" : "gcd(");
-  showVariable(&ptrOutput, 'f');
-  showText("(x), ");
+  formatString(&ptrOutput, "$1s($2v(x), ", LITERAL_GCD, 'f');  // gcd(f(x),
   showVariable(&ptrOutput, 'x');
   if (pretty == PRETTY_PRINT)
   {
@@ -401,9 +397,8 @@ static void DistinctDegreeFactorization(int polyDeg)
   bool showStartOfLoop;
   firstFactor = true;
   if (teachMod)
-  {
-    showText(lang ? "<h3>Factorización de distintos grados</h3>" :
-      "<h3>Distinct degree factorization</h3>");
+  {     // Distinct degree factorization.
+    formatString(&ptrOutput, "<h3>$1s</h3>", LITERAL_DISTINCT_DEGREE_FACT1);
   }
   NumberLengthR1 = NumberLength;
   pstFactorInfo = factorInfo;
@@ -436,8 +431,7 @@ static void DistinctDegreeFactorization(int polyDeg)
         firstFactor = false;
         copyStr(&ptrOutput, "<ul>");
       }
-      copyStr(&ptrOutput, lang? "<li><p>Factorizando f(x)":
-        "<li><p>Factoring f(x)");
+      formatString(&ptrOutput, "<li><p>$1s f(x)", LITERAL_DISTINCT_DEGREE_FACT2); // Factoring f(x)
       showEquAndPoly(ptrPolyToFactor, polyDegree);
     }
     GetPolyInvParm(polyDegree, ptrPolyToFactor);
@@ -454,17 +448,11 @@ static void DistinctDegreeFactorization(int polyDeg)
         char bufExp[100];
         char* ptrBuf;
         showStartOfLoop = false;
-        showText(lang ? "<p>Para todos los grados " : "</p>For all degrees ");
-        showVariable(&ptrOutput, 'd');
-        showText(lang ? " entre " : " between ");
-        int2dec(&ptrOutput, currentDegree);
-        showText(lang? " y " : " and ");
-        int2dec(&ptrOutput, polyDegree / 2);
-        showText(lang ? ", el producto de todos los factores de grado " :
-          ", the product of all factors of degree ");
-        showVariable(&ptrOutput, 'd');
-        showText(lang ? " se obtiene calculando " :
-          " is found by computing ");
+        copyStr(&ptrOutput, "</p><p>");
+        // For all degrees $1v between $2d and $3d, the product of all factors of
+        // degree $1v is found by computing 
+        formatString(&ptrOutput, LITERAL_DISTINCT_DEGREE_FACT3,
+          'd', currentDegree, polyDegree/2);
         ptrBuf = bufExp;
         showVariable(&ptrBuf, 'd');
         *ptrBuf = 0;    // Add string terminator.
@@ -477,34 +465,14 @@ static void DistinctDegreeFactorization(int polyDeg)
       {
         char* ptrOut = outputText;
         oldTimeElapsed = elapsedTime;
-        if (lang)
-        {
-          copyStr(&ptrOut, "1<p>Factorización de distintos grados módulo ");
-          BigInteger2Dec(&ptrOut, &primeMod, 0);
-          copyStr(&ptrOut, ": buscando factores de grado ");
-          int2dec(&ptrOut, currentDegree);
-          copyStr(&ptrOut, " (máx.  ");
-          int2dec(&ptrOut, (polyDegree + 1) / 2);
-          copyStr(&ptrOut, ") del factor número ");
-          int2dec(&ptrOut, nbrFactor + 1);
-          copyStr(&ptrOut, " de ");
-        }
-        else
-        {
-          copyStr(&ptrOut, "1<p>Distinct degree factorization mod ");
-          BigInteger2Dec(&ptrOut, &primeMod, 0);
-          copyStr(&ptrOut, ": searching for factors of degree ");
-          int2dec(&ptrOut, currentDegree);
-          copyStr(&ptrOut, " (max.  ");
-          int2dec(&ptrOut, (polyDegree + 1) / 2);
-          copyStr(&ptrOut, ") of factor number ");
-          int2dec(&ptrOut, nbrFactor + 1);
-          copyStr(&ptrOut, " of ");
-        }
-        int2dec(&ptrOut, nbrFactorsFound);
-        copyStr(&ptrOut, lang ? ".</p><p>Transcurrió " : ".</p><p>Time elapsed: ");
-        GetDHMS(&ptrOut, elapsedTime / 10);
+        copyStr(&ptrOutput, "1<p>");
+        // Distinct degree factorization mod $1b: searching for factors of degree
+        // $2d (max. $3d) of factor number $4d of $5d.
+        formatString(&ptrOutput, LITERAL_DISTINCT_DEGREE_FACT4,
+          &primeMod, currentDegree, (polyDegree + 1) / 2,
+          nbrFactor + 1, nbrFactorsFound);
         copyStr(&ptrOut, "</p>");
+        showElapsedTime(&ptrOut);
         databack(outputText);
       }
 #endif
@@ -539,27 +507,17 @@ static void DistinctDegreeFactorization(int polyDeg)
         showGcdDistinctDegFact(bufExp);
         showEquAndPoly(common.poly.poly4, degreeGcd);
         showText("</strong></p><p>");
-        showText(lang ? "Este polinomio tiene " : "This polynomial has ");
-        int2dec(&ptrOutput, degreeGcd / currentDegree);
-        if (degreeGcd == currentDegree)
-        {
-          showText(lang ? " factor irreducible de grado " :
-            " irreducible factor of degree ");
-        }
-        else
-        {
-          showText(lang ? " factores irreducibles de grado " :
-            " irreducible factors of degree ");
-        }
-        int2dec(&ptrOutput, currentDegree);
+        // This polynomial has $1d irreducible $1?1?factor??$1?2+?factors?? of degree $2d.
+        formatString(&ptrOutput, LITERAL_DISTINCT_DEGREE_FACT5,
+          degreeGcd / currentDegree, currentDegree);
         showText("</p>");
         if (degreeGcd != polyDegree)
         {    // New f(x) will have degree greater than zero.
-          showText(lang ? "<p>El nuevo valor de " : "<p>The new value of ");
-          showVariable(&ptrOutput, 'f');
-          showText(lang ? "(x) es el cociente entre " : "(x) is the quotient between ");
-          showVariable(&ptrOutput, 'f');
-          showText(lang ? "(x) y el mcd anterior.</p>" : "(x) and the previous gcd.</p>");
+          showText("<p>");
+          // The new value of $1v(x) is the quotient between
+          // $1v(x) and the previous gcd.
+          formatString(&ptrOutput, LITERAL_DISTINCT_DEGREE_FACT6, 'f');
+          showText("</p>");
         }
         showStartOfLoop = true;
       }
@@ -612,9 +570,8 @@ static void DistinctDegreeFactorization(int polyDeg)
         showVariable(&ptrOutput, 'f');
         showText("(x)");
         showEquAndPoly(ptrPolyToFactor, polyDegree);
-        showText("</strong></p><p>");
-        showText(lang ? "Este polinomio es irreducible.</p>" :
-          "This polynomial is irreducible.</p>");
+        // This polynomial is irreducible.
+        formatString(&ptrOutput, "</strong></p><p>$1s</p>", LITERAL_DISTINCT_DEGREE_FACT7);
       }
       pstFactorInfo->expectedDegree = polyDegree;
     }
@@ -633,20 +590,10 @@ static void percentageCallback(int percentage)
   if ((elapsedTime / 10) != (oldTimeElapsed / 10))
   {
     oldTimeElapsed = elapsedTime;
-    int2dec(&ptrOut, percentage);
-    if (lang)
-    {
-      copyStr(&ptrOut, "% del ");
-      int2dec(&ptrOut, attemptNbr);
-      copyStr(&ptrOut, ".º intento");
-    }
-    else
-    {
-      copyStr(&ptrOut, "% of attempt #");
-      int2dec(&ptrOut, attemptNbr);
-    }
-    copyStr(&ptrOut, lang ? ".</p><p>Transcurrió " : ".</p><p>Time elapsed: ");
-    GetDHMS(&ptrOut, elapsedTime / 10);
+    // $1d% of attempt #$2d.
+    formatString(&ptrOut, LITERAL_DISTINCT_DEGREE_FACT8, percentage, attemptNbr);
+    copyStr(&ptrOut, "</p><p>");
+    showElapsedTime(&ptrOut);
     copyStr(&ptrOut, "</p>");
     databack(outputText);
   }
@@ -662,16 +609,16 @@ static void showStepByStepForEqualDegree(int *poly, int expectedDegree, int poly
     firstFactor = false;
     copyStr(&ptrOutput, "<ul>");
   }
-  showText(lang ? "<li><p>Factorizando en polinomios de grado " :
-    "<li><p>Factoring in polynomials of degree ");
-  int2dec(&ptrOutput, expectedDegree);
+  // Factoring in polynomials of degree $1d
+  showText("<li><p>");
+  formatString(&ptrOutput, LITERAL_EQUAL_DEGREE_FACT1, expectedDegree);
   showText(" ");
   showVariable(&ptrOutput, 'f');
   showText("(x)");
   showEquAndPoly(poly, polyDegree);
-  showText(lang ? "<p>Eligiendo " : "<p>Choosing ");
-  showVariable(&ptrOutput, 'h');
-  showText(lang ? "(x) al azar, siendo " : "(x) at random, let ");
+  showText("<p>");
+  // Choosing $1v(x) al random, let 
+  formatString(&ptrOutput, LITERAL_EQUAL_DEGREE_FACT2, 'h');
   if (isCharacteristic2)
   { // If prime is 2.
     // g = h + h ^ 2 + h ^ 4 + ... + h ^ 2 ^ (d - 1) mod f(x)
@@ -791,12 +738,10 @@ static void showStepByStepForEqualDegree(int *poly, int expectedDegree, int poly
   {
     showText(", f");
   }
-  showText(lang ? "), calcular gcd(" : "), then compute gcd(");
-  showVariable(&ptrOutput, 'g');
-  showText(", ");
-  showVariable(&ptrOutput, 'f');
-  showText(lang ? ") hasta que el gcd no sea igual a uno de sus argumentos.</p>" :
-    ") until the gcd is not equal to one of its arguments.</p>");
+  showText("), ");
+  // then compute gcd($1v, $2v) until the gcd is not equal to one of its arguments.
+  formatString(&ptrOutput, LITERAL_EQUAL_DEGREE_FACT3, 'g', 'f');
+  showText("</p>");
 }
 
 static void showResultEqualDegreeFact(int degreeGcd, int degreeQuot, int expectedDegree)
@@ -808,11 +753,7 @@ static void showResultEqualDegreeFact(int degreeGcd, int degreeQuot, int expecte
   }
   showVariable(&ptrOutput, 'r');
   showEqu();
-  showText(lang ? "mcd(" : "gcd(");
-  showVariable(&ptrOutput, 'g');
-  showText(", ");
-  showVariable(&ptrOutput, 'f');
-  showText(")");
+  formatString(&ptrOutput, LITERAL_EQUAL_DEGREE_FACT4, 'g', 'f');
   showEquAndPoly(common.poly.poly4, degreeGcd);
   if (degreeGcd == expectedDegree)
   {
@@ -850,8 +791,8 @@ void SameDegreeFactorization(void)
   firstFactor = true;
   if (teachMod)
   {
-    showText(lang ? "<h3>Factorización del mismo grado</h3>" :
-      "<h3>Equal degree factorization</h3>");
+    // Equal degree factorization
+    formatString(&ptrOutput, "<h3>$1s</h3>", LITERAL_EQUAL_DEGREE_FACT5);
   }
   for (int nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
@@ -880,20 +821,11 @@ void SameDegreeFactorization(void)
     {
 #ifdef __EMSCRIPTEN__
       char* ptrOutputText = outputText;
-      if (lang)
-      {
-        copyStr(&ptrOutputText, "1<p>Factorización del mismo grado: buscando ");
-        int2dec(&ptrOutputText, polyDegree / pstFactorInfo->expectedDegree);
-        copyStr(&ptrOutputText, " factores de grado ");
-      }
-      else
-      {
-        copyStr(&ptrOutputText, "1<p>Equal degree factorization: searching for ");
-        int2dec(&ptrOutputText, polyDegree / pstFactorInfo->expectedDegree);
-        copyStr(&ptrOutputText, " factors of degree ");
-      }
-      int2dec(&ptrOutputText, pstFactorInfo->expectedDegree);
-      copyStr(&ptrOutputText, ".</p><p>");
+      copyStr(&ptrOutputText, "1<p>");
+      // Equal degree factorization: searching for $1d factors of degree $2d.
+      formatString(&ptrOutputText, LITERAL_EQUAL_DEGREE_FACT6,
+        polyDegree / pstFactorInfo->expectedDegree, pstFactorInfo->expectedDegree); 
+      copyStr(&ptrOutputText, "</p><p>");
       ptrPercentageOutput = ptrOutputText;
 #endif
       // Copy polynomial to factor to common.poly.poly3 and set leading coefficient to 1.
@@ -1102,9 +1034,8 @@ int FactorModularPolynomial(bool inputMontgomery, bool fromIntPolyFact)
   ConvertToMonic(common.poly.valuesPrime, degree);
   if (teachMod)
   {
-    showText(lang ? "<p>Dividiendo el polinomio por el coeficiente principal:" :
-      "<p>Dividing the polynomial by the leading coefficient:");
-    showText("</p><p><var>f</var>(x)");
+    // Dividing the polynomial by the leading coefficient:
+    formatString(&ptrOutput, "<p>$1s</p><p><var>f</var>(x)", LITERAL_EQUAL_DEGREE_FACT7);
     showEquAndPoly(common.poly.valuesPrime, degree);
     showText("</p>");
   }
@@ -1147,7 +1078,7 @@ int FactorModularPolynomial(bool inputMontgomery, bool fromIntPolyFact)
   }
   if (teachMod)
   {
-    showText(lang ? "<h3>Lista de factores</h3>": "<h3>List of factors</h3>");
+    formatString(&ptrOutput, "<h3>$1s</h3>", LITERAL_FACTOR_MODULAR_POLY);
   }
   SortFactors(&powerMod);
   return rc;

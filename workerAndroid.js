@@ -26,8 +26,3 @@ function callWorker(param)
 {
   Android.toJNI(param);
 }
-
-function getVersionText()
-{
-  return "";
-}

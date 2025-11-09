@@ -19,12 +19,14 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "highlevel.h"
 #include "polynomial.h"
 #include "showtime.h"
 #include "rootseq.h"
+#include "copyStr.h"
 #ifdef FACTORIZATION_APP
 #include "factor.h"
 #endif
@@ -192,13 +194,13 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
       {    // If modulus is zero: denominator is one.
            // If modulus is not zero: degree is zero.
         isFraction = false;
-        copyStr(&ptrOutput, lang ? "<h2>Polinomio ingresado</h2>" :
-          "<h2>Your polynomial</h2>");
+        // Your polynomial
+        formatString(&ptrOutput, "<h2>$1s</h2>", LITERAL_POLYFACT1);
       }
       else
       {
-        copyStr(&ptrOutput, lang ? "<h2>Fracción de polinomios</h2>" :
-          "<h2>Your polynomial fraction</h2>");
+        // Your polynomial fraction
+        formatString(&ptrOutput, "<h2>$1s</h2>", LITERAL_POLYFACT2);
       }
       if (onlyEvaluate)
       {
@@ -214,13 +216,13 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
       {
         if (isFraction)
         {
-          copyStr(&ptrOutput, lang ? "<h2>Factores irreducibles del polinomio numerador</h2>" :
-            "<h2>Irreducible numerator factors</h2>");
+          // Irreducible numerator factors
+          formatString(&ptrOutput, "<h2>$1s</h2>", LITERAL_POLYFACT3);
         }
         else
         {
-          copyStr(&ptrOutput, lang ? "<h2>Factores irreducibles del polinomio</h2>" :
-            "<h2>Irreducible polynomial factors</h2>");
+          // Irreducible polynomial factors
+          formatString(&ptrOutput, "<h2>$1s</h2>", LITERAL_POLYFACT4);
         }
         rc = FactorPolynomial();
       }
@@ -255,14 +257,13 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
       if ((nbrFactorsFound == 0) || ((nbrFactorsFound == 1) &&
         (pstFactorInfo->multiplicity == 1) && BigIntIsOne(&operand5)))
       {
-        copyStr(&ptrOutput, lang ? "<p>El polinomio es irreducible" : "<p>The polynomial is irreducible");
+        showText("<p>");
+        // The polynomial is irreducible
+        formatString(&ptrOutput, LITERAL_POLYFACT5);
         if (modulusIsZero && (primeEisenstein != 0))
         {
-          copyStr(&ptrOutput, lang ? " debido al criterio de Eisenstein (primo = " :
-            " because of Eisenstein's criterion (prime = ");
-          int2dec(&ptrOutput, primeEisenstein);
-          *ptrOutput = ')';
-          ptrOutput++;
+          // because of Eisenstein's criterion (prime = $1d)
+          formatString(&ptrOutput, LITERAL_POLYFACT6, primeEisenstein);
         }
         copyStr(&ptrOutput, "</p>");
       }
@@ -278,9 +279,10 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
         {    // Add factor of degree zero if it is not one.
           totalFactors++;
         }
-        copyStr(&ptrOutput, lang ? "<p>Los " : "<p>The ");
-        int2dec(&ptrOutput, totalFactors);
-        copyStr(&ptrOutput, lang ? " factores son:</p>" : " factors are:</p>");
+        // The $1d factors are:
+        showText("<p>");
+        formatString(&ptrOutput, LITERAL_POLYFACT7, totalFactors);
+        showText("</p>");
         if (modulusIsZero)
         {
           pstFactorInfo = factorInfoInteger;
@@ -335,12 +337,14 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
       }
       if (modulusIsZero)
       {
-        copyStr(&ptrOutput, lang ? "<h2>Raíces</h2>" : "<h2>Roots</h2>");
+        // Roots
+        formatString(&ptrOutput, "<h2>$1s</h2>", LITERAL_POLYFACT8);
         if (degree > 1)
         {
-          copyStr(&ptrOutput, lang ? "<p>Las " : "<p>The ");
-          int2dec(&ptrOutput, degree);
-          copyStr(&ptrOutput, lang ? " raíces son:</p>" : " roots are:</p>");
+          showText("<p>");
+          // The $1d roots are:
+          formatString(&ptrOutput, LITERAL_POLYFACT9, degree);
+          showText("</p>");
         }
         copyStr(&ptrOutput, "<ul>");
         if (pretty == TEX)
@@ -374,6 +378,6 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
     }
   }
   copyStr(&ptrOutput, "<p>");
-  copyStr(&ptrOutput, lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH);
+  showCopyright(&ptrOutput);
   copyStr(&ptrOutput, "</p>");
 }

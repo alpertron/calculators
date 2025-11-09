@@ -19,7 +19,6 @@
 /* global comingFromWorker */
 /* global fileContents */
 /* global get */
-/* global lang */
 let blob;
 let worker = null;
 function endWorker()
@@ -59,9 +58,3 @@ function callWorker(param)
   }
 }
 
-function getVersionText()
-{
-  let langName = (typeof(WebAssembly) === "undefined")? "asm.js": "WebAssembly";
-  return (lang ? " Esta es la versión "+langName+".</p>":
-                 " This is the "+langName+" version.</p>");
-}

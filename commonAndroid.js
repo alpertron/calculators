@@ -32,7 +32,7 @@ function getStorage(name)
   return Android.getStorage(name);
 }
 
-function getCalculatorCode(fileName, workerParam)
+function getCalculatorCode(filename, workerParam)
 {
   fileContents = 1;
 }
@@ -223,4 +223,8 @@ function onShowSumSquares()
 function setFocusTo(newFocusObj)
 {
   elementInFocus = newFocusObj;
+}
+
+function addLangToFilename(filename)
+{    // Nothing to do.
 }

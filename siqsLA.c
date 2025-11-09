@@ -20,10 +20,12 @@
 #include <math.h>
 #include <stdint.h>
 #include <assert.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
 #include "commonstruc.h"
+#include "copyStr.h"
 #if (DEBUG_SIQS == 2) && !defined(__EMSCRIPTEN__)
 #include <stdio.h>
 #endif
@@ -43,12 +45,10 @@ static void showMatrixSize(const char* SIQSInformationText, int rows, int cols)
 {
   (void)SIQSInformationText;
   char* ptrText = ptrLowerText;  // Point after number that is being factored.
-  copyStr(&ptrText, lang ? "<p>Resolviendo la matriz de congruencias de " : "<p>Solving ");
-  int2dec(&ptrText, rows);   // Show number of rows.
-  copyStr(&ptrText, " &times; ");
-  int2dec(&ptrText, cols);   // Show number of columns.
-  copyStr(&ptrText, lang ? " usando el algoritmo de Lanczos en bloques.</p>" :
-    " congruence matrix using Block Lanczos algorithm.</p>");
+  copyStr(&ptrText, "<p>");
+  // Solving $1d &times; $2d congruence matrix using Block Lanczos algorithm.
+  formatString(&ptrText, LITERAL_SHOW_MATRIX_SIZE1, rows, cols);
+  copyStr(&ptrText, "</p>");
   databack(lowerText);
 }
 #endif
@@ -423,9 +423,9 @@ static bool BlockLanczos(int seed)
       copyStr(&ptrText, "4<p>");
       GetDHMS(&ptrText, elapsedTime/10);
       copyStr(&ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-      copyStr(&ptrText, lang? "Progreso del álgebra lineal: ": "Linear algebra progress: ");
-      int2dec(&ptrText, stepNbr * 3200 / matrixRows);
-      copyStr(&ptrText, "%</p>");
+      // Linear algebra progress: $1d%
+      formatString(&ptrText, LITERAL_BLOCK_LANCZOS1, stepNbr * 3200 / matrixRows);
+      copyStr(&ptrText, "</p>");
       databack(SIQSInfo);
     }  
 #endif

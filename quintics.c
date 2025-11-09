@@ -22,9 +22,11 @@
 
 #include <string.h>
 #include "rootseq.h"
+#include "string/strings.h"
 #include "expression.h"
 #include "quintics.h"
 #include "musl.h"
+#include "copyStr.h"
 
 extern struct monomial arrayB[];
 extern struct monomial arrayD[];
@@ -1318,8 +1320,8 @@ void QuinticEquation(const int* ptrPoly, int multiplicity)
   // If there is a linear factor, that means that the quintic can be expressed with radicands.
   if (factorInfoInteger[0].degree != 1)
   {
-    showText(lang ? "<p>La ecuación quíntica no se puede expresar mediante radicandos.</p>" :
-      "The quintic equation cannot be expressed with radicands.");
+    // The quintic equation cannot be expressed with radicands.
+    formatString(&ptrOutput, "<p>$1s</p>", LITERAL_QUINTIC_EQ);
     return;
   }
   ptr = factorInfoInteger[0].ptrPolyLifted;

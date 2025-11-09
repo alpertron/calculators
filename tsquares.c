@@ -20,12 +20,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "highlevel.h"
 #include "showtime.h"
 #include "batch.h"
 #include "tsquares.h"
+#include "copyStr.h"
 
 #define NBR_PRIMES_QUADR_SIEVE  17
 
@@ -540,10 +542,12 @@ void ShowStatus(void)
   }
   oldTimeElapsed = elapsedTime;
   ptrStatus = status;
-  copyStr(&ptrStatus, lang ? "4<p>Transcurrió " : "4<p>Time elapsed: ");
+  copyStr(&ptrStatus, "4<p>");
+  // Time elapsed 
+  copyStr(&ptrStatus, LITERAL_SHOW_STATUS1);
   GetDHMS(&ptrStatus, elapsedTime / 10);
-  copyStr(&ptrStatus, lang ? "&nbsp;&nbsp;&nbsp;Intentando obtener suma de dos cuadrados. Prueba número " : "&nbsp;&nbsp;&nbsp;Attempting sum of two squares. Attempt #");
-  int2dec(&ptrStatus, attempts);
+  // &nbsp;&nbsp;&nbsp;Attempting sum of two squares. Attempt #$1d
+  formatString(&ptrStatus, LITERAL_SHOW_STATUS2, attempts);
   *ptrStatus = 0;
   databack(status);
 #endif

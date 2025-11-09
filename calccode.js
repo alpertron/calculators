@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* global addLangToFilename */
 /* global b64decode */
 /* global callWorker */
 /* global get */
@@ -23,6 +24,7 @@
 /* global req */
 let workPar;
 let req;
+
 function newState(_aEvt)
 {
   if (req.readyState === 4 && req.status === 200)
@@ -41,7 +43,7 @@ function getCalculatorCode(jsFileName, workerParameter)
   if (typeof(WebAssembly) === "undefined")
   {
     req = new XMLHttpRequest();
-    req.open("GET", jsFileName, true);
+    req.open("GET", addLangToFilename(jsFileName), true);
     req.responseType = "arraybuffer";
     req.onreadystatechange = newState;
     req.send(null);

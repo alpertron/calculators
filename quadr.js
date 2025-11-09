@@ -30,7 +30,6 @@
 /* global registerServiceWorker */
 /* global setStorage */
 /* global show */
-/** @define {number} */ const lang = 1;   // Use with Closure compiler.
 let fileContents = 0;
 let currentInputBox;
 let funcnames;
@@ -47,36 +46,6 @@ let coefC;
 let coefD;
 let coefE;
 let coefF;
-if (lang)
-{
-  funcnames =
-  [
-    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Raíz cuadrada entera,sqrt1,Raíz entera\n\nPrimer argumento: radicando\nSegundo argumento: orden de la raíz,iroot2,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random2,Valor absoluto,Abs1,Signo,Sign1",
-    "Igual,=,Distinto,!=,,,Mayor,>,Menor o igual,<=,Menor,<,Mayor o igual,>=",
-    "Desplazamiento a la izquierda\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHL ,Desplazamiento a la derecha\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHR ,,,Y lógica, AND ,O lógica, OR ,O exclusiva, XOR ,Negación lógica, NOT ",
-    ",,Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD2,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM2,¿El valor es primo?,IsPrime1",
-    "Primo siguiente,N1,Primo anterior,B1,Concatenar factores primos\n\nPrimer argumento: modo\n0: Primos no repetidos en forma ascendente\n1: Primos no repetidos en forma descendente\n2: Primos repetidos en forma ascendente\n3: Primos repetidos en forma descendente\nSegundo argumento: valor a factorizar,ConcatFact2,,,Cantidad de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,NumDigits2,Suma de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,SumDigits2,Invertir dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,RevDigits2",
-    "Parte entera del cociente\n\nPrimer argumento: dividendo\nSegundo argumento: divisor,FloorDiv2,Módulo\n\nPrimer argumento: valor\nSegundo argumento: módulo,Mod2,Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv2,División modular\n\nPrimer argumento: dividendo\nSegundo argumento: divisor\nTercer argumento: módulo,ModDiv3,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow3,Indicador de Euler,Totient1,Símbolo de Jacobi\n\nPrimer argumento: valor superior\nSegundo argumento: valor inferior,Jacobi2",
-    "Factorial,!,,,Primorial,#,Fibonacci,F1,Lucas,L1,Partición,P1",
-    "Suma,+,Resta,-,Multiplicación,*,División,/,,,Prefijo hex,0x,10,A,11,B,12,C,13,D,14,E,15,F"
-  ];
-  parens = "Paréntesis izquierdo,(,Paréntesis derecho,),";
-}
-else
-{
-  funcnames =
-  [
-    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt1,Integer root\n\nFirst argument: radicand\nSecond argument: root order,iroot2,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random2,Absolute value,Abs1,Sign,Sign1",
-    "Equal,=,Not equal,!=,,,Greater,>,Not greater,<=,Less,<,Not less,>=",
-    "Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ,,,Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT ",
-    ",,Greatest Common Divisor\n\nOne or more arguments can be used,GCD2,Least Common Multiple\n\nOne or more arguments can be used,LCM2,The value is prime?,IsPrime1",
-    "Next prime after,N1,Last prime before,B1,,,Number of digits\n\nFirst argument: value\nSecond argument: base,NumDigits2,Sum of digits\n\nFirst argument: value\nSecond argument: base,SumDigits2,Reverse digits\n\nFirst argument: value\nSecond argument: base,RevDigits2",
-    "Integer part of quotient\n\nFirst argument: dividend\nSecond argument: divisor,FloorDiv2,Modulo\n\nFirst argument: value\nSecond argument: modulo,Mod2,Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv2,Modular division\n\nFirst argument: dividend\nSecond argument: divisor\nThird argument: modulus,ModDiv3,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow3,Totient,Totient1,Jacobi symbol\n\nFirst argument: upper value\nSecond argument: lower value,Jacobi2",
-    "Factorial,!,Primorial,#,Fibonacci,F1,Lucas,L1,Partition,P1",
-    "Sum,+,Subtraction,-,Multiplication,*,Division,/,,,Hex prefix,0x,10,A,11,B,12,C,13,D,14,E,15,F"
-  ];
-  parens = "Left parenthesis,(,Right parenthesis,),";
-}
 
 function getFuncNames()
 {
@@ -123,7 +92,7 @@ function comingFromWorker(e)
 function dowork(n)
 {
   let param;
-  let app = lang + n;
+  let app = n;
   let res = get("result");
   let coefAText = coefA.value.trim();
   let coefBText = coefB.value.trim();
@@ -138,39 +107,37 @@ function dowork(n)
   let zero = String.fromCharCode(0);
   if (coefAText === "")
   {
-    missing = (lang? "coeficiente <var>a</var>." : "coefficient <var>a</var>.");
+    missing = "<var>a</var>";
   }
   if (coefBText === "")
   {
-    missing = (lang? "coeficiente <var>b</var>." : "coefficient <var>b</var>.");
+    missing = "<var>b</var>";
   }
   if (coefCText === "")
   {
-    missing = (lang? "coeficiente <var>c</var>." : "coefficient <var>c</var>.");
+    missing = "<var>c</var>";
   }
   if (coefDText === "")
   {
-    missing = (lang? "coeficiente <var>d</var>." : "coefficient <var>d</var>.");
+    missing = "<var>d</var>";
   }
   if (coefEText === "")
   {
-    missing = (lang? "coeficiente <var>e</var>." : "coefficient <var>e</var>.");
+    missing = "<var>e</var>";
   }
   if (coefFText === "")
   {
-    missing = (lang? "coeficiente <var>f</var>." : "coefficient <var>f</var>.");
+    missing = "<var>f</var>";
   }
   if (missing !== "")
   {
-    res.innerHTML = (lang? "Por favor ingrese un número o expresión para el "+missing :
-                               "Please type a number or expression for the "+missing);
+    res.innerHTML = get("missing").textContent.replace("{missing}", missing);
     return;
   }
   get("solve").disabled = true;
   get("steps").disabled = true;
   get("stop").disabled = false;
-  res.innerHTML = (lang? "Resolviendo la ecuación cuadrática..." :
-                             "Solving the quadratic equation...");
+  res.innerHTML = get("solving").textContent;
   param = digitGroup + "," + app + "," + coefAText + zero + coefBText + zero + coefCText + zero +
                                          coefDText + zero + coefEText + zero + coefFText + zero;
   callWorker(param);
@@ -189,8 +156,10 @@ function moveNext(e, curr, next)
 
 function getCalcURLs()
 {
-  return ["quadW0000.js",
-          "quad.webmanifest", "cuad.webmanifest", "quad-icon-1x.png", "quad-icon-2x.png", "quad-icon-4x.png", "quad-icon-180px.png", "quad-icon-512px.png", "favicon.ico"];
+  return [addLangToFilename("quadW0000.js"),
+          "quad.webmanifest", "cuad.webmanifest", "quad-icon-1x.png",
+          "quad-icon-2x.png", "quad-icon-4x.png", "quad-icon-180px.png",
+          "quad-icon-512px.png", "favicon.ico"];
 }
 
 function getFormSendValue()
@@ -221,6 +190,18 @@ function popstate(event)
 
 function startUp()
 {
+  funcnames =
+  [
+    get("btn1").textContent,
+    get("btn2").textContent,
+    get("btn3").textContent,
+    get("btn4").textContent,
+    get("btn5").textContent,
+    get("btn6").textContent,
+    get("btn7").textContent,
+    get("btn8").textContent
+  ];
+  parens = get("parens").textContent;
   coefA = get("coefA");
   coefB = get("coefB");
   coefC = get("coefC");
@@ -250,9 +231,7 @@ function startUp()
     get("solve").disabled = false;
     get("steps").disabled = false;
     get("stop").disabled = true;
-    get("result").innerHTML = 
-      (lang? "<p>Cálculo detenido por el usuario.</p>" :
-                 "<p>Calculation stopped by user</p>");
+    get("result").innerHTML = get("stopped").textContent;
   };
   get("helpbtn").onclick = function()
   {

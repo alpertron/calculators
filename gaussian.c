@@ -19,10 +19,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "factor.h"
 #include "expression.h"
 #include "showtime.h"
+#include "copyStr.h"
 
 #define PAREN_STACK_SIZE 100
 
@@ -304,13 +306,14 @@ void gaussianText(char *valueText, int doFactorization)
   {
     CopyBigInt(&ReValue, &value[0]);
     CopyBigInt(&ImValue, &value[1]);
+    showText("<p>");
     if (doFactorization != '0')
     {
-      showText(lang ? "<p>Factores de " : "<p>Factors of ");
+      showText(LITERAL_GAUSSIAN1);   // Factors of
     }
     else
     {
-      showText(lang ? "<p>El valor es " : "<p>Value is equal to ");
+      showText(LITERAL_GAUSSIAN2);   // Value is equal to
     }
     showNumber(&ReValue, &ImValue);
     if (doFactorization != '0')
@@ -326,7 +329,7 @@ void gaussianText(char *valueText, int doFactorization)
     textError(&ptrOutput, rc);
   }
   copyStr(&ptrOutput, "<p>");
-  copyStr(&ptrOutput, lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH);
+  showCopyright(&ptrOutput);
   copyStr(&ptrOutput, "</p>");
 }
 
@@ -352,9 +355,6 @@ EXTERNALIZE void doWork(void)
     ptrData++;
     flags = flags*10 + *ptrData - '0';
   }
-#ifndef lang  
-  lang = ((flags & 1)? true: false);
-#endif
   hexadecimal = ((flags & 0x10)? true: false);
   ptrData += 2;          // Skip flags and comma.
   gaussianText(ptrData, (flags & 2)+'0');

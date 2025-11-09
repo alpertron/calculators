@@ -31,7 +31,6 @@
 /* global registerServiceWorker */
 /* global setStorage */
 /* global show */
-/** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const debugEcm = false;
 let app;
 let digits;
@@ -43,32 +42,6 @@ let currentInputBox;
 let verboseValue;
 let prettyValue;
 let CunninghamValue;
-if (lang)
-{
-  funcnames =
-  [
-    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Parte real,Re1,Parte imaginaria,Im1,Norma\n\nRe(z)^2 + Im(z)^2,Norm1,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random2",
-    ",,Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD2,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM2,¿El valor es primo?,IsPrime1",
-    "Primo siguiente,N1,Primo anterior,B1",
-    "Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv2,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow3",
-    "Factorial,!,,,Primorial,#,Fibonacci,F1,Lucas,L1,Partición,P1",
-    "Suma,+,Resta,-,Multiplicación,*,División,/,,,Prefijo hex,0x,10,A,11,B,12,C,13,D,14,E,15,F"
-  ];
-  parens = "Paréntesis izquierdo,(,Paréntesis derecho,),Unidad imaginaria,i,";
-}
-else
-{
-  funcnames =
-  [
-    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Real part,Re1,Imaginary part,Im1,Norm\n\nRe(z)^2 + Im(z)^2,Norm1,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random2",
-    ",,Greatest Common Divisor\n\nOne or more arguments can be used,GCD2,Least Common Multiple\n\nOne or more arguments can be used,LCM2,The value is prime?,IsPrime1",
-    "Next prime after,N1,Last prime before,B1",
-    "Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv2,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow3",
-    "Factorial,!,,,Primorial,#,Fibonacci,F1,Lucas,L1,Partition,P1",
-    "Sum,+,Subtraction,-,Multiplication,*,Division,/,,,Hex prefix,0x,10,A,11,B,12,C,13,D,14,E,15,F"
-  ];
-  parens = "Left parenthesis,(,Right parenthesis,),Imaginary unit,i,";
-}
 
 function getFuncNames()
 {
@@ -142,32 +115,33 @@ function comingFromWorker(e)
 
 function dowork(n)
 {
-  app = lang + n + (config.charAt(4) === "1"? 16: 0);
+  app = n + (config.charAt(4) === "1"? 16: 0);
   let res = get("result");
   let valueText = get("value").value;
   let helphelp = get("helphelp");
   hide("help");
   show("helphelp");
-  helphelp.innerHTML = (lang? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización.</p>":
-                              "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization.</p>");
+  const version = (typeof(WebAssembly) === "undefined"? "nowebassy": "webassy");
+  helphelp.innerHTML = "<p>" + get("firstLine").innerHTML + " " +
+                       get(version).innerHTML + "</p>";
   show("result");
   if (valueText === "")
   {
-    res.innerHTML = (lang? "Por favor ingrese una expresión." :
-                           "Please type an expression.");
+    res.innerHTML = get("missing").innerHTML;
     return;
   }
   styleButtons("none", "inline");  // Enable "more" and "stop" buttons
-  res.innerHTML = (lang? "Factorizando la expresión..." :
-                         "Factoring expression...");
+  res.innerHTML = get("factoring").innerHTML;
   let param = digits + "," + app + "," + valueText + String.fromCharCode(0);
   callWorker(param);
 }
 
 function getCalcURLs()
 {
-  return ["gaussianW0000.js",
-          "gaussian.webmanifest", "gausiano.webmanifest", "gaussian-icon-1x.png", "gaussian-icon-2x.png", "gaussian-icon-4x.png", "gaussian-icon-180px.png", "gaussian-icon-512px.png", "favicon.ico"];
+  return [addLangToFilename("gaussianW0000.js"),
+          "gaussian.webmanifest", "gausiano.webmanifest", "gaussian-icon-1x.png",
+          "gaussian-icon-2x.png", "gaussian-icon-4x.png", "gaussian-icon-180px.png",
+          "gaussian-icon-512px.png", "favicon.ico"];
 }
 
 function getFormSendValue()
@@ -195,6 +169,16 @@ function popstate(event)
 
 function startUp()
 {
+  funcnames =
+  [
+    get("btn1").textContent,
+    get("btn2").textContent,
+    get("btn3").textContent,
+    get("btn4").textContent,
+    get("btn5").textContent,
+    get("btn6").textContent
+  ];
+  parens = get("parens").textContent;
   get("btnSentOK").onclick = function()
   {
     history.back();
@@ -220,9 +204,7 @@ function startUp()
   {
     endWorker();
     styleButtons("inline", "none");  // Enable eval and factor
-    get("result").innerHTML =
-      (lang? "<p>Cálculo detenido por el usuario.</p>" :
-             "<p>Calculation stopped by user</p>");
+    get("result").innerHTML = get("stopped").innerHTML;
     get("status").innerHTML = "";
   };
   get("more").onclick = function()

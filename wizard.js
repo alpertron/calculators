@@ -18,7 +18,6 @@
 */
 /* global get */
 /* global hide */
-/* global lang */
 /* global oneexpr */
 /* global saveConfig */
 /* global show */
@@ -38,10 +37,9 @@ function clearWizardTextInput()
 
 function selectLoop()
 {   
-  get("next").value = (lang ? "Siguiente": "Next");
-  get("wzddesc").innerHTML = (lang ? "Paso 1 de 5: Valor inicial de x": "Step 1 of 5: Initial value of x");
-  get("wzdexam").innerHTML = (lang? "No usar variables <var>x</var> o <var>c</var>. Ejemplo para números de Smith menores que 10000: <code>1</code>": 
-                                       "Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>");
+  get("next").value = get("next").innerHTML;
+  get("wzddesc").innerHTML = get("wzddesc1").innerHTML;
+  get("wzdexam").innerHTML = get("novars").innerHTML;
   wizardStep = 1;
 }
   
@@ -52,33 +50,32 @@ function wizardNext()
   let wzdExamText = get("wzdexam");
   let wzdInput = get("wzdinput");
   let valueInput = value;
-  let textExample = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>":
-                           "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>");
+  let textExample = get("varsreq").innerHTML;
   nextBtn.disabled = true;
   switch (++wizardStep)
   {
     case 2:
       wizardTextInput += "x="+wzdInput.value;
       hide("wzdupper");
-      wzdDescText.innerHTML = (lang? "Paso 2 de 5: Valor de x para la nueva iteración": "Step 2 of 5: Value of x for new iteration");
-      wzdExamText.innerHTML = textExample + "x+1</code>";
+      wzdDescText.innerHTML = get("wzddesc2").innerHTML;
+      wzdExamText.innerHTML = textExample + "<code>x+1</code>";
       break;
     case 3:
       wizardTextInput += ";x="+wzdInput.value;
-      wzdDescText.innerHTML = (lang? "Paso 3 de 5: Condición para finalizar el ciclo": "Step 3 of 5: End loop condition");
-      wzdExamText.innerHTML = textExample + "x&lt;10000</code>";
+      wzdDescText.innerHTML = get("wzddesc3").innerHTML;
+      wzdExamText.innerHTML = textExample + "<code>x&lt;10000</code>";
       break;
     case 4:
       wizardTextInput += ";"+wzdInput.value;
-      wzdDescText.innerHTML = (lang? "Paso 4 de 5: Expresión a factorizar": "Step 4 of 5: Expression to factor");
-      wzdExamText.innerHTML = textExample + "x</code>";
+      wzdDescText.innerHTML = get("wzddesc4").innerHTML;
+      wzdExamText.innerHTML = textExample + "<code>x</code>";
       break;
     case 5:
       wizardTextInput += ";"+wzdInput.value;
-      nextBtn.value = (lang? "Hecho": "Done");
+      nextBtn.value = get("done").innerHTML;
       nextBtn.disabled = false;
-      wzdDescText.innerHTML = (lang? "Paso 5 de 5: Condición para procesar la expresión": "Step 5 of 5: Process expression condition");
-      wzdExamText.innerHTML = textExample + "sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>";
+      wzdDescText.innerHTML = get("wzddesc5").innerHTML;
+      wzdExamText.innerHTML = textExample + "<code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>";
       break;
     case 6:
       if (wzdInput.value !== "")

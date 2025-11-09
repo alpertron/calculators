@@ -19,4 +19,7 @@
 #ifndef _COPYSTR_H
 #define _COPYSTR_H
 void copyStr(char** pptrString, const char* stringToCopy);
+void formatString(char** pptrString, const char* format, ...);
+void showCopyright(char **pptrOutput);
+
 #endif

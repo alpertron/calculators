@@ -47,11 +47,6 @@ function comingFromPolfact(value)
   }
 }
 
-function showVersion(lang)  
-{
-  return "";
-}
-
 function downloadResult()
 {
   hide("savefile");

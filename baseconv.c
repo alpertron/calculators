@@ -21,8 +21,10 @@
 #include <math.h>
 #include <stdint.h>
 #include <assert.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
+#include "copyStr.h"
 
 #define DIGITS_PER_LIMB 9
 #define MAX_LIMB_CONVERSION 1000000000
@@ -126,7 +128,6 @@ void int2dec(char **pOutput, int nbr)
   *pOutput = ptrOutput;
 }
 
-#ifdef __EMSCRIPTEN__
 void long2dec(char **pOutput, uint64_t nbr)
 {
   char *ptrOutput = *pOutput;
@@ -155,7 +156,6 @@ void long2dec(char **pOutput, uint64_t nbr)
   }
   *pOutput = ptrOutput;
 }
-#endif
 
 #ifdef __EMSCRIPTEN__
 void int2hex(char **pOutput, int nbr)
@@ -291,10 +291,7 @@ void Bin2Hex(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
   }
   if ((digits > 30) && showDigitsText)
   {
-    *ptrDecimal = '(';
-    ptrDecimal++;
-    int2dec(&ptrDecimal, digits);
-    copyStr(&ptrDecimal, (lang?" dígitos)": " digits)"));
+    formatString(&ptrDecimal, LITERAL_DIGITS, digits);
   }
   copyStr(&ptrDecimal, "</span>");
   *ppDecimal = ptrDecimal;
@@ -443,10 +440,7 @@ void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
     {
       *ptrDest = ' ';
       ptrDest++;
-      *ptrDest = '(';
-      ptrDest++;
-      int2dec(&ptrDest, digits);
-      copyStr(&ptrDest, (lang ? " dígitos)" : " digits)"));
+      formatString(&ptrDest, LITERAL_DIGITS, digits);
     }
   }
   *ptrDest = '\0';             // Add terminator.

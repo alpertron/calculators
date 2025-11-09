@@ -19,11 +19,13 @@
 #include <string.h>
 #include <stdint.h>
 #include <math.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
 #include "commonstruc.h"
 #include "skiptest.h"
+#include "copyStr.h"
 
 #define MAX_ALGEBRAIC_EXPON 18
 int yieldFreq;
@@ -402,8 +404,9 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
   {   // Enter here on numbers of more than 40 digits if the user selected
       // get Cunningham factors from server.
 #ifdef __EMSCRIPTEN__
-    databack(lang ? "4<p>Obteniendo los factores primitivos conocidos del servidor Web.</p>":
-                    "4<p>Requesting known primitive factors from Web server.</p>");
+    ptrUrl = url;
+    formatString(&ptrUrl, "4<p>$1s</p>", LITERAL_CUNNINGHAM1);
+    databack(url);
     // Format URL.
     ptrUrl = url;
     copyStr(&ptrUrl, "factors.pl?base=");
@@ -499,12 +502,9 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
   {
     oldTimeElapsed = elapsedTime;
     ptrStatus = status;
-    copyStr(&ptrStatus, lang ? "4<p>Transcurrió " : "4<p>Time elapsed: ");
+    formatString(&ptrStatus, "4<p>$1s", LITERAL_PROCESS_EXP1);  // Time elapsed:
     GetDHMS(&ptrStatus, elapsedTime / 10);
-    copyStr(&ptrStatus, lang ? "&nbsp;&nbsp;&nbsp;Exponente potencia +/- 1: " :
-      "&nbsp;&nbsp;&nbsp;Power +/- 1 exponent: ");
-    int2dec(&ptrStatus, Exponent);
-    *ptrStatus = 0;                       // Add string terminator.
+    formatString(&ptrStatus, LITERAL_PROCESS_EXP2, Exponent);   // Exponent power +/- 1.
     databack(status);
 }
 #endif
@@ -1071,21 +1071,14 @@ char *ShowFactoredPart(const BigInteger *pNbr, const struct sFactors* pstFactors
     copyStr(&ptrLowerText, "</p>");
     NumberLength = NumberLengthBak;
   }
+  copyStr(&ptrLowerText, "<p>");
   if (StepECM == 3)
-  {
-    copyStr(&ptrLowerText, lang ? "<p>Comprobando si es primo " : "<p>Testing primality of ");
+  {    // Testing primality of 
+    formatString(&ptrLowerText, LITERAL_SHOW_FACTORED_PART1, pNbr);
   }
   else
-  {
-    copyStr(&ptrLowerText, lang ? "<p>Factorizando " : "<p>Factoring ");
-  }
-  if (hexadecimal)
-  {
-    Bin2Hex(&ptrLowerText, pNbr->limbs, pNbr->nbrLimbs, groupLen);
-  }
-  else
-  {
-    Bin2Dec(&ptrLowerText, pNbr->limbs, pNbr->nbrLimbs, groupLen);
+  {    // Factoring
+    formatString(&ptrLowerText, LITERAL_SHOW_FACTORED_PART2, pNbr);
   }
   copyStr(&ptrLowerText, "</p>");
   return ptrLowerText;
@@ -1221,7 +1214,7 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
     (pstFactor->multiplicity == 1) &&
     ((*pstFactor->ptrFactor > 1) || (*(pstFactor->ptrFactor + 1) > 1)))
   {    // Do not show zero or one as prime.
-    copyStr(&ptrOutput, lang ? " es primo" : " is prime");
+    copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION1);
     *pptrOutput = ptrOutput;
     return;
   }
@@ -1282,78 +1275,79 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
       copyStr(&ptrOutput, " <span class=\"verbose\">(");
       if (compositeType == TYP_AURIF)
       {
-        copyStr(&ptrOutput, "Aurifeuille");
+        copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION2);
         if (!isPrime)
         {
-          copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
+          copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION4);  // Composite.
         }
       }
       else if (compositeType == TYP_TABLE)
       {
-        copyStr(&ptrOutput, lang ? "Tabla" : "Table");
+        copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION3);
         if (!isPrime)
         {
-          copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
+          copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION4);  // Composite.
         }
       }
       else if (compositeType == TYP_SIQS)
       {
-        copyStr(&ptrOutput, lang ? "<abbr title=\"Criba cuadrática autoinicializada\">SIQS</abbr>" :
-          "<abbr title=\"Self-Initializing Quadratic Sieve\">SIQS</abbr>");
+        formatString(&ptrOutput, "<abbr title=\"$1s\">$2s</abbr>",
+          LITERAL_OUTPUT_FACTORIZATION5, LITERAL_OUTPUT_FACTORIZATION13);
         if (!isPrime)
         {
-          copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
+          copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION4); // Composite.
         }
       }
       else if (compositeType == TYP_LEHMAN)
       {
-        copyStr(&ptrOutput, "Lehman");
+        copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION6);
         if (!isPrime)
         {
-          copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
+          copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION4); // Composite.
         }
       }
       else if (compositeType == TYP_RABIN)
       {
-        copyStr(&ptrOutput, lang ? "Miller y Rabin" : "Miller &amp; Rabin");
+        copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION7);
         if (!isPrime)
         {
-          copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
+          copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION4); // Composite.
         }
       }
       else if (compositeType == TYP_DIVISION)
       {
-        copyStr(&ptrOutput, lang ? "División" : "Division");
+        copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION8);
         if (!isPrime)
         {
-          copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
+          copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION4); // Composite.
         }
       }
       else if (compositeType == TYP_ALGEBR)
       {
-        copyStr(&ptrOutput, lang ? "Algebraico" : "Algebraic");
+        copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION9);
         if (!isPrime)
         {
-          copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
+          copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION4); // Composite.
         }
       }
       else if (type > TYP_EC)
       {
         if (isPrime)
         {
-          copyStr(&ptrOutput, lang ? "<abbr title=\"Método de curvas elípticas\">ECM</abbr>, curva " :
-            "<abbr title=\"Elliptic curve method\">ECM</abbr>, curve ");
-          int2dec(&ptrOutput, type - TYP_EC);
-          *ptrOutput = 0;     // Add string terminator.
+          char temp[100];
+          char* ptrTemp = temp;
+          formatString(&ptrTemp, "<abbr title=\"$1s\">$2s</abbr>",
+            LITERAL_OUTPUT_FACTORIZATION10, LITERAL_OUTPUT_FACTORIZATION11);
+          formatString(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION12, temp, type - TYP_EC);
         }
         else
         {
-          copyStr(&ptrOutput, lang ? "Compuesto" : "Composite");
+          copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION14);
         }
       }
       else if (!isPrime)
       {
-        copyStr(&ptrOutput, lang ? "Compuesto" : "Composite");
+        copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION14);
       }
       else
       {            // Nothing to do.
@@ -1363,7 +1357,7 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
     else if (!isPrime)
     {
       copyStr(&ptrOutput, "<span class=\"terse\"> (");
-      copyStr(&ptrOutput, lang ? "Compuesto" : "Composite");
+      copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION14);
       copyStr(&ptrOutput, ")</span>");
     }
     else
@@ -1371,7 +1365,7 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
     }
     if (type < 0)
     {
-      copyStr(&ptrOutput, " (Unknown)");
+      copyStr(&ptrOutput, LITERAL_OUTPUT_FACTORIZATION15);
     }
 #endif
     i++;
@@ -1578,12 +1572,22 @@ static void insertBigFactor(struct sFactors *pstFactors, const BigInteger *divis
     }
     // At this moment both GCD and known factor / GCD are new known factors. Replace the known factor by
     // known factor / GCD and generate a new known factor entry.
-    NumberLength = Temp3.nbrLimbs;
-    BigInteger2IntArray(ptrNewFactorLimbs, &Temp3);      // Append new known factor.
-    (void)BigIntDivide(&Temp2, &Temp3, &Temp4);          // Divide by this factor.
+    pstNewFactor->multiplicity = pstCurFactor->multiplicity;
+    int expon = PowerCheck(&Temp3, &Temp4);
+    if (expon > 1)
+    {
+      pstCurFactor->multiplicity *= expon;
+    }
     NumberLength = Temp4.nbrLimbs;
     BigInteger2IntArray(ptrFactor, &Temp4);              // Overwrite old known factor.
-    pstNewFactor->multiplicity = pstCurFactor->multiplicity;
+    (void)BigIntDivide(&Temp2, &Temp3, &Temp4);          // Divide by this factor.
+    expon = PowerCheck(&Temp4, &Temp3);
+    if (expon > 1)
+    {
+      pstNewFactor->multiplicity *= expon;
+    }
+    NumberLength = Temp3.nbrLimbs;
+    BigInteger2IntArray(ptrNewFactorLimbs, &Temp3);      
     pstNewFactor->ptrFactor = ptrNewFactorLimbs;
     pstNewFactor->upperBound = pstCurFactor->upperBound;
     if (typeFactor < 50000000)
@@ -1629,28 +1633,22 @@ void showECMStatus(void)
   }
   oldTimeElapsed = elapsedTime;
   ptrStatus = status;
-  copyStr(&ptrStatus, lang ? "4<p>Transcurrió " : "4<p>Time elapsed: ");
+  formatString(&ptrStatus, "4<p>$1s ", LITERAL_PROCESS_EXP1);  // Time elapsed:
   GetDHMS(&ptrStatus, elapsedTime / 10);
   copyStr(&ptrStatus, "&nbsp;&nbsp;&nbsp;");  // Separate with three spaces.
+  int percentage;
   switch (StepECM)
   {
   case 1:
-    copyStr(&ptrStatus, lang ? "Paso 1: " : "Step 1: ");
-    int2dec(&ptrStatus, indexPrimes / (nbrPrimes / 100));
-    *ptrStatus = '%';
-    ptrStatus++;
+    percentage = indexPrimes / (nbrPrimes / 100);
+    formatString(&ptrStatus, LITERAL_SHOW_ECM_STATUS1, percentage);   // Step 1: xx%
     break;
   case 2:
-    copyStr(&ptrStatus, lang ? "Paso 2: " : "Step 2: ");
-    int2dec(&ptrStatus, (maxIndexM == 0)? 0 : (indexM / (maxIndexM / 100)));
-    *ptrStatus = '%';
-    ptrStatus++;
+    percentage = (maxIndexM == 0) ? 0 : (indexM / (maxIndexM / 100));
+    formatString(&ptrStatus, LITERAL_SHOW_ECM_STATUS2, percentage);   // Step 2: xx %
     break;
   case 3:
-    copyStr(&ptrStatus, lang ? "Progreso: " : "Progress: ");
-    int2dec(&ptrStatus, percentageBPSW);
-    *ptrStatus = '%';
-    ptrStatus++;
+    formatString(&ptrStatus, LITERAL_SHOW_ECM_STATUS3, percentageBPSW); // Progress: xx%
     break;
   default:
     break;
@@ -1998,8 +1996,7 @@ static enum eTrialFactorRetCode performTrialDivision(struct sFactors* pstFactors
     CopyBigInt(&prime, &prime);
     return CONTINUE_FACTORIZATION;   // Do not perform trial factorization.
   }
-  copyStr(&ptrText, lang ? "<p>División por primos menores que 100000.</p>" :
-    "<p>Trial division by primes less than 100000.</p>");
+  formatString(&ptrText, LITERAL_PERFORM_TRIAL_DIV1);
   ShowLowerText();
 #endif
   while ((upperBound < 100000) && (nbrLimbs > 1))
@@ -2234,8 +2231,10 @@ void factorExt(const BigInteger *toFactor, const int *number,
     if (toFactor->nbrLimbs > 200)
     {
 #ifdef __EMSCRIPTEN__
-      databack(lang ? "3<p>Verificando si el número es una potencia perfecta más o menos 1.</p>" :
-        "3<p>Testing whether the number is a perfect power plus or minus one or not.</p>");
+      char temp[100];
+      char* ptrTemp = temp;
+      formatString(&ptrTemp, "3<p>$1s</p>", LITERAL_FACTOREXT1);
+      databack(temp);
 #endif
     }
     PowerPM1Check(pstFactors, toFactor);
@@ -2258,8 +2257,10 @@ void factorExt(const BigInteger *toFactor, const int *number,
 #ifdef FACTORIZATION_APP
       StepECM = 0;
 #else
-      databack(lang ? "3<p>Verificando si el número es potencia perfecta.</p>" :
-        "3<p>Testing whether the number is perfect power or not.</p>");
+      char temp[100];
+      char* ptrTemp = temp;
+      formatString(&ptrTemp, "3<p>$1s</p>", LITERAL_FACTOREXT2);
+      databack(temp);
 #endif
       CopyBigInt(&power, &prime);
       int expon = PowerCheck(&power, &prime);

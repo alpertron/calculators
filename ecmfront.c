@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
@@ -27,6 +28,7 @@
 #include "output.h"
 #include "commonstruc.h"
 #include "fromBlockly.h"
+#include "copyStr.h"
 
 #ifdef FACTORIZATION_APP
 #ifdef __EMSCRIPTEN__
@@ -120,11 +122,11 @@ void batchEcmCallback(char **pptrOutput, int type)
     }
     if (BpswPrimalityTest(&tofactor, NULL) == 0)
     {    // Argument is a probable prime.
-      copyStr(pptrOutput, lang ? " es primo" : " is prime");
+      copyStr(pptrOutput, LITERAL_ECM_BATCH_CBACK1);
     }
     else
     {
-      copyStr(pptrOutput, lang ? " no es primo" : " is not prime");
+      copyStr(pptrOutput, LITERAL_ECM_BATCH_CBACK2);
     }
   }
   else
@@ -224,15 +226,7 @@ static void GetNumberOfDivisors(char **pptrOutput)
     pstFactor++;
   }
   beginLine(&ptrOutput);
-  copyStr(&ptrOutput, lang ? "Cantidad de divisores: " : "Number of divisors: ");
-  if (hexadecimal)
-  {
-    BigInteger2Hex(&ptrOutput, &result, groupLen);
-  }
-  else
-  {
-    BigInteger2Dec(&ptrOutput, &result, groupLen);
-  }
+  formatString(&ptrOutput, LITERAL_NBR_DIVISORS, &result);
   finishLine(&ptrOutput);
   *pptrOutput = ptrOutput;
 }
@@ -242,15 +236,7 @@ static void GetSumOfDivisors(char **pptrOutput)
   char *ptrOutput = *pptrOutput;
   SumOfDivisors(&result);
   beginLine(&ptrOutput);
-  copyStr(&ptrOutput, lang ? "Suma de divisores: " : "Sum of divisors: ");
-  if (hexadecimal)
-  {
-    BigInteger2Hex(&ptrOutput, &result, groupLen);
-  }
-  else
-  {
-    BigInteger2Dec(&ptrOutput, &result, groupLen);
-  }
+  formatString(&ptrOutput, LITERAL_SUM_DIVISORS, &result);
   finishLine(&ptrOutput);
   *pptrOutput = ptrOutput;
 }
@@ -260,15 +246,7 @@ static void GetEulerTotient(char **pptrOutput)
   char *ptrOutput = *pptrOutput;
   Totient(&result);
   beginLine(&ptrOutput);
-  copyStr(&ptrOutput, lang ? "Phi de Euler: " : "Euler's totient: ");
-  if (hexadecimal)
-  {
-    BigInteger2Hex(&ptrOutput, &result, groupLen);
-  }
-  else
-  {
-    BigInteger2Dec(&ptrOutput, &result, groupLen);
-  }
+  formatString(&ptrOutput, LITERAL_PHI_EULER, &result);
   finishLine(&ptrOutput);
   *pptrOutput = ptrOutput;
 }
@@ -297,14 +275,7 @@ static void GetMobius(char **pptrOutput)
     }
   }
   beginLine(&ptrOutput);
-  copyStr(&ptrOutput, "Möbius: ");
-  if (mobius < 0)
-  {
-    mobius = -mobius;
-    *ptrOutput = '-';
-    ptrOutput++;
-  }
-  int2dec(&ptrOutput, mobius);
+  formatString(&ptrOutput, LITERAL_MOBIUS, mobius);
   finishLine(&ptrOutput);
   *pptrOutput = ptrOutput;
 }
@@ -354,8 +325,7 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
       StepECM = 3;   // Show progress (in percentage) of sum of squares.
       ptrText = ShowFactoredPart(&tofactor, astFactorsMod);
       beginLine(&ptrText);
-      copyStr(&ptrText, lang ? "<p>Hallando suma de cuadrados.</p>" :
-        "<p>Searching for sum of squares.</p>");
+      formatString(&ptrText, "<p>$1s</p>", LITERAL_ECMFRONT1);
       ShowLowerText();
       sumSquaresModMult = lModularMult;
 #endif
@@ -368,7 +338,7 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
     }
 #ifdef __EMSCRIPTEN__
     copyStr(&ptrOutput, "<div id=\"divisors\"><p><button type=\"button\" id=\"showdiv\">");
-    copyStr(&ptrOutput, lang? "Mostrar divisores": "Show divisors");
+    copyStr(&ptrOutput, LITERAL_ECMFRONT2);
     copyStr(&ptrOutput, "</button></p></div>");
 #endif
     beginLine(&ptrOutput);
@@ -378,37 +348,32 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
     if (lModularMult > 0)
     {
       beginLine(&ptrOutput);
-      copyStr(&ptrOutput, lang ? "Multiplicaciones modulares:" :
-        "Modular multiplications:");
+      copyStr(&ptrOutput, LITERAL_ECMFRONT3); // Modular multiplications:
       finishLine(&ptrOutput);
       startList(&ptrOutput);
-      if ((lModularMult - primeModMult - SIQSModMult - sumSquaresModMult) > 0)
+      int64_t ecmMultiplications = lModularMult - primeModMult - SIQSModMult - sumSquaresModMult;
+      if (ecmMultiplications > 0)
       {
         startListLine(&ptrOutput);
-        copyStr(&ptrOutput, "ECM: ");
-        long2dec(&ptrOutput, lModularMult - primeModMult - SIQSModMult - sumSquaresModMult);
+        formatString(&ptrOutput, LITERAL_ECMFRONT4, ecmMultiplications);
         endListLine(&ptrOutput);
       }
       if (primeModMult > 0)
       {
         startListLine(&ptrOutput);
-        copyStr(&ptrOutput, lang ? "Verificación de números primos probables: " :
-          "Probable prime checking: ");
-        long2dec(&ptrOutput, primeModMult);
+        formatString(&ptrOutput, LITERAL_ECMFRONT5, primeModMult);
         endListLine(&ptrOutput);
       }
       if (SIQSModMult > 0)
       {
         startListLine(&ptrOutput);
-        copyStr(&ptrOutput, "SIQS: ");
-        long2dec(&ptrOutput, SIQSModMult);
+        formatString(&ptrOutput, LITERAL_ECMFRONT6, SIQSModMult);
         endListLine(&ptrOutput);
       }
       if (sumSquaresModMult > 0)
       {
         startListLine(&ptrOutput);
-        copyStr(&ptrOutput, lang ? "Suma de cuadrados: " : "Sum of squares: ");
-        long2dec(&ptrOutput, sumSquaresModMult);
+        formatString(&ptrOutput, LITERAL_ECMFRONT7, sumSquaresModMult);
         endListLine(&ptrOutput);
       }
       endList(&ptrOutput);
@@ -417,94 +382,53 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
     {
       uint64_t quotient;
       beginLine(&ptrOutput);
-      copyStr(&ptrOutput, "SIQS:");
+      copyStr(&ptrOutput, LITERAL_ECMFRONT8);  // SIQS:
       startList(&ptrOutput);
       startListLine(&ptrOutput);
-      int2dec(&ptrOutput, polynomialsSieved);
-      copyStr(&ptrOutput, lang ? " polinomios utilizados" : " polynomials sieved");
+      formatString(&ptrOutput, LITERAL_ECMFRONT9, polynomialsSieved);
       endListLine(&ptrOutput);
       startListLine(&ptrOutput);
-      int2dec(&ptrOutput, trialDivisions);
-      copyStr(&ptrOutput, lang ? " conjuntos de divisiones de prueba" : " sets of trial divisions");
+      formatString(&ptrOutput, LITERAL_ECMFRONT10, trialDivisions);
       endListLine(&ptrOutput);
       startListLine(&ptrOutput);
-      int2dec(&ptrOutput, smoothsFound);
-      copyStr(&ptrOutput, lang ? " congruencias completas (1 de cada " :
-        " smooth congruences found (1 out of every ");
       quotient = ValuesSieved / (uint64_t)smoothsFound;
-      int2dec(&ptrOutput, (int)quotient);
-      copyStr(&ptrOutput, lang ? " valores)</li><li>" : " values)</li><li>");
-      int2dec(&ptrOutput, totalPartials);
-      copyStr(&ptrOutput, lang ? " congruencias parciales (1 de cada " :
-        " partial congruences found (1 out of every ");
-      quotient = ValuesSieved / (uint64_t)totalPartials;
-      int2dec(&ptrOutput, (int)quotient);
-      copyStr(&ptrOutput, lang ? " valores)" : " values)");
+      formatString(&ptrOutput, LITERAL_ECMFRONT11, smoothsFound, (int)quotient);
       endListLine(&ptrOutput);
       startListLine(&ptrOutput);
-      int2dec(&ptrOutput, partialsFound);
-      copyStr(&ptrOutput, lang ? " congruencias parciales útiles</li><li>Tamaño de la matriz binaria: " :
-        " useful partial congruences</li><li>Size of binary matrix: ");
-      int2dec(&ptrOutput, matrixRows);
-      copyStr(&ptrOutput, " &times; ");
-      int2dec(&ptrOutput, matrixCols);
+      quotient = ValuesSieved / (uint64_t)totalPartials;
+      formatString(&ptrOutput, LITERAL_ECMFRONT12, totalPartials, (int)quotient);
+      endListLine(&ptrOutput);
+      startListLine(&ptrOutput);
+      formatString(&ptrOutput, LITERAL_ECMFRONT13, partialsFound);
+      endListLine(&ptrOutput);
+      startListLine(&ptrOutput);
+      formatString(&ptrOutput, LITERAL_ECMFRONT14, matrixRows, matrixCols);
       endListLine(&ptrOutput);
       endList(&ptrOutput);
     }
     if ((nbrSIQS > 0) || (nbrECM > 0) || (nbrPrimalityTests > 0))
     {
       beginLine(&ptrOutput);
-      copyStr(&ptrOutput, lang ? "Tiempos:" : "Timings:");
+      copyStr(&ptrOutput, LITERAL_ECMFRONT15);  // Timings:
       startList(&ptrOutput);
       if (nbrPrimalityTests > 0)
       {
         startListLine(&ptrOutput);
-        copyStr(&ptrOutput, lang ? "Test de primo probable de " : "Probable prime test of ");
-        int2dec(&ptrOutput, nbrPrimalityTests);
-        copyStr(&ptrOutput, lang ? " número" : " number");
-        if (nbrPrimalityTests != 1)
-        {
-          *ptrOutput = 's';
-          ptrOutput++;
-        }
-        *ptrOutput = ':';
-        ptrOutput++;
-        *ptrOutput = ' ';
-        ptrOutput++;
+        formatString(&ptrOutput, LITERAL_ECMFRONT16, nbrPrimalityTests);
         GetDHMSt(&ptrOutput, timePrimalityTests);
         endListLine(&ptrOutput);
       }
       if (nbrECM > 0)
       {
         startListLine(&ptrOutput);
-        copyStr(&ptrOutput, lang ? "Factorización " : "Factoring ");
-        int2dec(&ptrOutput, nbrECM);
-        copyStr(&ptrOutput, lang ? " número" : " number");
-        if (nbrECM != 1)
-        {
-          *ptrOutput = 's';
-          ptrOutput++;
-        }
-        copyStr(&ptrOutput, lang ? " mediante ECM" : " using ECM:");
-        *ptrOutput = ' ';
-        ptrOutput++;
+        formatString(&ptrOutput, LITERAL_ECMFRONT17, nbrECM);
         GetDHMSt(&ptrOutput, timeECM - timeSIQS);
         endListLine(&ptrOutput);
       }
       if (nbrSIQS > 0)
       {
         startListLine(&ptrOutput);
-        copyStr(&ptrOutput, lang ? "Factorización " : "Factoring ");
-        int2dec(&ptrOutput, nbrSIQS);
-        copyStr(&ptrOutput, lang ? " número" : " number");
-        if (nbrSIQS != 1)
-        {
-          *ptrOutput = 's';
-          ptrOutput++;
-        }
-        copyStr(&ptrOutput, lang ? " mediante SIQS" : " using SIQS:");
-        *ptrOutput = ' ';
-        ptrOutput++;
+        formatString(&ptrOutput, LITERAL_ECMFRONT18, nbrSIQS);
         GetDHMSt(&ptrOutput, timeSIQS);
         endListLine(&ptrOutput);
       }
@@ -514,7 +438,7 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
 #endif
   }
   beginLine(&ptrOutput);
-  copyStr(&ptrOutput, lang ? COPYRIGHT_SPANISH : COPYRIGHT_ENGLISH );
+  showCopyright(&ptrOutput);
   finishLine(&ptrOutput);
   // Initialize all exponents to zero.
   (void)memset(common.k.divisors.currentExp, 0, sizeof(common.k.divisors.currentExp));
@@ -588,14 +512,12 @@ void showDivisors(void)
   char *ptrOutput = output;
   *ptrOutput = 'D';      // Indicate this output is the list of divisors.
   ptrOutput++;
-  copyStr(&ptrOutput, lang ? "<p>Lista de divisores:</p><ul>" :
-    "<p>List of divisors:</p><ul>");
+  formatString(&ptrOutput, "<p>$1s</p><ul>", LITERAL_SHOW_DIVISORS1); // List of divisors:
   if ((tofactor.nbrLimbs == 1) && (tofactor.limbs[0].x <= 1))
   {
     if (tofactor.limbs[0].x == 0)
-    {
-      copyStr(&ptrOutput, lang? "<li>Cualquier número natural</li></ul>":
-        "<li>Any natural number</li></ul>");
+    {    // Any natural number is a divisor of zero.
+      formatString(&ptrOutput, "<li>$1s</li></ul>", LITERAL_SHOW_DIVISORS2); 
     }
     else
     {
@@ -707,7 +629,7 @@ void showDivisors(void)
     }
     if (*ptrIntArray < 0)
     {
-      copyStr(&ptrOutput, lang ? " (primo)" : " (prime)");
+      copyStr(&ptrOutput, LITERAL_SHOW_DIVISORS3);
     }
     copyStr(&ptrOutput, "</li>");
   }
@@ -716,7 +638,7 @@ void showDivisors(void)
   {
 #ifdef __EMSCRIPTEN__
     copyStr(&ptrOutput, "<p><button type=\"button\" id=\"showdiv\">");
-    copyStr(&ptrOutput, lang ? "Mostrar más divisores" : "Show more divisors");
+    copyStr(&ptrOutput, LITERAL_SHOW_DIVISORS4);
     copyStr(&ptrOutput, "</button></p>");
 #endif
     output[0] = 'E';    // Indicate button present.
@@ -775,9 +697,6 @@ EXTERNALIZE void doWork(void)
     ptrData++;
     flags = -*ptrData;
   }
-#ifndef lang  
-  lang = ((flags & 1)? true: false);
-#endif
   useBlockly = false;
   doShowPrime = false;
   if ((flags & (-2)) == '8')

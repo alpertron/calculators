@@ -19,10 +19,12 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "factor.h"
 #include "expression.h"
 #include "skiptest.h"
+#include "copyStr.h"
 
 enum eOper
 {
@@ -1973,8 +1975,8 @@ static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
     char* ptrText;
     StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
     ptrText = ShowFactoredPart(pValue, pstFactors);
-    (void)strcpy(ptrText, lang ? "<p>Paso 1 del algoritmo BPSW de primos probables: Miller-Rabin fuerte con base 2.</p>" :
-      "<p>Step 1 of BPSW probable prime algorithm: Strong Miller-Rabin with base 2.</p>");
+    // Step 1 of BPSW probable prime algorithm: Strong Miller-Rabin with base 2.
+    formatString(&ptrText, "<p>$1s</p>", LITERAL_STEP1_BPSW);
     ShowLowerText();
     if (nbrLimbs > 30)
     {
@@ -1998,8 +2000,11 @@ static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
 #else
   if (nbrLimbs > 5)
   {   // Show text only if testing primality time is noticeable.
-    databack(lang ? "3<p>Paso 1 del algoritmo BPSW de primos probables: Miller-Rabin fuerte con base 2.</p>" :
-      "3<p>Step 1 of BPSW probable prime algorithm: Strong Miller-Rabin with base 2.</p>");
+    char text[200];
+    char* ptrText = text;
+    // Step 1 of BPSW probable prime algorithm: Strong Miller-Rabin with base 2.
+    formatString(&ptrText, "3<p>$1s</p>", LITERAL_STEP1_BPSW);
+    databack(text);
   }
 #endif
 #endif
@@ -2143,23 +2148,9 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int signD)
     *ptrText = '3';
     ptrText++;
 #endif
-    copyStr(&ptrText, lang ? "<p>Paso 2 del algoritmo BPSW de primos probables: Lucas fuerte con P=1, D=" :
-      "<p>Step 2 of BPSW probable prime algorithm: Strong Lucas with P=1, D=");
-    if (signD < 0)
-    {
-      copyStr(&ptrText, "&minus;");
-    }
-    int2dec(&ptrText, D);
-    copyStr(&ptrText, ", Q=");
-    if (signD > 0)
-    {
-      copyStr(&ptrText, "&minus;");
-      int2dec(&ptrText, (D-1)/4);
-    }
-    else
-    {
-      int2dec(&ptrText, (D+1)/4);
-    }
+    copyStr(&ptrText, "<p>");
+    // Step 2 of BPSW probable prime algorithm: Strong Lucas with P=1, D=$1d, Q=$2d
+    formatString(&ptrText, LITERAL_STEP2_BPSW, D, -signD * (D - 1) / 4);
     copyStr(&ptrText, "</p>");
 #ifdef FACTORIZATION_APP
     ShowLowerText();

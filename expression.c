@@ -113,9 +113,6 @@ static int comprStackValues[COMPR_STACK_SIZE];
 static int comprStackOffset[PAREN_STACK_SIZE];
 extern limb MontgomeryR1[MAX_LEN];
 static int stackIndex;
-#ifndef lang  
-  bool lang;
-#endif
 char output[3000000];
 limb Mult1[MAX_LEN];
 limb Mult3[MAX_LEN];

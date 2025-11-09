@@ -22,10 +22,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
 #include "quadmodLL.h"
+#include "output.h"
+#include "copyStr.h"
 
 static BigInteger discriminant;
 static BigInteger sqrtDiscriminant;
@@ -167,8 +170,8 @@ void textErrorQuadMod(char **pptrOutput, enum eExprErr rc)
 {
   if (rc == EXPR_MODULUS_MUST_BE_NONNEGATIVE)
   {
-    copyStr(pptrOutput, lang ? "No debe ser negativo" :
-      "Must not be negative");
+    // It must not be negative
+    copyStr(pptrOutput, LITERAL_ERROR_QUADMOD);
   }
   else
   {
@@ -237,21 +240,27 @@ void quadmodText(const char *quadrText, const char *linearText, const char *cons
   rc = ComputeExpression(quadrText, &ValA);
   if (rc != EXPR_OK)
   {
-    copyStr(&ptrOutput, lang ? "<p>Coeficiente cuadrático: ": "<p>Quadratic coefficient: ");
+    copyStr(&ptrOutput, "<p>");
+    // Quadratic coefficient:
+    copyStr(&ptrOutput, LITERAL_QUADMOD1);
     textErrorQuadMod(&ptrOutput, rc);
     copyStr(&ptrOutput, "</p>");
   }
   rc = ComputeExpression(linearText, &ValB);
   if (rc != EXPR_OK)
   {
-    copyStr(&ptrOutput, lang ? "<p>Coeficiente lineal: " : "<p>Linear coefficient: ");
+    copyStr(&ptrOutput, "<p>");
+    // Linear coefficient:
+    copyStr(&ptrOutput, LITERAL_QUADMOD2);
     textErrorQuadMod(&ptrOutput, rc);
     copyStr(&ptrOutput, "</p>");
   }
   rc = ComputeExpression(constText, &ValC);
   if (rc != EXPR_OK)
   {
-    copyStr(&ptrOutput, lang ? "<p>Término independiente: " : "<p>Constant coefficient: ");
+    copyStr(&ptrOutput, "<p>");
+    // Constant coefficient:
+    copyStr(&ptrOutput, LITERAL_QUADMOD3);
     textErrorQuadMod(&ptrOutput, rc);
     copyStr(&ptrOutput, "</p>");
   }
@@ -262,7 +271,8 @@ void quadmodText(const char *quadrText, const char *linearText, const char *cons
   }
   if (rc != EXPR_OK)
   {
-    copyStr(&ptrOutput, lang ? "Módulo: " : "Modulus: ");
+    // Modulus:
+    copyStr(&ptrOutput, LITERAL_QUADMOD4);
     textErrorQuadMod(&ptrOutput, rc);
     copyStr(&ptrOutput, "</p>");
   }
@@ -289,7 +299,8 @@ void quadmodText(const char *quadrText, const char *linearText, const char *cons
     if (SolNbr == 0)
     {
       ptrOutput = ptrBeginSol;
-      copyStr(&ptrOutput, lang? "<p>No hay soluciones.</p>": "<p>There are no solutions.</p>");
+      // There are no solutions.
+      formatString(&ptrOutput, "<p>$1s</p>", LITERAL_QUADMOD5);
     }
     else
     {
@@ -297,7 +308,7 @@ void quadmodText(const char *quadrText, const char *linearText, const char *cons
     }
   }
   copyStr(&ptrOutput, "<p>");
-  copyStr(&ptrOutput, lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH);
+  showCopyright(&ptrOutput);
   copyStr(&ptrOutput, "</p>");
 }
 
@@ -320,10 +331,6 @@ EXTERNALIZE void doWork(void)
     ptrData++;
   }
   ptrData++;                    // Skip comma.
-#ifndef lang  
-  int flags = *ptrData;
-  lang = ((flags & 1)? true: false);
-#endif
   ptrQuadrCoeff = ptrData + 2;  // Skip flags and comma.
   ptrLinearCoeff = ptrQuadrCoeff + (int)strlen(ptrQuadrCoeff) + 1;
   ptrConstCoeff = ptrLinearCoeff + (int)strlen(ptrLinearCoeff) + 1;

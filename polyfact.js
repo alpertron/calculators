@@ -27,7 +27,6 @@
 /* global registerServiceWorker */
 /* global show */
 /** @define {number} */ const android = 0;   // Use with Closure compiler.
-/** @define {number} */ const lang = 1;      // Use with Closure compiler.
 let busy = false;
 let workerParam;
 let fileContents = 0;
@@ -49,7 +48,7 @@ function fromWorker(e)
   {    // User entered a number. Load calculator to process it.
     window.sessionStorage.setItem((firstChar === "M"? "F": "E"),
       get("poly").value);
-    window.location.replace(lang? "ECMC.HTM": "ECM.HTM");
+    window.location.replace(get("ecm").textContent);
     return;
   }
   let result = get("result");
@@ -75,7 +74,7 @@ function comingFromWorker(e)
 
 function dowork(n)
 {
-  let app = lang + n + (get("out").value.charCodeAt(0)-48)*8;
+  let app = n + (get("out").value.charCodeAt(0)-48)*8;
   let res = get("result");
   let polyText = get("poly").value;
   let modText = get("mod").value;
@@ -84,19 +83,16 @@ function dowork(n)
   show("result");
   if (polyText === "")
   {
-    res.innerHTML = (lang? "Por favor ingrese una expresión para el polinomio a evaluar." :
-                           "Please type an expression for the polynomial to evaluate.");
+    res.innerHTML = get("missingPoly").innerHTML;
     return;
   }
   if (modText === "")
   {
-    res.innerHTML = (lang? "Por favor ingrese un número o expresión para el módulo." :
-                           "Please type a number or expression for the modulus.");
+    res.innerHTML = get("missingMod").innerHTML;
     return;
   }
   enableButtons(true);
-  res.innerHTML = (lang? "Factorizando el polinomio..." :
-                         "Factoring polynomial...");
+  res.innerHTML = get("factoring").innerHTML;
   let param = digitGroup + "," + app + "," + modText + String.fromCharCode(0) + polyText +
   String.fromCharCode(0);
   if (!fileContents)
@@ -111,8 +107,10 @@ function dowork(n)
 
 function getCalcURLs()
 {
-  return ["polfactW0000.js",
-          "polfact.webmanifest", "factpol.webmanifest", "polfact-icon-1x.png", "polfact-icon-2x.png", "polfact-icon-4x.png", "polfact-icon-180px.png", "polfact-icon-512px.png", "favicon.ico"];
+  return [addLangToFilename("polfactW0000.js"),
+          "polfact.webmanifest", "factpol.webmanifest", "polfact-icon-1x.png",
+          "polfact-icon-2x.png", "polfact-icon-4x.png", "polfact-icon-180px.png",
+          "polfact-icon-512px.png", "favicon.ico"];
 }
 
 function getFormSendValue()
@@ -161,9 +159,7 @@ function startUp()
   {
     endWorker();
     enableButtons(false);
-    get("result").innerHTML = 
-      (lang? "<p>Factorización detenida por el usuario.</p>" :
-             "<p>Factorization stopped by user</p>");
+    get("result").innerHTML = get("stopped").innerHTML;
   };
   get("helpbtn").onclick = function ()
   {

@@ -19,6 +19,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "showtime.h"
@@ -74,7 +75,8 @@ void GetDHMSt(char **pptrText, int tenths)
 void showElapsedTime(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
-  copyStr(&ptrOutput, lang ? "Tiempo transcurrido: " : "Time elapsed: ");
+  // Time elapsed: 
+  copyStr(&ptrOutput, LITERAL_SHOW_TIME_ELAPSED);
 #ifdef __EMSCRIPTEN__
   GetDHMSt(&ptrOutput, (int)(tenths() - originalTenthSecond));
 #endif
@@ -85,7 +87,9 @@ void showElapsedTime(char **pptrOutput)
 void showElapsedTimeSec(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
-  copyStr(&ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");
+  copyStr(&ptrOutput, "<p>");
+  // Time elapsed: 
+  copyStr(&ptrOutput, LITERAL_SHOW_TIME_ELAPSED);
   GetDHMS(&ptrOutput, (int)(tenths() - originalTenthSecond) / 10);
   copyStr(&ptrOutput, "</p>");
   *ptrOutput = 0;   // Add string terminator.

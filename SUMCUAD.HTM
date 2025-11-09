@@ -19,7 +19,7 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:description" content="Funciona con polinomios enteros y módulo p^n.">
-<meta property="article:published_time" content="2025-08-31">
+<meta property="article:published_time" content="2025-11-08">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/SUMCUAD.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/FSQUARES.HTM">
@@ -86,7 +86,7 @@ input[type=text], input[type=email], input[type=number] {min-height:2em; border-
 input[type=button], button {min-height:2.5em; min-width:2.5em; border-radius:5px}
 #close {float:right}
 #modal-header-text {font-size:1.5em}
-#sending, #sentOK, #notSent {display:none}
+#strings, #sending, #sentOK, #notSent {display:none}
 .center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
 #skip a:focus {position:absolute;	left:0px;	top:0px; outline-color:transparent; transition: top .1s ease-in}
@@ -331,7 +331,7 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <h2>Código fuente</h2>
 <p>Se puede bajar el código fuente de este programa y el del viejo applet de suma de cuatro cuadrados desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 31 de agosto de 2025.</p>
+<p>Escrito por Dario Alpern. Actualizado el 8 de noviembre de 2025.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -459,6 +459,35 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <p>No se pudo enviar el comentario.</p>
 <div class="center"><button type="button" id="btnNotSent">Volver</button></div>
 </aside>
+<div id="strings">
+<div id="btn1">Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Raíz cuadrada entera,sqrt1,Raíz entera\n\nPrimer argumento: radicando\nSegundo argumento: orden de la raíz,iroot2,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random2,Valor absoluto,Abs1,Signo,Sign1</div>
+<div id="btn2">Variable,x,Inicializar variable,x=,Variable es menor que,x&lt;,,,Variable es menor o igual que,x&lt;=,Contador,c,Contador es menor que,c&lt;,Contador es menor o igual que,c&lt;=,Separador,;</div>
+<div id="btn3">Igual,=,Distinto,!=,,,Mayor,&gt;,Menor o igual,&lt;=,Menor,&lt;,Mayor o igual,&gt;=</div>
+<div id="btn4">Desplazamiento a la izquierda\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHL ,Desplazamiento a la derecha\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHR ,,,Y lógica, AND ,O lógica, OR ,O exclusiva, XOR ,Negación lógica, NOT </div>
+<div id="btn5">,,Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD2,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM2,¿El valor es primo?,IsPrime1</div>
+<div id="btn6">Primo siguiente,N1,Primo anterior,B1,Concatenar factores primos\n\nPrimer argumento: modo\n0: Primos no repetidos en forma ascendente\n1: Primos no repetidos en forma descendente\n2: Primos repetidos en forma ascendente\n3: Primos repetidos en forma descendente\nSegundo argumento: valor a factorizar,ConcatFact2,,,Cantidad de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,NumDigits2,Suma de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,SumDigits2,Invertir dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,RevDigits2</div>
+<div id="btn7">Parte entera del cociente\n\nPrimer argumento: dividendo\nSegundo argumento: divisor,FloorDiv2,Módulo\n\nPrimer argumento: valor\nSegundo argumento: módulo,Mod2,Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv2,División modular\n\nPrimer argumento: dividendo\nSegundo argumento: divisor\nTercer argumento: módulo,ModDiv3,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow3,Indicador de Euler,Totient1,Símbolo de Jacobi\n\nPrimer argumento: valor superior\nSegundo argumento: valor inferior,Jacobi2</div>
+<div id="btn8">Factorial,!,,,Primorial,#,Fibonacci,F1,Lucas,L1,Partición,P1</div>
+<div id="btn9">Suma,+,Resta,-,Multiplicación,*,División,/,,,Prefijo hex,0x,10,A,11,B,12,C,13,D,14,E,15,F</div>
+<div id="parens">Paréntesis izquierdo,(,Paréntesis derecho,),Nueva línea,&#x23CE;,</div>
+<div id="missing">Por favor ingrese un número o expresión.</div>
+<div id="nowebassy">Esta es la versión JavaScript.</div>
+<div id="webassy">Esta es la versión WebAssembly.</div>
+<div id="firstLine">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo.</div>
+<div id="computing">Calculando suma de cuadrados...</div>
+<div id="stopped"><p>Cálculo detenido por el usuario.</p></div>
+<div id="done">Hecho</div>
+<div id="wzddescr1">Paso 1 de 1: Expresión a procesar</div>
+<div id="wzddesc1">Paso 1 de 5: Valor inicial de x</div>
+<div id="wzddesc2">Paso 2 de 5: Valor de x para la nueva iteración</div>
+<div id="wzddesc3">Paso 3 de 5: Condición para finalizar el ciclo</div>
+<div id="wzddesc4">Paso 4 de 5: Expresión a procesar</div>
+<div id="wzddesc5">Paso 5 de 5: Condición para procesar la expresión</div>
+<div id="next">Siguiente</div>
+<div id="novars">No usar variables <var>x</var> o <var>c</var>. Ejemplo para números de Smith menores que 10000: <code>1</code></div>
+<div id="varsreq">Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: </div>
+<div id="sendmail">enviomail</div>
+</div>
 <script type="text/wasmb64" id="wasmb64">
 </script>
 <script>
@@ -475,8 +504,8 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
   "name": "Suma de cuatro cuadrados",
   "description": "Aplicación Web que descompone un número en una suma de hasta cuadrados.",
   "image": ["https://www.alpertron.com.ar/fsquares.png"],
-  "datePublished": "2025-08-31",
-  "dateModified": "2025-08-31",
+  "datePublished": "2025-11-08",
+  "dateModified": "2025-11-08",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {

@@ -18,12 +18,14 @@
 //
 #include <string.h>
 #include <assert.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "highlevel.h"
 #include "showtime.h"
 #include "batch.h"
 #include "copyStr.h"
+#include "output.h"
 extern bool hexadecimal;
 static BigInteger value;
 static BigInteger Base1;
@@ -370,7 +372,7 @@ static int fcubes(char **pptrOutput, const BigInteger *pArgument)
       multadd(&Base2, sums[i + 4], &value, sums[i + 5]); // Base2 <- sums[i+4]*value+sums[i+5]
       multadd(&Base3, sums[i + 6], &value, sums[i + 7]); // Base3 <- sums[i+6]*value+sums[i+7]
       multadd(&Base4, sums[i + 8], &value, sums[i + 9]); // Base4 <- sums[i+8]*value+sums[i+9]
-      copyStr(pptrOutput, lang ? "<p>Usando la fórmula " : "<p>Using the formula ");
+      formatString(pptrOutput, "<p>$1s ", LITERAL_FCUBES1);  // Using the formula
       showLinear(pptrOutput, modulus, sums[i + 1]);
       copyStr(pptrOutput, " = ");
       showCubeOfLinear(pptrOutput, sums[i + 2], sums[i + 3]);
@@ -393,7 +395,8 @@ static int fcubes(char **pptrOutput, const BigInteger *pArgument)
       EvaluateQuadraticPoly(&Base2, &value, -29484, -2157, -41);
       EvaluateQuadraticPoly(&Base3, &value, 9828, 485, 4);
       EvaluateQuadraticPoly(&Base4, &value, -9828, -971, -22);
-      copyStr(pptrOutput, lang ? "<p>Usando la fórmula " : "</p>Using the formula ");
+      copyStr(pptrOutput, LITERAL_FCUBES1);
+      copyStr(pptrOutput, " ");
       showLinear(pptrOutput, 54, 2);
       copyStr(pptrOutput, " = ");
       showCubeOfQuadratic(pptrOutput, 29484, 2211, 43);
@@ -412,7 +415,8 @@ static int fcubes(char **pptrOutput, const BigInteger *pArgument)
       EvaluateQuadraticPoly(&Base2, &value, -29484, -25089, -5348);
       EvaluateQuadraticPoly(&Base3, &value, 9828, 8129, 1682);
       EvaluateQuadraticPoly(&Base4, &value, -9828, -8615, -1889);
-      copyStr(pptrOutput, lang ? "<p>Usando la fórmula " : "<p>Using the formula ");
+      copyStr(pptrOutput, LITERAL_FCUBES1);
+      copyStr(pptrOutput, " ");
       showLinear(pptrOutput, 83*108, 83*46);
       copyStr(pptrOutput, " = ");
       showCubeOfQuadratic(pptrOutput, 29484, 25143, 5371);
@@ -426,8 +430,7 @@ static int fcubes(char **pptrOutput, const BigInteger *pArgument)
     }
     else
     {
-      copyStr(pptrOutput, lang ? "<p>Usando el método de Demjanenko:</p>" :
-        "<p>Using Demjanenko's method:</p>");
+      copyStr(pptrOutput, LITERAL_FCUBES2);
       Demjanenko();
     }
   }
@@ -458,12 +461,12 @@ void fcubesText(char *input, int grpLen)
   }
   (void)BatchProcessing(input, &toProcess, &ptrOutput, NULL, batchCubesCallback);
 #ifdef __EMSCRIPTEN__
-  copyStr(&ptrOutput, lang ? "<p>Transcurrió " : "<p>Time elapsed: ");
+  formatString(&ptrOutput, "<p>$1s ", LITERAL_FCUBES3);
   int elapsedTime = (int)(tenths() - originalTenthSecond);
   GetDHMSt(&ptrOutput, elapsedTime);
 #endif
   copyStr(&ptrOutput, "<p>");
-  copyStr(&ptrOutput, (lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH));
+  showCopyright(&ptrOutput);
   copyStr(&ptrOutput, "</p>");
 }
 
@@ -535,11 +538,10 @@ static void batchCubesCallback(char **pptrOutput, int type)
   switch (result)
   {
   case -1:
-    copyStr(&ptrOutput, (lang?"El applet no funciona si el número es congruente a 4 o 5 (mod 9)":
-      "This applet does not work if the number is congruent to 4 or 5 (mod 9)"));
+    copyStr(&ptrOutput, LITERAL_FCUBES_BATCH_CBACK1);
     break;
   case 2:
-    copyStr(&ptrOutput, (lang?"El usuario detuvo el cálculo": "User stopped the calculation"));
+    copyStr(&ptrOutput, LITERAL_FCUBES_BATCH_CBACK2);
     break;
   default:
     break;
@@ -611,9 +613,6 @@ EXTERNALIZE void doWork(void)
     ptrData++;
     app = (app * 10) + *ptrData - '0';
   }
-#ifndef lang  
-  lang = ((app & 1) ? true : false);
-#endif
   if ((app & 0x40) != 0)
   {
     hexadecimal = true;

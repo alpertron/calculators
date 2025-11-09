@@ -6,22 +6,13 @@ rem del *.wasm
 rem del *00*js
 rem --compilation_level WHITESPACE_ONLY
 rem --compilation_level ADVANCED_OPTIMIZATIONS
-rem ==================== GENERATION OF ASM.JS ===============================
-cmd /c emcc ulam.c isprime.c MontMultGraphic.c graphics.c copyStr.c -s EXPORTED_FUNCTIONS="['_initUlam', '_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 %commonOptions% -o ulamW.js
-if errorlevel 1 goto end
-cmd /c emcc gausspr.c isprime.c MontMultGraphic.c graphics.c -s EXPORTED_FUNCTIONS="['_initGaussPr', '_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 %commonOptions% -o gaussprW.js
-if errorlevel 1 goto end
-
 rem ===================== GENERATION OF WASM ================================
 cmd /c emcc %wasmCommon% ulam.c isprime.c MontMultGraphic.c graphics.c copyStr.c -s EXPORTED_FUNCTIONS="['_initUlam', '_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 -o ulam.wasm
 if errorlevel 1 goto end
 cmd /c emcc %wasmCommon% gausspr.c isprime.c MontMultGraphic.c graphics.c -s EXPORTED_FUNCTIONS="['_initGaussPr', '_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 -o gausspr.wasm
 if errorlevel 1 goto end
 
-copy /b ulam.js + common.js + strings.js + commonGraphics.js ulamA.js
-perl generateTempJS.pl ulamA.js ulamW.js ulamT.js moveGraphic drawPartialGraphic nbrChanged getInformation getPixels
-@if errorlevel 1 goto end
-del ulamA.js
+copy /b ulam.js + common.js + strings.js + commonGraphics.js ulamT.js
 java -jar %compilerName% %compilerOptions2% --js ulamT.js --js initGraphicNoAndroid.js --js_output_file ulamU.js
 copy ulamU.js ulamV.js
 copy ULAM.HTM toweb
@@ -42,10 +33,7 @@ java -jar %compilerName% %compilerOptions2% --js ulamT.js --js initGraphicAndroi
 perl replaceEmbeddedJSAnd.pl 0000 "assets\eulam.html" ulamSA.js privacidad_calc.html
 @if errorlevel 1 goto end
 
-copy /b gausspr.js + common.js + strings.js + commonGraphics.js gaussprA.js
-perl generateTempJS.pl gaussprA.js gaussprW.js gaussprT.js moveGraphic drawPartialGraphic nbrChanged getInformation getPixels
-@if errorlevel 1 goto end
-del gaussprA.js
+copy /b gausspr.js + common.js + strings.js + commonGraphics.js gaussprT.js
 java -jar %compilerName% %compilerOptions2% --js gaussprT.js --js initGraphicNoAndroid.js --js_output_file gaussprU.js
 copy gaussprU.js gaussprV.js
 copy GAUSSPR.HTM toweb

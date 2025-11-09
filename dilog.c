@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "string/strings.h"
+#include "copyStr.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
@@ -87,7 +89,7 @@ static void showText(const char *text)
 
 static void noDiscreteLog(void)
 {
-  showText(lang? "No existe el logaritmo discreto": "There is no discrete logarithm");
+  showText(LITERAL_NO_DISCRETE_LOG);
   DiscreteLogPeriod.sign = SIGN_NEGATIVE;
 }
 
@@ -104,15 +106,13 @@ void textErrorDilog(char **pptrOutput, enum eExprErr rc)
   switch (rc)
   {
   case EXPR_BASE_MUST_BE_POSITIVE:
-    copyStr(&pOutput, lang ? "La base debe ser mayor que cero" :
-      "Base must be greater than zero");
+    copyStr(&pOutput, LITERAL_BASE_POSITIVE);
     break;
   case EXPR_POWER_MUST_BE_POSITIVE:
-    copyStr(&pOutput, lang ? "La potencia debe ser mayor que cero" :
-      "Power must be greater than zero");
+    copyStr(&pOutput, LITERAL_POWER_POSITIVE);
     break;
   case EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE:
-    copyStr(&pOutput, lang ? "El módulo debe ser mayor que 1" : "Modulus must be greater than one");
+    copyStr(&pOutput, LITERAL_MODULUS_GREATER_THAN1);
     break;
   default:
     textError(&pOutput, rc);
@@ -321,41 +321,12 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   NumberLength = *astFactorsGO[indexBase + 1].ptrFactor;
   IntArray2BigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
   subGroupOrder.limbs[subGroupOrder.nbrLimbs].x = 0;
+  subGroupOrder.sign = SIGN_POSITIVE;
   ptr = textExp;
-  copyStr(&ptr, lang? "Calculando el logaritmo discreto en subgrupo de ":
-    "Computing discrete logarithm in subgroup of ");
-  Bin2Out(&ptr, subGroupOrder.limbs, subGroupOrder.nbrLimbs, groupLen);
-  if (astFactorsGO[indexBase + 1].multiplicity > 1)
-  {
-    *ptr = '<';
-    ptr++;
-    *ptr = 's';
-    ptr++;
-    *ptr = 'u';
-    ptr++;
-    *ptr = 'p';
-    ptr++;
-    *ptr = '>';
-    ptr++;
-    int2dec(&ptr, subGroupMultiplicity);
-    *ptr = '<';
-    ptr++;
-    *ptr = '/';
-    ptr++;
-    *ptr = 's';
-    ptr++;
-    *ptr = 'u';
-    ptr++;
-    *ptr = 'p';
-    ptr++;
-    *ptr = '>';
-    ptr++;
-  }
-  copyStr(&ptr, lang? " elementos": " elements");
+  formatString(&ptr, LITERAL_COMPUTE_DISCR_SUBGROUP1, &subGroupOrder, subGroupMultiplicity);
   if (NbrFactorsMod > 1)
   {
-    copyStr(&ptr, lang ? " módulo " : " modulo ");
-    Bin2Out(&ptr, mod.limbs, mod.nbrLimbs, groupLen);
+    formatString(&ptr, LITERAL_COMPUTE_DISCR_SUBGROUP2, &mod);
   }
   *ptr = '.';
   ptr++;
@@ -675,8 +646,7 @@ void DiscreteLogarithm(void)
     CompressLimbsBigInteger(powerMontg, &tmpBase);
     // Compute group order as the prime minus 1.
     groupOrder.limbs[0].x--;
-    showText(lang? "Calculando el logaritmo discreto...":
-      "Computing discrete logarithm...");
+    showText(LITERAL_DISCR_LOG1);
     BigInteger2IntArray(nbrToFactor, &groupOrder);
     factor(&groupOrder, nbrToFactor, factorsGO, astFactorsGO);  // factor groupOrder.
     NbrFactors = astFactorsGO[0].multiplicity;
@@ -854,23 +824,16 @@ static void generateOutput(enum eExprErr rc, int groupLength)
   }
   else
   {
-    copyStr(&ptrOutput, lang ? "<p>Hallar <var>exp</var> tal que " :
-      "<p>Find <var>exp</var> such that ");
-    Bin2Out(&ptrOutput, base.limbs, base.nbrLimbs, groupLength);
-    copyStr(&ptrOutput, "<sup><var>exp</var></sup> &equiv; ");
-    Bin2Out(&ptrOutput, power.limbs, power.nbrLimbs, groupLength);
-    copyStr(&ptrOutput, " (mod ");
-    Bin2Out(&ptrOutput, modulus.limbs, modulus.nbrLimbs, groupLength);
-    copyStr(&ptrOutput, ")</p><p>");
+    copyStr(&ptrOutput, "<p>");
+    formatString(&ptrOutput, LITERAL_DISCR_LOG2, &base, &power, &modulus);
+    copyStr(&ptrOutput, "</p>");
     if (DiscreteLogPeriod.sign == SIGN_NEGATIVE)
     {
-      copyStr(&ptrOutput, lang ? "Ningún valor de <var>exp</var> satisface la congruencia.</p>" :
-        "There is no such value of <var>exp</var>.</p>");
-      copyStr(&ptrOutput, textExp);
+      formatString(&ptrOutput, "<p>$1s</p>$2s", LITERAL_DISCR_LOG3, textExp);
     }
     else
     {
-      copyStr(&ptrOutput, "<var>exp</var> = ");
+      copyStr(&ptrOutput, "<p><var>exp</var> = ");
       Bin2Out(&ptrOutput, DiscreteLog.limbs, DiscreteLog.nbrLimbs, groupLength);
       if (!BigIntIsZero(&DiscreteLogPeriod))
       {   // Discrete log period is not zero.
@@ -884,7 +847,7 @@ static void generateOutput(enum eExprErr rc, int groupLength)
   copyStr(&ptrOutput, "<p>");
   showElapsedTime(&ptrOutput);
   copyStr(&ptrOutput, "</p><p>");
-  copyStr(&ptrOutput, lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH);
+  showCopyright(&ptrOutput);
   copyStr(&ptrOutput, "</p>");
 }
 
@@ -948,9 +911,6 @@ EXTERNALIZE void doWork(void)
     ptrData++;
     flags = (flags * 10) + *ptrData - '0';
   }
-#ifndef lang
-  lang = ((flags & 1)? true: false);
-#endif
   hexadecimal = ((flags & 0x10) ? true : false);
   ptrData += 2;          // Skip flags and comma.
   ptrPower = ptrData + (int)strlen(ptrData) + 1;

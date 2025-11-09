@@ -19,7 +19,6 @@
 /* global get */
 /* global getFormSendValue */
 /* global hide */
-/* global lang */
 /* global show */
 function formSend()
 {
@@ -48,7 +47,7 @@ function formSend()
       }
     }
   };
-  xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
+  xhr.open("POST", "/" + get("sendmail").textContent + ".php", true);
   xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
   let elements = get("formfeedback").elements;
   let contents = "";

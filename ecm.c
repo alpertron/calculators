@@ -19,11 +19,13 @@
 #include <string.h>
 #include <stdint.h>
 #include <math.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
 #include "commonstruc.h"
 #include "skiptest.h"
+#include "copyStr.h"
 
 #if MAX_PRIME_SIEVE == 11
 #define MAX_SIEVE_PRIME    5000
@@ -993,29 +995,16 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
 #ifdef __EMSCRIPTEN__
     nbrPrimes = pstBounds->nbrPrimes;
     ptrText = ptrLowerText;  // Point after number that is being factored.
-    if (lang)
-    {
-      copyStr(&ptrText, "<p>Nivel de ");
-      int2dec(&ptrText, pstBounds->digitLevel);
-      copyStr(&ptrText, " dígitos:");
-    }
-    else
-    {
-      copyStr(&ptrText, "<p>");
-      int2dec(&ptrText, pstBounds->digitLevel);
-      copyStr(&ptrText, "-digit level:");
-    }
+    copyStr(&ptrText, "<p>");
+    formatString(&ptrText, LITERAL_ECM1, pstBounds->digitLevel);
     copyStr(&ptrText, " <meter min=\"0\" max=\"");
     int2dec(&ptrText, pstBounds->nbrCurves);
     copyStr(&ptrText, "\" value=\"");
     int2dec(&ptrText, curveNbr);
-    copyStr(&ptrText, "\"</p><p>");
-    copyStr(&ptrText, lang ? "Curva " : "Curve ");
-    int2dec(&ptrText, EC);   // Show curve number.
-    copyStr(&ptrText, lang ? " usando límites B1=" : " using bounds B1=");
-    int2dec(&ptrText, boundStep1);   // Show first bound.
-    copyStr(&ptrText, lang ? " y B2=" : " and B2=");
-    long2dec(&ptrText, boundStep2);   // Show second bound.
+    copyStr(&ptrText, "\">");
+    int2dec(&ptrText, curveNbr * 100 / pstBounds->nbrCurves);
+    copyStr(&ptrText, "%</meter></p><p>");
+    formatString(&ptrText, LITERAL_ECM2, EC, boundStep1, boundStep2);
     copyStr(&ptrText, "</p>");
     databack(lowerText);
 #endif

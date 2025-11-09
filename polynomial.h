@@ -45,9 +45,6 @@ enum eDivType
   TYPE_MODULUS
 };
 
-#ifndef lang  
-  extern bool lang;
-#endif
 extern BigInteger Quintic;
 extern BigInteger Quartic;
 extern BigInteger Cubic;

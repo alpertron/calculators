@@ -20,8 +20,10 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include "string/strings.h"
 #include "rootseq.h"
 #include "expression.h"
+#include "copyStr.h"
 
 extern BigInteger Quadratic;
 extern BigInteger Linear;
@@ -37,19 +39,19 @@ void stepsForQuadraticEquation(char origVar, char substVar)
   char currVar = origVar;
   if (!BigIntIsZero(&RatLinear.numerator))
   {
-    showText(lang ? "<p>Para eliminar el término lineal se debe hacer la sustitución:</p><p>" :
-      "<p>To eliminate the linear term, we will perform the following substitution:</p><p>");
+    // To eliminate the linear term, we will perform the following substitution:
+    formatString(&ptrOutput, "<p>$1s</p><p>", LITERAL_STEPS_QUADR1);
     showVariable(&ptrOutput, origVar);
     showText(" = ");
     showVariable(&ptrOutput, substVar);
     BigRationalDivideByInt(&RatLinear, -2, &Rat2);
     showPlusMinusRational(&Rat2);
     showText("</p><p>");
-    showText(lang ? "El valor indicado en la sustitución es la mitad del coeficiente lineal.</p>" :
-      "The constant value in the substitution equals half of the linear coefficient.</p>");
+    // The constant value in the substitution equals half of the linear coefficient.
+    showText(LITERAL_STEPS_QUADR2);
     currVar = substVar;
     // Show a(y-k)^2 + b(y-k) + c = 0.
-    showText("<p>");
+    showText("</p><p>");
     startParen();
     showVariable(&ptrOutput, substVar);
     showPlusMinusRational(&Rat2);
@@ -63,7 +65,9 @@ void stepsForQuadraticEquation(char origVar, char substVar)
     endParen();
     showPlusMinusRational(&RatIndependent);
     showText(" = 0</p><p>");
-    showText(lang?"Distribuyendo:</p><p>": "Expanding brackets:</p><p>");
+    // Expanding brackets:
+    showText(LITERAL_STEPS_QUADR3);
+    showText("</p><p>");
     // Expand all terms.
     // (y-B/2)^2
     showRatCoeffAndPowerVar(NULL, -2, substVar);
@@ -79,7 +83,9 @@ void stepsForQuadraticEquation(char origVar, char substVar)
     // C
     showPlusMinusRational(&RatIndependent);
     showText(" = 0</p><p>");
-    showText(lang ? "Simplificando:</p><p>" : "Simplifying:</p><p>");
+     // Simplifying:
+    showText(LITERAL_STEPS_QUADR4);
+    showText("</p><p>");
     // Show y^2 - delta = 0.
     BigRationalDivideByInt(&Rat4, 2, &Rat4);
     BigRationalAdd(&Rat4, &RatIndependent, &Rat4);
@@ -150,8 +156,8 @@ void ProcessQuadraticEquation(enum eSign* pSignDescr)
   {
     if (!BigIntIsOne(&Quadratic))
     {
-      showText(lang ? "<p>Dividiendo la ecuación por el coeficiente cuadrático:</p><p>" :
-        "<p>Dividing the equation by the quadratic coefficient:</p><p>");
+      // Dividing the equation by the quadratic coefficient:
+      formatString(&ptrOutput, "<p>$1s</p></p>", LITERAL_QUADRATIC_EQ1);
       showRatCoeffAndPowerVar(NULL, -2, 'x');
       showRatCoeffAndPowerVar(&RatLinear, 1, 'x');
       showRatCoeffAndPowerVar(&RatIndependent, 0, 'x');

@@ -23,12 +23,14 @@
 #include <stdint.h>
 #include <assert.h>
 #include "bignbr.h"
+#include "string/strings.h"
 #include "expression.h"
 #include "highlevel.h"
 #include "polynomial.h"
 #include "rootseq.h"
 #include "showtime.h"
 #include "output.h"
+#include "copyStr.h"
 
 #define MAX_MODULUS 100
 
@@ -1417,8 +1419,8 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
   }
   if (teachMod)
   {
-    showText(lang ? "<h3>Lema de Hensel</h3>" :
-      "<h3>Hensel Lifting</h3>");
+    // Hensel Lifting
+    formatString(&ptrOutput, "<h3>$1s</h3>", LITERAL_HENSEL_LIFTING1);
   }
   computePower(1);
   // Compute a_i for each factor f_i by computing the extended gcd between
@@ -1466,24 +1468,11 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
     {
       char outputInfo[1000];
       char* ptrOut = outputInfo;
-      if (lang)
-      {
-        copyStr(&ptrOut, "1<p>Aplicando lema de Hensel usando el número primo ");
-        int2dec(&ptrOut, primeMod.limbs[0].x);
-        copyStr(&ptrOut, " procesando exponente ");
-        int2dec(&ptrOut, currentExp);
-        copyStr(&ptrOut, " de ");
-      }
-      else
-      {
-        copyStr(&ptrOut, "1<p>Hensel lifting using prime number ");
-        int2dec(&ptrOut, primeMod.limbs[0].x);
-        copyStr(&ptrOut, " processing exponent ");
-        int2dec(&ptrOut, currentExp);
-        copyStr(&ptrOut, " of ");
-      }
-      int2dec(&ptrOut, exponentMod);
-      copyStr(&ptrOut, ".</p>");
+      copyStr(&ptrOut, "1<p>");
+      // Hensel lifting using prime number $1d processing exponent $2d of $3d.
+      formatString(&ptrOut, LITERAL_HENSEL_LIFTING2, primeMod.limbs[0].x,
+        currentExp, exponentMod);
+      copyStr(&ptrOut, "</p>");
       showElapsedTimeSec(&ptrOut);
       databack(outputInfo);
     }
@@ -1534,8 +1523,9 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
           copyStr(&ptrOutput, "</p>");
           pstFactorInfo++;
         }
-        copyStr(&ptrOutput, lang? "<p>Usando el algoritmo de MCD extendido, calcular ":
-          "<p>Using the extended GCD algorithm, compute ");
+        // Using the extended GCD algorithm, compute 
+        copyStr(&ptrOutput, "<p>");
+        formatString(&ptrOutput, LITERAL_HENSEL_LIFTING3);
         if (pretty == PRETTY_PRINT)
         {
           copyStr(&ptrOutput, "a<sub>1, 1</sub>, ..., a<sub>1, n</sub>");
@@ -1544,8 +1534,8 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
         {
           copyStr(&ptrOutput, "a_{1, 1}, ..., a_{1, n}");
         }
-        copyStr(&ptrOutput, lang ? " tales que</p><p>" : " such that</p><p>");
-        copyStr(&ptrOutput, "1 = ");
+        // such that
+        formatString(&ptrOutput, "$1s</p><p>1 = ", LITERAL_HENSEL_LIFTING4);
         showSumOfProducts();
         if (pretty != PRETTY_PRINT)
         {
@@ -2044,14 +2034,7 @@ void showPowerVar(char** pptrOutput, int polyDegree, char letter)
   {
     if (pretty == PRETTY_PRINT)
     {
-      if (letter == 'x')
-      {
-        copyStr(&ptrOut, lang ? "<var role=\"img\" aria-label=\"equis\">x</var>" : "<var>x</var>");
-      }
-      else
-      {
-        showVariable(&ptrOut, letter);
-      }
+      showVariable(&ptrOut, letter);
     }
     else
     {
@@ -2405,53 +2388,42 @@ void textErrorPol(char **pptrOutput, enum eExprErr rc)
   switch (rc)
   {
   case EXPR_CANNOT_USE_X_IN_EXPONENT:
-    copyStr(&ptrOut, lang ? "No se puede usar variable en el exponente" :
-      "Cannot use variable in exponent");
+    copyStr(&ptrOut, LITERAL_ERROR_POL1);
     break;
   case EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER:
-    copyStr(&ptrOut, lang ? "La división de polinomios no es entera" :
-      "Polynomial division is not integer");
+    copyStr(&ptrOut, LITERAL_ERROR_POL2);
     break;
   case EXPR_DENOMINATOR_MUST_BE_CONSTANT:
-    copyStr(&ptrOut, lang ? "El denominador debe ser constante" :
-      "Denominator must be constant");
+    copyStr(&ptrOut, LITERAL_ERROR_POL3);
     break;
   case EXPR_DEGREE_TOO_HIGH:
-    copyStr(&ptrOut, lang ? "El grado del polinomio es muy elevado" :
-      "Degree is too high");
+    copyStr(&ptrOut, LITERAL_ERROR_POL4);
     break;
   case EXPR_EXPONENT_TOO_LARGE:
-    copyStr(&ptrOut, lang ? "Exponente muy grande" : "Exponent is too large");
+    copyStr(&ptrOut, LITERAL_ERROR_POL5);
     break;
   case EXPR_EXPONENT_NEGATIVE:
-    copyStr(&ptrOut, lang ? "Exponente negativo" : "Exponent is negative");
+    copyStr(&ptrOut, LITERAL_ERROR_POL6);
     break;
   case EXPR_LEADING_COFF_MULTIPLE_OF_PRIME:
-    copyStr(&ptrOut, lang ? "El primer coeficiente es múltiplo del número primo" :
-      "Leading coefficient multiple of prime");
+    copyStr(&ptrOut, LITERAL_ERROR_POL7);
     break;
   case EXPR_CANNOT_LIFT:
-    copyStr(&ptrOut, lang ? "No se puede elevar porque hay factores duplicados" :
-      "Cannot lift because of duplicate factors modulo prime");
+    copyStr(&ptrOut, LITERAL_ERROR_POL8);
     break;
   case EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE:
-    copyStr(&ptrOut, lang ? "El módulo debe ser mayor que 1" : "Modulus must be greater than one");
-    break;
+    copyStr(&ptrOut, LITERAL_ERROR_POL9);
   case EXPR_MODULUS_MUST_BE_PRIME_EXP:
-    copyStr(&ptrOut, lang ? "El módulo debe ser un número primo o una potencia de número primo" :
-      "Modulus must be a prime number or a power of a prime");
+    copyStr(&ptrOut, LITERAL_ERROR_POL10);
     break;
   case EXPR_MULTIPLE_VARIABLES_NOT_ACCEPTED:
-    copyStr(&ptrOut, lang ? "No se aceptan múltiples variables" :
-      "Multiple variables are not accepted");
+    copyStr(&ptrOut, LITERAL_ERROR_POL11);
     break;
   case EXPR_MORE_THAN_ONE_EQUAL_SIGN:
-    copyStr(&ptrOut, lang ? "No se acepta más de un signo igual" :
-      "More than one equal sign is not accepted");
+    copyStr(&ptrOut, LITERAL_ERROR_POL12);
     break;
   case EXPR_EQUAL_SIGN_INSIDE_PAREN:
-    copyStr(&ptrOut, lang ? "Hay un signo igual dentro de paréntesis" :
-      "Equal sign inside parentheses");
+    copyStr(&ptrOut, LITERAL_ERROR_POL13);
     break;
   default:
     textError(&ptrOut, rc);

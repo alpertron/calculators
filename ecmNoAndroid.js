@@ -19,8 +19,6 @@
 /* global dowork */
 /* global fileName */
 /* global getStorage */
-/* global getVersionText */
-/* global lang */
 /* global hide */
 /* global newCurveOrFactor */
 /* global resultDirty */
@@ -30,7 +28,7 @@
 function loadPolyCalc(firstChar, value)
 {
   window.sessionStorage.setItem((firstChar === "M"? "F": "E"), value);
-  window.location.replace(lang? "FACTPOL.HTM": "POLFACT.HTM");
+  window.location.replace(get("polfact").textContent);
 }
 
 function comingFromPolfact(value)
@@ -79,18 +77,6 @@ function comingFromPolfact(value)
       }
     }
   }
-}
-
-function showVersion(lang)  
-{
-  if ((typeof(Worker) === "undefined"))
-  {    // Web workers not supported on this browser.
-    resultDirty = true;
-    resultText = (lang ? "<p>Esta calculadora necesita Web Workers. Por favor use otro navegador Web.</p>" :
-                         "<p>This calculator requires Web Workers. Please use another Web browser.</p>");
-    return null;
-  }
-  return getVersionText();
 }
 
 function downloadResult()

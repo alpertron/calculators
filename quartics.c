@@ -19,8 +19,10 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include "string/strings.h"
 #include "rootseq.h"
 #include "expression.h"
+#include "copyStr.h"
 
 #define NBR_COEFFS_BACKUP 7
 extern const char* ptrI;
@@ -55,7 +57,9 @@ static void showStepsForRealBiquadratic(BigRational *pQuadratic,
   BigRationalDivideByInt(pQuadratic, 2, &Rat1);
   BigRationalMultiply(pQuadratic, pQuadratic, &Rat2);
   BigRationalDivideByInt(&Rat2, 4, &Rat2);
-  showText(lang ? "<p>Como " : "<p>Since ");
+  showText("<p>");
+  // Since 
+  showText(LITERAL_STEPS_BIQUADR1);
   startParen();
   showRatCoeffAndPowerVar(NULL, -2, letter);
   showPlusMinusRational(&Rat1);
@@ -65,7 +69,9 @@ static void showStepsForRealBiquadratic(BigRational *pQuadratic,
   showRatCoeffAndPowerVar(NULL, -4, letter);
   showRatCoeffAndPowerVar(pQuadratic, 2, letter);
   showRatCoeffAndPowerVar(&Rat2, 0, letter);
-  showText(lang ? "</p><p>obtenemos " : "</p><p>we get ");
+  showText("</p><p>");
+  // we get
+  showText(LITERAL_STEPS_BIQUADR2);
   startParen();
   showRatCoeffAndPowerVar(NULL, -2, letter);
   showPlusMinusRational(&Rat1);
@@ -101,13 +107,16 @@ static void showAdjustForCubic(void)
 {
   if (!BigIntIsZero(&RatCubic.numerator))
   {
-    showText(lang ? "<p>Como " : "<p>Since ");
+    showText("<p>");
+    // Since
+    showText(LITERAL_STEPS_BIQUADR1);
     showVariable(&ptrOutput, 'x');
     showText(" = ");
     showVariable(&ptrOutput, 'y');
     // RatCubic is already divided by -4.
     showPlusMinusRational(&RatCubic);
-    showText(lang ? ", obtenemos:</p>" : ", we get:</p>");
+    // we get
+    showText(LITERAL_STEPS_BIQUADR2);
   }
 }
 
@@ -127,14 +136,16 @@ static void showStepsForComplexSquareRoot(char letter, const char *pszPlus)
   showSquareRootOfRational(&Rat2, 2, ptrTimes);
   generateEqNbr();     // Equation 1.
   showText("</p><p>");
-  showText(lang ? "Sea " : "Let ");
+  // Let
+  showText(LITERAL_STEPS_COMPLEX_SQROOT1);
   showRatCoeffAndPowerVar(NULL, -1, letter);
   showText(" = ");
   showU();
   showText(" + ");
   showText(ptrI);
   showRatCoeffAndPowerVar(NULL, -1, 'v');
-  showText(lang ? "</p><p>Entonces " : "</p><p>Then ");
+  showText("</p><p>");
+  showText(LITERAL_STEPS_COMPLEX_SQROOT2);
   showRatCoeffAndPowerVar(NULL, -2, letter);
   showText(" = ");
   showRatCoeffAndPowerVar(NULL, -2, 'u');
@@ -148,9 +159,9 @@ static void showStepsForComplexSquareRoot(char letter, const char *pszPlus)
   showRatCoeffAndPowerVar(NULL, -1, 'v');
   generateEqNbr();     // Equation 2.
   showText("</p><p>");
-  showText(lang ? "Igualando las partes reales de " : "Equating the real parts of ");
-  showEqNbrs(eqNbr - 1, eqNbr);        // Equations 1 and 2.
-  showText(":</p><p>");
+  // Equating the real parts of $1q and $2q:  (equations 1 and 2)
+  formatString(&ptrOutput, LITERAL_STEPS_COMPLEX_SQROOT3, eqNbr - 1, eqNbr);
+  showText("</p><p>");
   showRatCoeffAndPowerVar(NULL, -2, 'u');
   showText(ptrMinus);
   showRatCoeffAndPowerVar(NULL, -2, 'v');
@@ -158,7 +169,8 @@ static void showStepsForComplexSquareRoot(char letter, const char *pszPlus)
   showRationalNoParen(&Rat1);
   generateEqNbr();     // Equation 3.
   showText("</p><p>");
-  showText(lang ? "Multiplicando por " : "Multiplying by ");
+  // Multiplying by
+  showText(LITERAL_STEPS_COMPLEX_SQROOT4);
   showRatCoeffAndPowerVar(NULL, -2, 'u');
   showText(":</p><p>");
   BigRationalMultiplyByInt(&Rat1, -1, &Rat1);
@@ -171,10 +183,8 @@ static void showStepsForComplexSquareRoot(char letter, const char *pszPlus)
   showText(" = 0");
   generateEqNbr();      // Equation 4.
   showText("</p><p>");
-  showText(lang ? "Igualando las partes imaginarias de " :
-    "Equating the imaginary parts of ");
-  showEqNbrs(eqNbr - 3, eqNbr - 2);     // Equations 1 and 2.
-  showText(lang ? " y dividiendo por 2:" : " and dividing by 2:");
+  // Equating the imaginary parts of $1q and $2q (equations 1 and 2) and dividing by 2:
+  formatString(&ptrOutput, LITERAL_STEPS_COMPLEX_SQROOT5, eqNbr - 3, eqNbr - 2);
   showText("</p><p>");
   showU();
   showText(ptrTimes);
@@ -195,9 +205,9 @@ static void showStepsForComplexSquareRoot(char letter, const char *pszPlus)
   showRational(&Rat2);
   generateEqNbr();      // Equation 6.
   showText("</p><p>");
-  showText(lang ? "De " : "From ");
-  showEqNbrs(eqNbr - 2, eqNbr);   // Equations 4 and 6.
-  showText(":</p><p>");
+  // From $1q y $2q: (Equations 4 and 6)
+  formatString(&ptrOutput, LITERAL_STEPS_COMPLEX_SQROOT6, eqNbr - 2, eqNbr);
+  showText("</p><p>");
   showRatCoeffAndPowerVar(NULL, -4, 'u');
   showRatCoeffAndPowerVar(&Rat1, 2, 'u');
   BigRationalMultiplyByInt(&Rat2, -1, &Rat4);
@@ -206,12 +216,11 @@ static void showStepsForComplexSquareRoot(char letter, const char *pszPlus)
   CopyBigInt(&Rat3.numerator, &Rat1.numerator);
   CopyBigInt(&Rat3.denominator, &Rat1.denominator);
   showStepsForRealBiquadratic(&Rat3, &Rat4, 'u');
-  showText(lang ? "<p>Usaremos el signo más para que el argumento de la raíz cuadrada sea positiva." :
-    "<p>We will use the plus sign so the argument of the square root is positive.");
+  // We will use the plus sign so the argument of the square root is positive.
+  formatString(&ptrOutput, "<p>$1s</p></p>", LITERAL_STEPS_COMPLEX_SQROOT7);
+  // From
+  formatString(&ptrOutput, LITERAL_STEPS_COMPLEX_SQROOT8, eqNbr - 3);   // Equation 3.
   showText("</p><p>");
-  showText(lang ? "De (" : "From (");
-  int2dec(&ptrOutput, eqNbr - 3);   // Equation 3.
-  showText("):</p><p>");
   showRatCoeffAndPowerVar(NULL, -2, 'v');
   showText(" = ");
   BigRationalMultiplyByInt(&Rat1, -2, &Rat1);
@@ -224,15 +233,21 @@ static void showStepsForComplexSquareRoot(char letter, const char *pszPlus)
   showText(" + ");
   showSquareRootOfRational(&Rat2, 2, ptrTimes);
   showText("</p><p>");
-  showText(lang ? "Como " : "Since ");
+  // Since
+  showText(LITERAL_STEPS_BIQUADR1);
   showU();
-  showText(lang ? " es la parte real de " : " is the real part of ");
+  // is the real part of
+  showText(LITERAL_STEPS_COMPLEX_SQROOT9);
   showRatCoeffAndPowerVar(NULL, -1, letter);
-  showText(lang ? " y " : " and ");
+  // and
+  showText(LITERAL_STEPS_COMPLEX_SQROOT10);
   showRatCoeffAndPowerVar(NULL, -1, 'v');
-  showText(lang ? " es la parte imaginaria de " : " is the imaginary part of ");
+  // is the imaginary part of
+  showText(LITERAL_STEPS_COMPLEX_SQROOT11);
   showRatCoeffAndPowerVar(NULL, -1, letter);
-  showText(lang ? ", obtenemos:</p>" : ", we get:</p>");
+  // , we get:
+  showText(LITERAL_STEPS_COMPLEX_SQROOT12);
+  showText("</p>");
 }
 
 static void showStepsForBiquadratic(void)
@@ -419,8 +434,9 @@ static void biquadraticEquation(int multiplicity)
 {
   if (teach)
   {
-    showText(lang ? "<p>Como los coeficientes cubico y lineal valen cero, esta es una ecuación bicuadrática.</p>" :
-      "<p>The cubic and linear coefficients are equal to zero, so this is a biquadratic equation.</p>");
+    // The cubic and linear coefficients are equal to zero,
+    // so this is a biquadratic equation.
+    formatString(&ptrOutput, "<p>$1s</p>", LITERAL_BIQUADR_EQ1);
   }
   // Compute discriminant as c^2-4e
   BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &Rat2);
@@ -582,7 +598,7 @@ static void showStepsOnRationalRootOfResolvent(const char *pszMinus, enum eSign 
   showRatCoeffAndPowerVar(&Rat1, 0, currLetter);
   ComputeRightSqrtFerrariRational(1, sign == SIGN_POSITIVE ? SIGN_NEGATIVE : SIGN_POSITIVE);
   showText(" = 0</p><p>");
-  showText(lang ? "Usando la identidad" : "From the identity:");
+  // From the identity:
   showText("</p><p>");
   startParen();
   showRatCoeffAndPowerVar(NULL, -1, currLetter);
@@ -606,7 +622,8 @@ static void showStepsOnRationalRootOfResolvent(const char *pszMinus, enum eSign 
   BigRationalDivideByInt(&Rat3, 2, &Rat3);
   showRatCoeffAndPowerVar(&Rat3, 0, currLetter);
   showText("</p><p>");
-  showText(lang ? "obtenemos:" : "we get:");
+  // we get:
+  showText(LITERAL_BIQUADR_EQ3);
   showText("</p><p>");
   startParen();
   showRatCoeffAndPowerVar(NULL, -1, currLetter);
@@ -649,8 +666,8 @@ static void showStepsOnRationalRootOfResolvent(const char *pszMinus, enum eSign 
   showText("</p>");
   if (RatS.numerator.sign == SIGN_POSITIVE)
   {   // Square root of complex number Rat1 +/- i*sqrt(-Rat2).
-    showText(lang ? "<p>Debemos calcular la raíz cuadrada de un número complejo.</p>" :
-      "<p>We must compute the square root of a complex number.</p>");
+    // We must compute the square root of a complex number.
+    formatString(&ptrOutput, "<p>$1s</p>", LITERAL_BIQUADR_EQ4);
     BigRationalMultiplyByInt(&Rat2, -1, &Rat2);
     if (RatDeprLinear.numerator.sign == sign)
     {
@@ -682,22 +699,10 @@ static void showStepsOnRationalRootOfResolvent(const char *pszMinus, enum eSign 
     showText(ptrI);
     showText(ptrTimes);
     showVariable(&ptrOutput, 'v');
-    showText(lang ? "<p>De (" : "<p>From (");
-    int2dec(&ptrOutput, eqNbr - 1);
-    showText("), ");
-    showVariable(&ptrOutput, 'u');
-    showText(lang ? " y " : " and ");
-    showVariable(&ptrOutput, 'v');
-    showText(lang ? " tienen ": " have ");
-    if (RatDeprLinear.numerator.sign == sign)
-    {
-      showText(lang ? "el mismo signo" : "the same sign");
-    }
-    else
-    {
-      showText(lang ? "signos diferentes" : "different signs");
-    }
-    showText(".</p>");
+    // From $1q, $2v y $3v have $4?1?the same sign??$4?0?different sign??.
+    formatString(&ptrOutput, LITERAL_BIQUADR_EQ5, eqNbr - 1, 'u', 'v',
+      (RatDeprLinear.numerator.sign == sign ? 0 : 1));
+    showText("</p>");
   }
   showAdjustForCubic();
   // Restore value of RatS and RetDeprLinear.
@@ -708,17 +713,19 @@ static void showStepsOnRationalRootOfResolvent(const char *pszMinus, enum eSign 
 
 static void showFerrariResolventRationalRoot(void)
 {
-  showText(lang ? "<p>Esta ecuación tiene una raíz racional:":
-    "<p>This equation has a rational root:");
+  showText("<p>");
+  // This equation has a rational root:
+  showText(LITERAL_FERRARI_RAT_ROOT1);
   showText("</p><p>");
   showM();
   showText(" = ");
   BigRationalMultiplyByInt(&RatS, -1, &Rat4);
   showRationalNoParen(&Rat4);
   showText("</p><p>");
-  showText(lang ? "Sustituyendo esta raíz en (" : "Replacing this root in (");
-  int2dec(&ptrOutput, eqNbr);    // Equation 1.
-  showText("):</p><p>");
+  // Replacing this root in $1q:
+  formatString(&ptrOutput, LITERAL_FERRARI_RAT_ROOT2, eqNbr);  // Equation 1.
+  int2dec(&ptrOutput, eqNbr);    
+  showText("</p><p>");
   BigRationalDivideByInt(&RatDeprQuadratic, 2, &Rat1);
   BigRationalAdd(&Rat1, &Rat4, &Rat1);
   startParen();
@@ -923,7 +930,8 @@ static void showEndFerrariResolventNoRationalRoot(const char* minus, int multipl
   }
   showNbrOverSqrt2M();
   showText("= 0</p><p>");
-  showText(lang ? "<p>Como " : "<p>Since ");
+  // Since
+  showText(LITERAL_STEPS_BIQUADR1);
   intToBigInteger(&Rat2.numerator, (minus == ptrMinus? -1: 1));
   intToBigInteger(&Rat2.denominator, 2);
   startParen();
@@ -946,7 +954,8 @@ static void showEndFerrariResolventNoRationalRoot(const char* minus, int multipl
   Rat2.numerator.sign = SIGN_POSITIVE;
   showRatCoeffAndPowerVar(&Rat2, 1, 'm');
   showText("</p><p>");
-  showText(lang ? "obtenemos:" : "we get:");
+  // we get:
+  showText(LITERAL_BIQUADR_EQ3);
   showText("</p><p>");
   intToBigInteger(&Rat2.numerator, (minus == ptrMinus ? -1 : 1));
   startParen();
@@ -1050,9 +1059,10 @@ static void showFerrariResolventNoRationalRoot(int multiplicity)
     CopyBigInt(&(*pRat)->denominator, &coeffBackup[i].denominator);
     pRat++;
   }
-  showText(lang ? "<p>De " : "<p>From ");
-  showEqNbrs(FerrariEq, FerrariEq + 1);
-  showText(":</p><p>");
+  showText("<p>");
+  // From $1q y $2q:
+  formatString(&ptrOutput, LITERAL_STEPS_COMPLEX_SQROOT6, FerrariEq, FerrariEq + 1);
+  showText("</p><p>");
   showRatCoeffAndPowerVar(NULL, -2, currLetter);
   BigRationalDivideByInt(&RatDeprQuadratic, 2, &Rat1);
   showRatCoeffAndPowerVar(&Rat1, 0, currLetter);
@@ -1063,12 +1073,14 @@ static void showFerrariResolventNoRationalRoot(int multiplicity)
   showSquareRHS(false);
   generateEqNbr();
   showText("</p><p>");
-  showText(lang ? "Usando el signo más:" : "Using the plus sign:");
+  // Using the plus sign:
+  showText(LITERAL_FERRARI_RAT_ROOT3);
   showText("</p>");
   showEndFerrariResolventNoRationalRoot(ptrMinus, multiplicity);
-  showText(lang ? "<p>Usando el signo menos en (" : "<p>Using the minus sign in (");
-  int2dec(&ptrOutput, eqNbr);
-  showText("):</p><p>");
+  showText("<p>");
+  // Using the minus sign in $1q:
+  formatString(&ptrOutput, LITERAL_FERRARI_RAT_ROOT4, eqNbr);
+  showText("</p><p>");
   showEndFerrariResolventNoRationalRoot(" + ", multiplicity);
   showText("</p>");
 }
@@ -1092,16 +1104,18 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
   enum eSign oldLinearSign = RatDeprLinear.numerator.sign;
   if (teach)
   {
-    showText(lang ? "<p>Usando el signo más:" : "<p>Using the plus sign:");
+    // Using the plus sign:
+    showText(LITERAL_FERRARI_RAT_ROOT3);
     showStepsOnRationalRootOfResolvent(ptrMinus, SIGN_POSITIVE);
   }
   showSolFerrariResolventRatRoot(0, oldLinearSign, multiplicity);
   showSolFerrariResolventRatRoot(2, oldLinearSign, multiplicity);
   if (teach)
   {
-    showText(lang ? "<p>Usando el signo menos en (" : "<p>Using the minus sign in (");
-    int2dec(&ptrOutput, eqPlusMinusAfterRoot);
-    showText("):</p>");
+    showText("<p>");
+    // Using the minus sign in $1q:
+    formatString(&ptrOutput, LITERAL_FERRARI_RAT_ROOT4, eqPlusMinusAfterRoot);
+    showText("</p>");
     showStepsOnRationalRootOfResolvent("+", SIGN_NEGATIVE);
   }
   showSolFerrariResolventRatRoot(1, oldLinearSign, multiplicity);
@@ -1112,8 +1126,8 @@ static void showDepressedQuartic(void)
 {
   if (!BigIntIsOne(&Quartic))
   {
-    showText(lang ? "<p>Dividiendo la ecuación por el coeficiente cuártico:</p><p>" :
-      "<p>Dividing the equation by the quartic coefficient:</p><p>");
+    // Dividing the equation by the quartic coefficient:
+    formatString(&ptrOutput, "<p>$1s</p><p>", LITERAL_SHOW_DEPR_QUARTIC1);
     showRatCoeffAndPowerVar(NULL, -4, 'x');
     showRatCoeffAndPowerVar(&RatCubic, 3, 'x');
     showRatCoeffAndPowerVar(&RatQuadratic, 2, 'x');
@@ -1123,16 +1137,15 @@ static void showDepressedQuartic(void)
   }
   if (!BigIntIsZero(&Cubic))
   {
-    showText(lang ? "<p>Para eliminar el término cúbico se debe hacer la sustitución:</p><p>" :
-      "<p>To eliminate the cubic term, we will perform the following substitution:</p><p>");
+    // To eliminate the cubic term, we will perform the following substitution:
+    formatString(&ptrOutput, "<p>$1s</p>", LITERAL_SHOW_DEPR_QUARTIC2);
     showVariable(&ptrOutput, 'x');
     showText(" = ");
     showVariable(&ptrOutput, 'y');
     BigRationalDivideByInt(&RatCubic, -4, &Rat2);
     showPlusMinusRational(&Rat2);
-    showText("</p><p>");
-    showText(lang ? "El valor indicado en la sustitución es la cuarta parte del coeficiente cúbico.</p>" :
-      "The constant value in the substitution equals the fourth part of the cubic coefficient.</p>");
+    // The constant value in the substitution equals the fourth part of the cubic coefficient.
+    formatString(&ptrOutput, "</p><p>$1s</p>", LITERAL_SHOW_DEPR_QUARTIC3);
     currLetter = 'y';
     // Show a(y-k)^4 + b(y-k)^3 + c(y-k)^2 + d(y-k) + e = 0.
     showText("<p>");
@@ -1167,7 +1180,9 @@ static void showDepressedQuartic(void)
     }
     showPlusMinusRational(&RatIndependent);
     showText(" = 0</p><p>");
-    showText(lang ? "Distribuyendo:</p><p>" : "Expanding brackets:</p><p>");
+    // Expanding brackets:
+    showText(LITERAL_SHOW_DEPR_QUARTIC4);
+    showText("</p><p>");
     // Expand all terms.
     // Show (y-B/4)^4 = y^4 - B*y^3 + 3/8*B^2*y^2 - 1/16*B^3*y + 1/256*B^4
     showRatCoeffAndPowerVar(NULL, -4, 'y');
@@ -1213,7 +1228,9 @@ static void showDepressedQuartic(void)
     // Show E
     showPlusMinusRational(&RatIndependent);
     showText(" = 0</p><p>");
-    showText(lang ? "Simplificando:</p><p>" : "Simplifying:</p><p>");
+    // Simplifying:
+    showText(LITERAL_SHOW_DEPR_QUARTIC5);
+    showText("</p><p>");
     // Show y^4 + Py^2 + Qy + R = 0.
     showRatCoeffAndPowerVar(NULL, -4, 'y');
     showRatCoeffAndPowerVar(&RatDeprQuadratic, 2, 'y');
@@ -1225,15 +1242,12 @@ static void showDepressedQuartic(void)
 
 static void showFerrariMethodDerivation(void)
 {
-  showText(lang ? "<p>Usaremos el método de Lodovico Ferrari para resolver la ecuación "
-    "de cuarto grado usando una ecuación auxiliar (llamada resolvente) de tercer grado.</p>"
-    "<p>En el miembro derecho de la siguiente identidad se encuentran los dos primeros "
-    "términos de la ecuación anterior:":
-    "<p>We will use Lodovico Ferrari's method to solve the quartic equation using an "
-    "auxiliar cubic equation (named resolvent equation).</p>"
-    "<p>The right hand side of the following identity includes the first two terms "
-    "of the previous equation:");
-  showText("</p><p>");
+  // We will use Lodovico Ferrari's method to solve the quartic equation
+  // using an auxiliar cubic equation (named resolvent equation).
+  // The right hand side of the following identity includes the first
+  // two terms of the previous equation:
+  formatString(&ptrOutput, "<p>$1s</p><p>$2s</p><p>", LITERAL_SHOW_FERRARI_METHOD1,
+    LITERAL_SHOW_FERRARI_METHOD2);
   BigRationalDivideByInt(&RatDeprQuadratic, 2, &Rat1);
   showSquareLHS();
   showText(" = ");
@@ -1251,9 +1265,9 @@ static void showFerrariMethodDerivation(void)
   BigRationalDivideByInt(&Rat3, 4, &Rat3);
   showRatCoeffAndPowerVar(&Rat3, 0, 'm');
   showText("</p><p>");
-  showText(lang ? "Como la ecuación vale cero, podemos restar al miembro derecho de la "
-    "identidad el miembro izquierdo de la ecuación." : "Since the equation equals zero, "
-    "we can subtract it from the right hand side of the identity.");
+  // Since the equation equals zero,
+  // we can subtract it from the right hand side of the identity.
+  showText(LITERAL_SHOW_FERRARI_METHOD3);
   showText("</p><p>");
   showSquareLHS();
   showText(" = 2");
@@ -1269,12 +1283,11 @@ static void showFerrariMethodDerivation(void)
   BigRationalSubt(&Rat3, &RatDeprIndependent, &Rat3);
   showRatCoeffAndPowerVar(&Rat3, 0, 'm');
   showText("</p><p>");
-  showText(lang ? "Elegimos el valor de " : "We select the value of ");
-  showVariable(&ptrOutput, 'm');
-  showText(lang ? " tal que el miembro derecho sea un cuadrado perfecto.</p>"
-    "</p><p>De la identidad" :
-    " such that the right hand side be a perfect square.</p>"
-    "<p>From the identity");
+  // We select the value of $1v such that the right hand side be a perfect square.
+  formatString(&ptrOutput, LITERAL_SHOW_FERRARI_METHOD4, 'm');
+  showText("</p><p>");
+  // From the identity
+  showText(LITERAL_SHOW_FERRARI_METHOD5);
   showText("</p><p>");
   showSquareRHS(true);
   showText(" = 2");
@@ -1289,7 +1302,8 @@ static void showFerrariMethodDerivation(void)
   showText(" + ");
   showRationalNoParenOverGeneric(&Rat4, showM);
   showText("</p><p>");
-  showText(lang ? "obtenemos:" : "we get:");
+  // we get:
+  showText(LITERAL_BIQUADR_EQ3);
   showText("</p><p>");
   showSquareLHS();
   showText(" = ");
@@ -1307,11 +1321,9 @@ static void showFerrariMethodDerivation(void)
   generateEqNbr();    // Equation 1.
   FerrariEq = eqNbr;
   showText("</p><p>");
-  showText(lang ? "Para que el miembro derecho sea un cuadrado perfecto, podemos hacer "
-    "que lo que se encuentra fuera del paréntesis valga cero. De esta manera obtenemos "
-    "una ecuación de tercer grado:" :
-    "We can make the right hand side a perfect square by setting to zero what is "
-    "outside the parentheses. In this way we get a cubic equation:");
+  // We can make the right hand side a perfect square by setting to zero what is outside
+  // the parentheses. In this way we get a cubic equation:
+  showText(LITERAL_SHOW_FERRARI_METHOD6);
   showText("</p><p>");
   BigRationalMultiplyByInt(&Rat4, -1, &Rat4);
   showRatCoeffAndPowerVar(NULL, -3, 'm');

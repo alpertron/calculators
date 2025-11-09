@@ -19,12 +19,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
 #include "showtime.h"
 #include "output.h"
 #include "commonstruc.h"
+#include "copyStr.h"
 
 extern BigInteger tofactor;
 static BigInteger Quad1;
@@ -851,17 +853,9 @@ static void showSumSqButton(char** pptrOutput)
     // Show button.
     copyStr(pptrOutput,
       "<div id=\"sumSquares\"><p><button type=\"button\" id=\"showSumSq\">");
-    if (lang)
-    {
-      copyStr(pptrOutput, "Todas las sumas de dos cuadrados");
-    }
-    else
-    {
-      copyStr(pptrOutput, "All sums of two squares");
-    }
-    copyStr(pptrOutput, "</button> <span class=\"new\">");
-    copyStr(pptrOutput, lang ? "¡Nuevo!" : "New!");
-    copyStr(pptrOutput, "</span></p></div>");
+    // All sums of two squares
+    copyStr(pptrOutput, LITERAL_SHOW_SUM_SQB);
+    copyStr(pptrOutput, "</button>");
 #endif
   }
 }
@@ -940,8 +934,8 @@ void showSumTwoSquares(void)
   }
   *ptrOutput = 'T';      // Indicate this output is the sum of squares.
   ptrOutput++;
-  copyStr(&ptrOutput, lang ? "<p>Suma de dos cuadrados:</p><ul>" :
-    "<p>Sum of two squares:</p><ul>");
+  // Sum of two squares:
+  formatString(&ptrOutput, "<p>$1s</p><ul>", LITERAL_SHOW_SUM_TWO_SQ1);
   for (sumSquaresNbr = 0; sumSquaresNbr < 1000; sumSquaresNbr++)
   {
     int exponentNbr;
@@ -1094,7 +1088,8 @@ void showSumTwoSquares(void)
   {
 #ifdef __EMSCRIPTEN__
     copyStr(&ptrOutput, "<p><button type=\"button\" id=\"showSumSq\">");
-    copyStr(&ptrOutput, lang ? "Más sumas de dos cuadrados" : "More sums of two squares");
+    // More sums of two squares
+    copyStr(&ptrOutput, LITERAL_SHOW_SUM_TWO_SQ2);
     copyStr(&ptrOutput, "</button></p>");
 #endif
     output[0] = 'S';    // Indicate button present.

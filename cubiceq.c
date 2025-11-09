@@ -19,6 +19,8 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include "string/strings.h"
+#include "copyStr.h"
 #include "rootseq.h"
 #include "expression.h"
 
@@ -182,14 +184,12 @@ static void CasusIrreducibilis(int multiplicity, char currLetter, bool fromQuart
   {
     char buf[1000];
     char* ptrBuf;
-    showText(lang ? "<p>El discriminante es positivo, lo que indica que las tres raíces son reales. "
-      "En este caso no es posible representar las raíces mediante expresiones radicales de números reales, "
-      "por lo que se debe utilizar trigonometría.</p>"
-      "<p>Comenzando con la fórmula de la triplicación del ángulo:</p><p>4" :
-      "<p>The discriminant is positive, which implies that all three roots are real. "
-      "In this case the roots cannot be represented by radical expressions of real numbers, "
-      "so we must use trigonometry.</p>"
-      "<p>Starting with the formula of the triple angle:</p><p>4");
+    // The discriminant is positive, which implies that all three roots are real.
+    // In this case the roots cannot be represented by radical expressions of real
+    // numbers, so we must use trigonometry.
+    // Starting with the formula of the triple angle:
+    formatString(&ptrOutput, "<p>$1s</p><p>$2s</p><p>4",
+      LITERAL_CASUSIRR1, LITERAL_CASUSIRR7);
     showText(ptrTimes);
     showCosTPower3();
     showText(" ");
@@ -209,20 +209,15 @@ static void CasusIrreducibilis(int multiplicity, char currLetter, bool fromQuart
     showText(" = 0");
     generateEqNbr();     // Equation 2.
     showText("</p><p>");
-    showText(lang ? "Sea " : "Let ");
-    showVariable(&ptrOutput, currLetter);
-    showText(" = ");
-    showVariable(&ptrOutput, 'u');
-    showText(" ");
+    // Let $1v = $2v 
+    formatString(&ptrOutput, LITERAL_CASUSIRR8, currLetter, 'u');
     showText(ptrTimes);
     showCosT();
     generateEqNbr();     // Equation 3.
     showText("</p><p>");
-    showText(lang ? "Sustituyendo (": "Replacing (");
-    int2dec(&ptrOutput, eqNbr);      // Equation 3.
-    showText(lang ? ") en (" : ") in (");
-    int2dec(&ptrOutput, eqNbr - 2);  // Equation 1.
-    showText("):</p><p>");
+    // Replacing $1q in $2q:
+    formatString(&ptrOutput, LITERAL_REPLACING1, eqNbr, eqNbr - 2);
+    showText("</p><p>");
     showPowerVar(&ptrOutput, 3, 'u');
     showText(ptrTimes);
     showCosTPower3();
@@ -234,11 +229,8 @@ static void CasusIrreducibilis(int multiplicity, char currLetter, bool fromQuart
     showText(" = 0");
     generateEqNbr();                // Equation 4.
     showText("</p><p>");
-    showText(lang ? "El criterio a seguir consiste en igualar los términos de " :
-      "We will equate the terms of ");
-    showEqNbrs(eqNbr - 2, eqNbr);   // Equations 2 and 4.
-    showText(lang ? " de izquierda a derecha. Dividiendo por " :
-      " from left to right. Dividing by ");
+    // We will equate the terms of $1q and $2q from left to right. Dividing by 
+    formatString(&ptrOutput, LITERAL_CASUSIRR2, eqNbr - 2, eqNbr);  // Equation 2 and 4.
     showPowerVar(&ptrOutput, 3, 'u');
     showText(" / 4:</p>4");
     showCosTPower3();
@@ -261,11 +253,8 @@ static void CasusIrreducibilis(int multiplicity, char currLetter, bool fromQuart
       TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
     Rat1.numerator.sign = SIGN_POSITIVE;
     showRationalOverStr(&Rat1, buf, ptrTimes);
-    showText(" = 0</p><p>");
-    showText(lang ? "El segundo coeficiente debe valer " :
-      "The second coefficient must equal ");
-    showText(ptrMinus);
-    showText(lang ? "3, así que:</p><p>" : "3, so:</p><p>");
+    // The second coefficient must equal &minus;3, so:
+    formatString(&ptrOutput, " = 0</p><p>$1s</p><p>", LITERAL_CASUSIRR3);
     showVariable(&ptrOutput, 'u');
     showText(" = ");
     intToBigInteger(&Rat1.numerator, 2);
@@ -274,9 +263,8 @@ static void CasusIrreducibilis(int multiplicity, char currLetter, bool fromQuart
     MultiplyRationalBySqrtRational(&Rat1, &Rat2);
     ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
     generateEqNbr();     // Equation 6.
-    showText("</p><p>");
-    showText(lang ? "Igualando el último término:" : "Equating the last term:");
-    showText("</p><p>");
+    // Equating the last term:
+    formatString(&ptrOutput, "</p><p>$1s</p><p>", LITERAL_CASUSIRR4);
     showText(ptrCos);
     startParen();
     showText("3");
@@ -345,9 +333,8 @@ static void CasusIrreducibilis(int multiplicity, char currLetter, bool fromQuart
   Rat1.numerator.sign = SIGN_POSITIVE;
   if (teach)
   {
-    showText(lang ? "<p>De " : "<p>From ");
-    showEqNbrs(eqNbr - 2, eqNbr);    // Equations 4 and 6.
-    showText(":</p>");
+    // From $1q and $2q:
+    formatString(&ptrOutput, LITERAL_FROM2, eqNbr - 2, eqNbr);  // Equations 4 and 6.
   }
   for (int ctr = 0; ctr <= 4; ctr += 2)
   {
@@ -497,11 +484,11 @@ static void bothQuadraticAndLinearCoeffZero(int multiplicity, bool fromQuartic)
   ForceDenominatorPositive(&RatDeprIndependent);
   if (teach)
   {
-    showText(lang ? "<p>Las soluciones son la raíz cúbica real de " :
-      "<p>The solutions are the real cube root of ");
+    // The solutions are the real cube root of 
+    formatString(&ptrOutput, "<p>$1s", LITERAL_CASUSIRR5);
     showRationalNoParen(&RatDeprIndependent);
-    showText(lang ? " y su producto por las dos raíces cúbicas no reales de 1, que son:</p><p>":
-      " and the multiplication by both non-real cube roots of 1:</p><p>");
+    // and the multiplication by both non-real cube roots of 1:
+    formatString(&ptrOutput, "$1s</p><p>", LITERAL_CASUSIRR6);
     showNonRealCubeRootsOf1();
     showText("</p>");
   }
@@ -599,13 +586,9 @@ static void showR(void)
 
 static void showCardanoMethod(char currLetter)
 {
-  showText(lang ? "<p>Usando el método de Cardano, asignando " : "<p>Using Cardano's method, setting ");
-  showVariable(&ptrOutput, currLetter);
-  showText(" = ");
-  showVariable(&ptrOutput, 'r');
-  showText(" + ");
-  showVariable(&ptrOutput, 's');
-  showText(":</p><p>");
+  // Using Cardano's method, setting 
+  formatString(&ptrOutput, "<p>$1s", LITERAL_CARDANO1);
+  formatString(&ptrOutput, "$1v = $2v + $3v:</p><p>", currLetter, 'r', 's');
   // Show (r+s)^3 + N = 0, where N = p(r+s) + q
   showRPlusS();
   showPower(&ptrOutput, 3);
@@ -651,9 +634,7 @@ static void showCardanoMethod(char currLetter)
   showPlusMinusRational(&RatDeprIndependent);
   showText(" = 0");
   generateEqNbr();     // Equation 1
-  showText("</p><p>");
-  showText(lang ? "Como hay una variable adicional, se puede imponer una condición extra. En este caso la elección es:</p><p>" :
-    "Since there is an extra variable, we can impose an additional condition. In our case it is:</p><p>");
+  formatString(&ptrOutput, "</p><p>$1s</p><p>", LITERAL_CARDANO2);
   // Show 3rs + p = 0
   showRational(&Rat1);
   showText(ptrTimes);
@@ -682,10 +663,8 @@ static void showCardanoMethod(char currLetter)
   BigRationalMultiply(&Rat2, &Rat1, &Rat2);
   showRational(&Rat2);
   generateEqNbr();     // Equation 4
-  showText("</p><p>");
-  showText(lang ? "De " : "From ");
-  showEqNbrs(eqNbr - 3, eqNbr - 2);  // Equations 1 and 2.
-  showText(":</p><p>");
+  showText("</p>");
+  formatString(&ptrOutput, LITERAL_FROM2, eqNbr - 3, eqNbr - 2);  // Equations 1 and 2.
   // Show r^3 + s^3 + q = 0
   showPowerVar(&ptrOutput, 3, 'r');
   showText(" + ");
@@ -694,9 +673,8 @@ static void showCardanoMethod(char currLetter)
   showText(" = 0");
   generateEqNbr();     // Equation 5
   showText("</p><p>");
-  showText(lang ? "Multiplicando por " : "Multiplying by ");
-  showPowerVar(&ptrOutput, 3, 'r');
-  showText(":</p></p>");
+  formatString(&ptrOutput, LITERAL_CARDANO3, "r3");
+  showText("</p></p>");
   // Show r^6 + r^3*s^3 + q*r^3 = 0
   showPowerVar(&ptrOutput, 6, 'r');
   showText(" + ");
@@ -704,10 +682,8 @@ static void showCardanoMethod(char currLetter)
   showText(ptrTimes);
   showPowerVar(&ptrOutput, 3, 's');
   showRatCoeffAndPowerVar(&RatDeprIndependent, 3, 'r');
-  showText(" = 0</p><p>");
-  showText(lang ? "De (": "From (");
-  int2dec(&ptrOutput, eqNbr - 1);   // Equation 4.
-  showText("):</p>");
+  showText(" = 0</p>");
+  formatString(&ptrOutput, LITERAL_FROM1, eqNbr - 1);   // Equation 4.
   showPowerVar(&ptrOutput, 6, 'r');
   showPlusMinusRational(&Rat2);
   showRatCoeffAndPowerVar(&RatDeprIndependent, 3, 'r');
@@ -716,25 +692,8 @@ static void showCardanoMethod(char currLetter)
   showRatCoeffAndPowerVar(&RatDeprIndependent, 3, 'r');
   showPlusMinusRational(&Rat2);
   showText(" = 0</p><p>");
-  showText(lang ? "Esta es una ecuación cuadrática en " :
-    "This is a quadratic equation in ");
-  showPowerVar(&ptrOutput, 3, 'r');
-  showText(lang ? ". Al multiplicar (" : ". If we multiplied (");
-  int2dec(&ptrOutput, eqNbr);    // Equation 5.
-  showText(lang ? ") por " : ") by ");
-  showPowerVar(&ptrOutput, 3, 's');
-  showText(lang ? " en vez de " : " instead of ");
-  showPowerVar(&ptrOutput, 3, 'r');
-  showText(lang ? ", los coeficientes de la ecuación serían los mismos, así que la ecuación cuadrática también permite obtener " :
-    ", the equation coefficients would be the same, so the quadratic equation can also give us the value of ");
-  showPowerVar(&ptrOutput, 3, 's');
-  showText(lang ? ". Sea " : ". Let ");
-  showVariable(&ptrOutput, 'w');
-  showText(" = ");
-  showPowerVar(&ptrOutput, 3, 'r');
-  showText(lang ? " o " : " or ");
-  showPowerVar(&ptrOutput, 3, 's');
-  showText(".</p><p>");
+  formatString(&ptrOutput, LITERAL_CARDANO4, "r3", eqNbr, "s3", 'w');
+  showText("</p><p>");
   // Back-up linear and independent coefficients.
   CopyBigInt(&RatQuartic.numerator, &RatLinear.numerator);
   CopyBigInt(&RatQuartic.denominator, &RatLinear.denominator);
@@ -761,22 +720,16 @@ static void linearCoeffNotZero(int multiplicity, char currLetter, bool fromQuart
 {
   if (teach)
   {
-    showText(lang ? "<p>El discriminante es negativo, lo que indica que hay una raíz real y dos raíces complejas conjugadas.</p>" :
-      "<p>The discriminant is negative, so there is a real root and two complex conjugate roots.</p>");
+    formatString(&ptrOutput, "<p>$1s</p>", LITERAL_COEFF_NO_ZERO1);
     showCardanoMethod(currLetter);
   }
   showRAndS();
   if (!fromQuartic && teach)
   {
-    showText(lang ? "<p>Una raíz cúbica tiene tres soluciones en el campo complejo. Sin embargo, no se puede elegir cualquier valor para " :
-      "<p>A cubic root has three solutions in the complex field. But we cannot select any value for ");
-    showVariable(&ptrOutput, 'r');
-    showText(lang ? " y " : " and ");
-    showVariable(&ptrOutput, 's');
-    showText(lang ? " porque se debe cumplir la condición (" : "because the condition (");
-    int2dec(&ptrOutput, eqNbr - 2);     // Equation 3.
-    showText(lang ? "). Así que el producto debe ser un número real.</p><p>Sea " :
-      ") must be true. So their product must be a real number.</p><p>Let ");
+    showText("<p>");
+    formatString(&ptrOutput, LITERAL_COEFF_NO_ZERO2, 'r', 's', eqNbr-2);  // Equation 3.
+    showText("</p><p>");
+    showText(LITERAL_COEFF_NO_ZERO3);
     for (char letter = 'r'; letter <= 's'; letter++)
     {
       if (letter == 's')
@@ -799,22 +752,12 @@ static void linearCoeffNotZero(int multiplicity, char currLetter, bool fromQuart
       showText(ptrTimes);
       showVariable(&ptrOutput, 'f');
     }
-    showText(lang ? ", donde</p><p>" : ", where</p><p>");
+    formatString(&ptrOutput, ", $1s</p><p>", LITERAL_COEFF_NO_ZERO4);
     showNonRealCubeRootsOf1();
-    showText(lang ? "</p><p>son las raíces cúbicas no reales de 1. Como " :
-      "</p><p>are the non-real cubic roots of 1. Since ");
-    showVariable(&ptrOutput, 'e');
-    showText(ptrTimes);
-    showVariable(&ptrOutput, 'f');
-    showText(lang ? " es real, pero " : " is real, but ");
-    showPowerVar(&ptrOutput, 2, 'e');
-    showText(lang ? " y " : " and ");
-    showPowerVar(&ptrOutput, 2, 'f');
-    showText(lang ? " no lo son, los valores de " : " are not, the values of ");
-    showVariable(&ptrOutput, currLetter);
-    showText(lang ? " que cumplen la condición (" : " that follow the condition (");
-    int2dec(&ptrOutput, eqNbr - 2);   // Equation 3.
-    showText(lang ? ") son:</p>" : ") are:</p>");
+    showText("</p><p>");
+    formatString(&ptrOutput, LITERAL_COEFF_NO_ZERO5, 'e', ptrTimes, 'f', "e2", "f2",
+      currLetter, eqNbr - 2);     // Equation 3.
+    showText("</p>");
     for (int rootNbr = 1; rootNbr <= 3; rootNbr++)
     {
       showText("<p>");
@@ -936,9 +879,8 @@ static void linearCoeffNotZero(int multiplicity, char currLetter, bool fromQuart
     }
     if (fromQuartic)
     {
-      showText(lang? "<p>De (": "<p>From (");
-      int2dec(&ptrOutput, eqNbr - 2);
-      showText("):</p><p>");
+      formatString(&ptrOutput, LITERAL_FROM1, eqNbr - 2);
+      showText("<p>");
       showVariable(&ptrOutput, 'm');
       showText(" = ");
       if (!BigIntIsZero(&Quadratic))
@@ -1022,8 +964,7 @@ void solveCubic(int multiplicity, bool fromQuartic, char currLetter)
     }
     if (!fromQuartic && !BigIntIsOne(&Cubic))
     {
-      showText(lang ? "<p>Dividiendo la ecuación por el coeficiente cúbico:</p><p>" :
-        "<p>Dividing the equation by the cubic coefficient:</p><p>");
+      formatString(&ptrOutput, "<p>$1s</p><p>", LITERAL_SOLVE_CUBIC1);
       showRatCoeffAndPowerVar(NULL, -3, 'x');
       showRatCoeffAndPowerVar(&RatQuadratic, 2, 'x');
       showRatCoeffAndPowerVar(&RatLinear, 1, 'x');
@@ -1043,17 +984,13 @@ void solveCubic(int multiplicity, bool fromQuartic, char currLetter)
       {
         showText("</p>");
       }
-      showText("<p>");
-      showText(lang ? "Para eliminar el término cuadrático se debe hacer la sustitución:</p><p>" :
-        "To eliminate the quadratic term, we will perform the following substitution:</p><p>");
+      formatString(&ptrOutput, "<p>$1s</p><p>", LITERAL_SOLVE_CUBIC2);
       showVariable(&ptrOutput, currLetter);
       showText(" = ");
       showVariable(&ptrOutput, currLetter + 1);
       BigRationalDivideByInt(&RatQuadratic, -3, &Rat2);
       showPlusMinusRational(&Rat2);
-      showText("</p><p>");
-      showText(lang ? "El valor indicado en la sustitución es la tercera parte del coeficiente cuadrático.</p>" :
-        "The constant value in the substitution equals a third of the quadratic coefficient.</p>");
+      formatString(&ptrOutput, "</p><p>$1s</p>", LITERAL_SOLVE_CUBIC3);
       // Change variable name.
       currLetter++;
       // Show a(y-k)^3 + b(y-k)^2 + c(y-k) + d = 0.
@@ -1079,8 +1016,7 @@ void solveCubic(int multiplicity, bool fromQuartic, char currLetter)
         endParen();
       }
       showPlusMinusRational(&RatIndependent);
-      showText(" = 0</p><p>");
-      showText(lang ? "Distribuyendo:</p><p>" : "Expanding brackets:</p><p>");
+      formatString(&ptrOutput, " = 0</p><p>$1s</p><p>", LITERAL_SOLVE_CUBIC4);
       // Expand all terms.
       // (y-B/3)^3
       showRatCoeffAndPowerVar(NULL, -3, currLetter);
@@ -1111,8 +1047,7 @@ void solveCubic(int multiplicity, bool fromQuartic, char currLetter)
       showPlusMinusRational(&Rat4);
       // D
       showPlusMinusRational(&RatIndependent);
-      showText(" = 0</p><p>");
-      showText(lang ? "Simplificando:</p><p>" : "Simplifying:</p><p>");
+      formatString(&ptrOutput, " = 0</p><p>$1s</p><p>", LITERAL_SOLVE_CUBIC5);
       // Show y^3 + Py + Q = 0.
       showRatCoeffAndPowerVar(NULL, -3, currLetter);
       showRatCoeffAndPowerVar(&RatDeprLinear, 1, currLetter);
@@ -1120,10 +1055,7 @@ void solveCubic(int multiplicity, bool fromQuartic, char currLetter)
       showText(" = 0");
       generateEqNbr();        // Equation 1.
     }
-    showText("</p><p>");
-    showText(lang ? "La naturaleza de las raíces está dada por el valor del discriminante." :
-      "The nature of the roots depends on the value of the discriminant.");
-    showText("</p><p>");
+    formatString(&ptrOutput, "</p><p>$1s</p><p>", LITERAL_SOLVE_CUBIC6);
     showText(ptrDelta);
     showText(" = ");
     intToBigInteger(&Rat1.numerator, -4);
@@ -1132,11 +1064,9 @@ void solveCubic(int multiplicity, bool fromQuartic, char currLetter)
     showText(" ");
     intToBigInteger(&Rat1.numerator, -27);
     showRatCoeffAndPowerVar(&Rat1, 2, 'q');
-    showText(lang ? "<p>donde " : "<p>where ");
-    showVariable(&ptrOutput, 'p');
-    showText(lang ? " es el coeficiente lineal y " : " is the linear coefficient and ");
-    showVariable(&ptrOutput, 'q');
-    showText(lang ? " es el término independiente.</p><p>" : " is the constant term.</p><p>");
+    showText("<p>");
+    formatString(&ptrOutput, LITERAL_SOLVE_CUBIC7, 'p', 'q');
+    showText("</p><p>");
     showText(ptrDelta);
     showText(" = ");
     showText(ptrMinus);

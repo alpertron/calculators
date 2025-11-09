@@ -3,7 +3,7 @@
  * @externs
  */
 
-let useBlockly = function(_callback, _lang)
+let useBlockly = function(_callback)
 {
   /* Nothing to be done in extern file */
 };

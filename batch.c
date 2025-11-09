@@ -19,11 +19,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
 #include "showtime.h"
 #include "batch.h"
+#include "copyStr.h"
 
 static char *ptrEndBatchFactor;
 static char *ptrCurrBatchFactor;
@@ -123,11 +125,14 @@ static void stringToHTML(char **pptrOutput, const char *ptrString)
 
 static void showErrorInExpr(char** pptrOutput, int rcode)
 {
-  copyStr(pptrOutput, lang ? "Error en la expresión " :
-    "Error in expression #");
-  int2dec(pptrOutput, expressionNbr);
-  copyStr(pptrOutput, ": ");
-  textError(pptrOutput, rcode);
+  char errorString[200];
+  char* ptrErrorString = errorString;
+  int expressionNbrBak = expressionNbr;
+  expressionNbr = 0;  // On syntax error, do not show expression number twice.
+  textError(&ptrErrorString, rcode);
+  expressionNbr = expressionNbrBak;
+  // Error in expression #$1d: $2s
+  formatString(pptrOutput, LITERAL_ERROR_IN_EXPRESSION, expressionNbr, errorString);
   counterC = 0;
   ptrOutput += 4;
 }
@@ -218,42 +223,6 @@ static bool doCallback(const char * ptrExpr, BigInteger *valueFound, int type)
   return false;
 }
 
-static const char* missingVariableES[2] =
-{
-  "falta variable x en la primera expresión",
-  "falta variable x en la segunda expresión",
-};
-
-static const char* missingVariableEN[2] =
-{
-  "variable x missing in first expression",
-  "variable x missing in second expression",
-};
-
-static const char *missingSemicolonES[2] =
-{
-  "se esperaban tres o cuatro puntos y comas pero no hay ninguno",
-  "se esperaban tres o cuatro puntos y comas pero solo hay uno",
-};
-
-static const char* missingSemicolonEN[2] =
-{
-  "three or four semicolons expected but none found",
-  "three or four semicolons expected but there are only one",
-};
-
-static const char *missingEqualSignES[2] =
-{
-  "falta signo igual en la primera expresión",
-  "falta signo igual en la segunda expresión",
-};
-
-static const char* missingEqualSignEN[2] =
-{
-  "equal sign missing in first expression",
-  "equal sign missing in second expression",
-};
-
 static bool convertExpressionsToRPN(const char* batchText)
 {
   enum eExprErr retcode;
@@ -270,23 +239,29 @@ static bool convertExpressionsToRPN(const char* batchText)
     SkipSpacesConst(&ptrBatchText);
     if ((*ptrBatchText != 'x') && (*ptrBatchText != 'X'))
     {
+      // variable x missing in first expression
+      // variable x missing in second expression
       BatchError(&ptrOutput, batchText,
-        lang ? missingVariableES[exprNbr] : missingVariableEN[exprNbr]);
+        (exprNbr == 0? LITERAL_MISSING_VARIABLE1: LITERAL_MISSING_VARIABLE2));
       return false;
     }
     ptrBatchText++;               // Skip variable 'x'.
     SkipSpacesConst(&ptrBatchText);
     if (*ptrBatchText != '=')
     {
+      // equal sign missing in first expression
+      // equal sign missing in second expression
       BatchError(&ptrOutput, batchText,
-        lang ? missingEqualSignES[exprNbr] : missingEqualSignEN[exprNbr]);
+        (exprNbr == 0 ? LITERAL_MISSING_EQUAL_SIGN1: LITERAL_MISSING_EQUAL_SIGN2));
       return false;
     }
     ptrCharFound = findChar(ptrBatchText + 1, ';');
     if (ptrCharFound == NULL)
     {
+      // three or four semicolons expected but none found
+      // three or four semicolons expected but there are only one
       BatchError(&ptrOutput, batchText,
-        lang ? missingSemicolonES[exprNbr] : missingSemicolonEN[exprNbr]);
+        (exprNbr == 0 ? LITERAL_MISSING_SEMICOLON1: LITERAL_MISSING_SEMICOLON2));
       return false;
     }
     ptrBatchText++;   // Point after equal (assignment) sign.
@@ -313,9 +288,8 @@ static bool convertExpressionsToRPN(const char* batchText)
   ptrCharFound = findChar(EndExpr, ';');  // Find third semicolon.
   if (ptrCharFound == NULL)
   {      // Third semicolon not found.
-    BatchError(&ptrOutput, batchText,
-      lang ? "se esperaban tres o cuatro puntos y comas pero solo hay dos" :
-      "three or four semicolons expected but there are only two");
+    // three or four semicolons expected but there are only two
+    BatchError(&ptrOutput, batchText, LITERAL_THIRD_SEMICOLON_NOT_FOUND);
     return false;
   }
   // Generate RPN for third expression (end expression).
@@ -356,9 +330,8 @@ static bool convertExpressionsToRPN(const char* batchText)
     }
     if (*ptrEndQuote == 0)
     {
-      BatchError(&ptrOutput, batchText,
-        lang ? "falta comilla de cierre" :
-        "missing closing quote");
+      // missing closing quote
+      BatchError(&ptrOutput, batchText, LITERAL_MISSING_CLOSING_QUOTE);
       return false;
     }
     // Find number of conversion clauses.
@@ -373,9 +346,8 @@ static bool convertExpressionsToRPN(const char* batchText)
           ptrCharFound += 2;
           if (nbrExpressions == MAX_EXPRESSIONS)
           {
-            BatchError(&ptrOutput, batchText,
-              lang ? "demasiadas cláusulas de conversion" :
-              "too many conversion clauses");
+            // too many conversion clauses
+            BatchError(&ptrOutput, batchText, LITERAL_TOO_MANY_CONVERSION_CLAUSES);
             return false;
           }
           nbrExpressions++;
@@ -389,18 +361,16 @@ static bool convertExpressionsToRPN(const char* batchText)
           ptrCharFound += 3;
           if (nbrExpressions == MAX_EXPRESSIONS)
           {
-            BatchError(&ptrOutput, batchText,
-              lang ? "demasiadas cláusulas de conversion" :
-              "too many conversion clauses");
+            // too many conversion clauses
+            BatchError(&ptrOutput, batchText, LITERAL_TOO_MANY_CONVERSION_CLAUSES);
             return false;
           }
           nbrExpressions++;
         }
         else
         {
-          BatchError(&ptrOutput, batchText,
-            lang ? "carácter extraño después de %" :
-            "strange character after %");
+          // strange character after %
+          BatchError(&ptrOutput, batchText, LITERAL_STRANGE_CHARACTER_AFTER_PERCENT_SIGN);
           return false;
         }
       }
@@ -416,9 +386,8 @@ static bool convertExpressionsToRPN(const char* batchText)
       ptrColon = findChar(ptrColon, ':');
       if (ptrColon == NULL)
       {
-        BatchError(&ptrOutput, batchText,
-          lang ? "la cantidad de clásulas de conversión es mayor que la cantidad de dos puntos" :
-          "the number of conversion clauses is greater than the number of colons");
+        // the number of conversion clauses is greater than the number of colons
+        BatchError(&ptrOutput, batchText, LITERAL_MORE_CONVERSION_CLAUSES_THAN_COLONS);
         return false;
       }
       ptrColon++;
@@ -434,9 +403,8 @@ static bool convertExpressionsToRPN(const char* batchText)
     ptrColon = findChar(ptrColon, ':');
     if (ptrColon != NULL)
     {
-      BatchError(&ptrOutput, batchText,
-        lang ? "la cantidad de clásulas de conversión es menor que la cantidad de dos puntos" :
-        "the number of conversion clauses is less than the number of colons");
+      // the number of conversion clauses is less than the number of colons
+      BatchError(&ptrOutput, batchText, LITERAL_LESS_CONVERSION_CLAUSES_THAN_COLONS);
       return false;
     }
   }
@@ -585,11 +553,11 @@ static bool InternalProcessLoop(bool* pIsBatch, const char* batchText,
               {
                 if (BigIntIsZero(valueFound))
                 {
-                  copyStr(&ptrOutput, "no");
+                  copyStr(&ptrOutput, LITERAL_NO);
                 }
                 else
                 {
-                  copyStr(&ptrOutput, lang ? "sí": "yes");
+                  copyStr(&ptrOutput, LITERAL_YES);
                 }
                 colonNbr++;
                 ptrInsideQuotes += 2;
@@ -743,7 +711,14 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
     c = *ptrSrcString;
     if (c == 0)
     {   // Empty line.
-      copyStr(&ptrOutput, "<br>");
+      if (fromFile)
+      {
+        copyStr(&ptrOutput, (lineEndingCRLF ? "\r\n" : "\n"));
+      }
+      else
+      {
+        copyStr(&ptrOutput, "</li><li>");
+      }
     }
     else if (c == '#')
     {   // Copy comment to output, but convert non-safe characters to entities.
@@ -756,7 +731,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       }
       else
       {
-        copyStr(&ptrOutput, "<li>");
+        copyStr(&ptrOutput, "</li><li>");
       }
     }
     else if ((c == 'x') || (c == 'X'))
@@ -788,8 +763,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       {
         if (rc == EXPR_VAR_IN_EXPRESSION)
         {
-          copyStr(&ptrOutput, lang ? "Variable inesperada en la expresión." :
-            "Unexpected variable in expression.");
+          copyStr(&ptrOutput, LITERAL_UNEXPECTED_VARIABLE);
         }
         else
         {
@@ -806,17 +780,6 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         copyStr(&ptrOutput, "</li><li>");
       }
       valuesProcessed++;
-    }
-    if (counterC == 1)
-    {
-      if (fromFile)
-      {
-        copyStr(&ptrOutput, (lineEndingCRLF ? "\r\n" : "\n"));
-      }
-      else
-      {
-        copyStr(&ptrOutput, "</li>");
-      }
     }
     if (ptrOutput >= &output[(int)sizeof(output) - 200000])
     {
@@ -844,14 +807,18 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
   }
   if (counterC == 1)
   {
-    if (!fromFile)
-    {
-      ptrOutput--;             // Erase extra character of </li>.
-    }
     if (!errorDisplayed)
     {
-      copyStr(&ptrOutput, lang ? "No hay valores para la expresión ingresada." :
-        "There are no values for the requested expression.");
+      const char* str;
+      if (fromFile) 
+      {
+        str = (lineEndingCRLF ? "$1s\r\n" : "$1s\n");
+      }
+      else
+      {
+        str = "<li>$1s</li>";
+      }
+      formatString(&ptrOutput, str, LITERAL_NO_VALUES);
     }
   }
   if (fromFile)

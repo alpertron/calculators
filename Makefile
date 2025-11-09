@@ -35,10 +35,13 @@ flags_cov_and_asan=$(flags_coverage) $(flags_sanitize)
 flags_factorization=$(flags_factorization_1) $(flags_cov_and_asan) $(flags_general)
 flags_squares=$(flags_squares_1) $(flags_cov_and_asan) $(flags_general)
 flags_other=$(flags_other_1) $(flags_cov_and_asan) $(flags_general)
-h_files=batch.h bignbr.h commonstruc.h expression.h factor.h highlevel.h polynomial.h showtime.h skiptest.h
+h_files=batch.h bignbr.h commonstruc.h expression.h factor.h highlevel.h polynomial.h showtime.h skiptest.h string/strings.h
 targets = ecm quad quadmod fsquares fcubes polfact dilog gaussian contfrac blockly tsqcubes sumquad divisors isprime modmult testmodmult prod
 .PHONY : all
 all: $(targets)
+
+string/strings.h: string_en.txt
+	perl internationalize.pl string_en.txt string/strings.h
 
 ecm_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c gcdrings.c fromBlockly.c linkedbignbr.c test.c

@@ -82,18 +82,12 @@ static int comprStackValues[COMPR_STACK_SIZE];
 static int comprStackOffset[PAREN_STACK_SIZE];
 static int stackIndex;
 #ifdef __ANDROID__
-#ifndef lang
-  extern bool lang;
-#endif
   extern char output[3000000];
   extern limb Mult1[MAX_LEN];
   extern limb Mult3[MAX_LEN];
   extern limb Mult4[MAX_LEN];
   extern int valueQ[MAX_LEN];
 #else
-#ifndef lang
-  bool lang;
-#endif
   char output[3000000];
   limb Mult1[MAX_LEN];
   limb Mult3[MAX_LEN];

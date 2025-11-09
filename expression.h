@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 31 de agosto de 2025."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 31 August 2025."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 8 de noviembre de 2025."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 8 November 2025."
 
 #include "bignbr.h"
 #ifdef __EMSCRIPTEN__
@@ -129,9 +129,6 @@ enum eParseExpr
   PARSE_EXPR_POLYNOMIAL,
 };
 
-#ifndef lang  
-  extern bool lang;
-#endif
 extern char inputString[1000000];
 extern char output[3000000];
 extern BigInteger valueX;

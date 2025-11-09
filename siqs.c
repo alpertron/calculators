@@ -20,10 +20,12 @@
 #include <math.h>
 #include <stdint.h>
 #include <assert.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
 #include "commonstruc.h"
+#include "copyStr.h"
 #if DEBUG_SIQS
 #ifndef __EMSCRIPTEN__
 #include <stdio.h>
@@ -69,14 +71,13 @@ static void sieveThread(BigInteger *result);
 static void InitSIQSStrings(int SieveLimit)
 {
   char *ptrText = ptrLowerText;  // Point after number that is being factored.
-  copyStr(&ptrText, lang ? "<p>Parámetros de SIQS: " : "<p>SIQS parameters: ");
-  int2dec(&ptrText, common.siqs.nbrFactorBasePrimes);   // Show number of primes in factor base.
-  copyStr(&ptrText, lang ? " primos, límite de la criba: " : " primes, sieve limit: ");
-  int2dec(&ptrText, SieveLimit);  // Show sieve limit.
-  copyStr(&ptrText, "</p>");
+  copyStr(&ptrText, "<p>");
+  // SIQS parameters: %1d primes, sieve limit: $2d
+  // Show number of primes in factor base.
+  formatString(&ptrText, LITERAL_INIT_SIQS_STRINGS1, common.siqs.nbrFactorBasePrimes, SieveLimit);
   ptrSIQSStrings = ptrText;
-  copyStr(&ptrText, lang ? "<p>Buscando el mejor multiplicador de Knuth-Schroeppel...</p>" :
-                         "<p>Searching for Knuth-Schroeppel multiplier...</p>");
+  // Searching for Knuth - Schroeppel multiplier...
+  formatString(&ptrText, "</p><p>$1s</p>", LITERAL_INIT_SIQS_STRINGS2);
   databack(lowerText);
 }
 
@@ -84,10 +85,9 @@ static void InitSIQSStrings(int SieveLimit)
 static void getMultAndFactorBase(int multiplier, int FactorBase)
 {
   char *ptrText = ptrSIQSStrings;
-  copyStr(&ptrText, lang ? "<p>Multiplicador: " : "<p>Multiplier: ");
-  int2dec(&ptrText, multiplier);  // Show Knuth-Schroeppel multiplier.
-  copyStr(&ptrText, lang ? ", base de factores: " : ", factor base: ");
-  int2dec(&ptrText, FactorBase);  // Show factor base.
+  copyStr(&ptrText, "<p>");
+  // Multiplier: $1d, factor base: $2d
+  formatString(&ptrText, LITERAL_GET_MULT_AND_FB, multiplier, FactorBase);
   copyStr(&ptrText, "</p>");
   ptrSIQSStrings = ptrText;
 }
@@ -104,19 +104,13 @@ static void ShowSIQSInfo(int timeSieve, int nbrCongruencesFound, int matrixBLeng
   int u = (int)dU;
   char *ptrText = SIQSInfo;
   copyStr(&ptrText, "4<p>");
-  int2dec(&ptrText, nbrCongruencesFound);  // Show number of congruences found.
-  copyStr(&ptrText, lang ? " congruencias halladas (" : " congruences found (");
-  int2dec(&ptrText, percentage);  // Show number of congruences found.
-  copyStr(&ptrText, lang ? "%) con " : "%) with ");
-  int2dec(&ptrText, common.siqs.nbrPrimesUsed);
-  copyStr(&ptrText, lang ? " primos diferentes." : " different primes.");
-  copyStr(&ptrText, lang ? "<br>Relaciones: " : "<br>Relations: ");
-  int2dec(&ptrText, smoothsFound);   // Show number of full congruences.
-  copyStr(&ptrText, lang ? " completas y " : " full and ");
-  int2dec(&ptrText, partialsFound);  // Show number of built congruences.
-  copyStr(&ptrText, lang ? " obtenidas de " : " found from ");
-  int2dec(&ptrText, totalPartials);  // Show number of partial congruences.
-  copyStr(&ptrText, lang ? " parciales." : " partials.");
+  // $1d congruences found ($2d%) with $3d different primes.
+  formatString(&ptrText, LITERAL_SHOW_SIQS_INFO1, nbrCongruencesFound, percentage,
+    common.siqs.nbrPrimesUsed);
+  copyStr(&ptrText, "<br>");
+  // Relations: $1d full and $2d found from $3d partials.
+  formatString(&ptrText, LITERAL_SHOW_SIQS_INFO2, smoothsFound, partialsFound,
+    totalPartials);
   copyStr(&ptrText, "<br><br><progress value=\"");
   int2dec(&ptrText, percentage);
   copyStr(&ptrText, "\" max=\"100\"></progress><br>");
@@ -124,7 +118,8 @@ static void ShowSIQSInfo(int timeSieve, int nbrCongruencesFound, int matrixBLeng
   if ((timeSieve > 1) && (nbrCongruencesFound > 10))
   {
     copyStr(&ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-    copyStr(&ptrText, lang ? " Fin de la criba en " : " End sieve in ");
+    // End sieve in
+    copyStr(&ptrText, LITERAL_SHOW_SIQS_INFO3);
     GetDHMS(&ptrText, u / 2);
   }
   copyStr(&ptrText, "</p>");

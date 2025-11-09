@@ -20,12 +20,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "string/strings.h"
 #include "bignbr.h"
+#include "output.h"
 #include "expression.h"
 #include "highlevel.h"
 #include "showtime.h"
 #include "batch.h"
 #include "tsquares.h"
+#include "copyStr.h"
 
 static int delta[MAX_SIEVE];
 static int power4;
@@ -226,21 +229,15 @@ int fsquares(void)
 void fsquaresText(char *input, int grpLen)
 {
   char *ptrOutput;
-#ifdef __EMSCRIPTEN__
-  int elapsedTime;
-#endif
   if (valuesProcessed == 0)
   {
     groupLength = grpLen;
   }
   (void)BatchProcessing(input, &toProcess, &ptrOutput, NULL, batchSquaresCallback);
-#ifdef __EMSCRIPTEN__
-  copyStr(&ptrOutput, lang ? "<p>Transcurrió " : "<p>Time elapsed: ");
-  elapsedTime = (int)(tenths() - originalTenthSecond);
-  GetDHMSt(&ptrOutput, elapsedTime);
-#endif
   copyStr(&ptrOutput, "<p>");
-  copyStr(&ptrOutput, (lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH));
+  showElapsedTime(&ptrOutput);
+  copyStr(&ptrOutput, "</p><p>");
+  showCopyright(&ptrOutput);
   copyStr(&ptrOutput, "</p>");
 }
 
@@ -298,12 +295,12 @@ static void batchSquaresCallback(char **pptrOutput, int type)
   switch (rc)
   {
   case 1:
-    copyStr(&ptrOutput, (lang ? ": ¡Error interno!\n\nPor favor envíe este número al autor del applet.</p>":
-      ": Internal error!\n\nPlease send the number to the author of the applet.</p>"));
+    formatString(&ptrOutput, "<p>$1s</p><p>$2s</p>",
+      LITERAL_BATCH_FSQUARES_CBACK1, LITERAL_BATCH_FSQUARES_CBACK2);
     *pptrOutput = ptrOutput;
     return;
   case 2:
-    copyStr(&ptrOutput, (lang?": El usuario detuvo el cálculo": ": User stopped the calculation"));
+    copyStr(&ptrOutput, LITERAL_BATCH_FSQUARES_CBACK3);
     *pptrOutput = ptrOutput;
     return;
   default:
@@ -399,9 +396,6 @@ EXTERNALIZE void doWork(void)
     ptrData++;
     app = (app * 10) + *ptrData - '0';
   }
-#ifndef lang  
-  lang = ((app & 1) ? true : false);
-#endif
   if ((app & 0x40) != 0)
   {
     hexadecimal = true;

@@ -19,6 +19,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
 #include "linkedbignbr.h"
@@ -27,6 +28,7 @@
 #include "showtime.h"
 #include "rootseq.h"
 #include "musl.h"
+#include "copyStr.h"
 
 #define MAX_MATRIX_SIZE  200
 char* ptrOutput2;
@@ -396,24 +398,9 @@ void integralLLL(int size)
   char outputInfo[1000];
   char* ptrOut = outputInfo;
   numberLLL++;
-  if (lang)
-  {
-    copyStr(&ptrOut, "1<p>Calculando LLL número ");
-    int2dec(&ptrOut, numberLLL);
-    copyStr(&ptrOut, " en matriz de");
-  }
-  else
-  {
-    copyStr(&ptrOut, "1<p>Computing LLL #");
-    int2dec(&ptrOut, numberLLL);
-    copyStr(&ptrOut, " in matrix of");
-  }
-  *ptrOut = ' ';
-  ptrOut++;
-  int2dec(&ptrOut, size);
-  copyStr(&ptrOut, " &times; ");
-  int2dec(&ptrOut, size);
-  copyStr(&ptrOut, ".</p>");
+  copyStr(&ptrOut, "1<p>");
+  formatString(&ptrOut, LITERAL_INTEGRAL_LLL1, numberLLL, size, size);
+  copyStr(&ptrOut, "</p>");
   showElapsedTimeSec(&ptrOut);
   databack(outputInfo);
 #endif
@@ -1274,13 +1261,10 @@ static void vanHoeij(int prime, int numFactors)
       {
         char outputInfo[1000];
         char *ptrOut = outputInfo;
-
+   
         oldTimeElapsed = elapsedTime;
-        copyStr(&ptrOut, lang? "1<p>Obteniendo factores de dos factores modulares: prueba ":
-                                "1<p>Finding factors from two modular factors: attempt ");
-        int2dec(&ptrOut, currentAttempts);
-        copyStr(&ptrOut, lang ? " de " : " of ");
-        int2dec(&ptrOut, maxAttempts);
+        copyStr(&ptrOut, "1<p>");
+        formatString(&ptrOut, LITERAL_VAN_HOEIJ1, currentAttempts, maxAttempts);
         copyStr(&ptrOut, "</p>");
         showElapsedTimeSec(&ptrOut);
         databack(outputInfo);
@@ -1701,14 +1685,7 @@ static void vanHoeij(int prime, int numFactors)
     {
       char outputInfo[1000];
       char* ptrOutputInfo = outputInfo;
-      if (lang)
-      {
-        copyStr(&ptrOutputInfo, "1<p>Paso 7</p>");
-      }
-      else
-      {
-        copyStr(&ptrOutputInfo, "1<p>Step 7</p>");
-      }
+      formatString(&ptrOutputInfo, "1<p>$1s</p>", LITERAL_VAN_HOEIJ2);   // Step 7.
       databack(outputInfo);
     }
 #endif
@@ -1748,14 +1725,7 @@ static void vanHoeij(int prime, int numFactors)
     {
       char outputInfo[1000];
       char* ptrOutputInfo = outputInfo;
-      if (lang)
-      {
-        copyStr(&ptrOutputInfo, "1<p>Paso 8</p>");
-      }
-      else
-      {
-        copyStr(&ptrOutputInfo, "1<p>Step 8</p>");
-      }
+      formatString(&ptrOutputInfo, "1<p>$1s</p>", LITERAL_VAN_HOEIJ3);
       databack(outputInfo);
     }
 #endif
@@ -1846,14 +1816,7 @@ static void vanHoeij(int prime, int numFactors)
 #ifdef __EMSCRIPTEN__
     char outputInfo[1000];
     char* ptrOutputInfo = outputInfo;
-    if (lang)
-    {
-      copyStr(&ptrOutputInfo, "1<p>Verificando si los polinomios hallados son factores irreducibles.</p>");
-    }
-    else
-    {
-      copyStr(&ptrOutputInfo, "1<p>Testing whether the polynomials found are irreducible factors.</p>");
-    }
+    formatString(&ptrOutputInfo, "1<p>$1s</p>", LITERAL_VAN_HOEIJ4);
     showElapsedTimeSec(&ptrOutputInfo);
     databack(outputInfo);
 #endif

@@ -41,3 +41,9 @@ function onShowSumSquares()
 function setFocusTo(newFocusObj)
 {   // Nothing to do.
 }
+
+function addLangToFilename(filename)
+{
+  const lang = document.documentElement.lang || "en";
+  return filename.replace(/\.js$/, lang + ".js");
+}
