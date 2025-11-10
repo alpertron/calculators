@@ -41,6 +41,7 @@ targets = ecm quad quadmod fsquares fcubes polfact dilog gaussian contfrac block
 all: $(targets)
 
 string/strings.h: string_en.txt
+	mkdir -p string
 	perl internationalize.pl string_en.txt string/strings.h
 
 ecm_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
