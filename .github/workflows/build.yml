@@ -31,7 +31,9 @@ jobs:
           CFLAGS="--coverage" CXXFLAGS="--coverage" LDFLAGS="--coverage" make
 
       - name: Run tests
-        run: ./coverage
+        run: |
+          chmod 755 coverage
+          ./coverage
 
       - name: Generate coverage file
         run: |
