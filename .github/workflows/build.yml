@@ -20,10 +20,10 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Install build dependencies
+      - name: Install gcovr and build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcovr lcov build-essential
+          sudo apt-get install -y gcovr build-essential
 
       - name: Build with coverage flags
         run: |
@@ -31,18 +31,14 @@ jobs:
           CFLAGS="--coverage" CXXFLAGS="--coverage" LDFLAGS="--coverage" make
 
       - name: Run tests
+        run: ./run_tests.sh
+
+      - name: Generate coverage file
         run: |
-          # Adjust to your test command
-          ./run_tests.sh
+          gcovr -r . --xml-pretty -o coverage.xml
 
-      - name: Generate coverage report (gcovr)
-        run: |
-          gcovr -r . --xml-pretty --output coverage.xml
-
-      - name: Install SonarCloud Scanner
-        uses: SonarSource/sonarqube-scan-action/setup@dfa55763d2a5eec7b87da3a6799d9c12172a4cb3
-
+      # SonarCloud Scan - the correct maintained action
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@dfa55763d2a5eec7b87da3a6799d9c12172a4cb3
+        uses: SonarSource/sonarcloud-github-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
