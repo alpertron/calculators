@@ -31,7 +31,7 @@ jobs:
           CFLAGS="--coverage" CXXFLAGS="--coverage" LDFLAGS="--coverage" make
 
       - name: Run tests
-        run: ./run_tests.sh
+        run: ./coverage
 
       - name: Generate coverage file
         run: |
