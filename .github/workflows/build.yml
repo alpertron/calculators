@@ -45,8 +45,8 @@ jobs:
 
       # **New: Install the build wrapper via the new action**
       - name: Install Build Wrapper
-        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v4.2.1
-        with:
+        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v6.0.0
+        #with:
           # optional: you can specify installation path
           # installation-path: ./tools/sonar
 
@@ -58,7 +58,7 @@ jobs:
 
       # **New: Run SonarQube scan using the action**
       - name: Run SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v4.2.1
+        uses: SonarSource/sonarqube-scan-action@v6.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
