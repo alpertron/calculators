@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   # <-- NECESSARY
 
     steps:
       - uses: actions/checkout@v4
@@ -40,13 +41,14 @@ jobs:
           chmod 755 coverage
           ./coverage
 
-      # ⭐ Correct way to install scanner + build-wrapper in v6.x
+      # ⭐ Install scanner + build-wrapper
       - name: Prepare SonarQube scanner and build-wrapper
         uses: SonarSource/sonarqube-scan-action@v6.0.0
         with:
           sonar_token: ${{ secrets.SONAR_TOKEN }}
-          prepare: true   # <-- THIS replaces the old /setup action
+          prepare: true
 
+      # ⭐ Build with build-wrapper output
       - name: Run build-wrapper
         run: |
           build-wrapper-linux-x86-64 \
@@ -57,8 +59,9 @@ jobs:
       - name: Run SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6.0.0
         with:
-          sonar_token: ${{ secrets.SONAR_TOKEN }}
+          sonar_token: ${{ secrets.SONAR_TOKEN }}           
           args: >
             -Dsonar.organization=alpertron
+            -Dsonar.projectKey=alpertron_calculators
             -Dsonar.cfamily.build-wrapper-output=${{ env.BUILD_WRAPPER_OUT_DIR }}
             -Dsonar.coverageReportPaths=coverage.xml
