@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  build:
+  sonarcloud:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,26 +20,44 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Install gcovr and build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcovr build-essential
+      - name: Set up Python 3.8 for gcovr
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
 
-      - name: Build with coverage flags
+      - name: Install gcovr
+        run: pip install gcovr==7.0
+
+      # -----------------------------------------------
+      # INSTALL SONAR BUILD-WRAPPER (required for C/C++)
+      # -----------------------------------------------
+      - name: Install Sonar build-wrapper
+        run: |
+          curl -sSLo build-wrapper.zip \
+            "https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip"
+          unzip -o build-wrapper.zip
+
+      # -----------------------------------------------
+      # BUILD WITH COVERAGE + BUILD-WRAPPER
+      # -----------------------------------------------
+      - name: Build with Sonar build-wrapper
         run: |
           make clean || true
-          CFLAGS="--coverage" CXXFLAGS="--coverage" LDFLAGS="--coverage" make
+          CFLAGS="--coverage" CXXFLAGS="--coverage" LDFLAGS="--coverage" \
+            build-wrapper-linux-x86/build-wrapper-linux-x86-64 \
+              --out-dir bw-output make
 
-      - name: Run tests
+      # -----------------------------------------------
+      # TESTS + COVERAGE XML (your script)
+      # -----------------------------------------------
+      - name: Run coverage script
         run: |
-          chmod 755 coverage
+          chmod +x coverage
           ./coverage
 
-      - name: Generate coverage file
-        run: |
-          gcovr -r . --xml-pretty -o coverage.xml
-
-      # SonarCloud Scan - the correct maintained action
+      # -----------------------------------------------
+      # SONARCLOUD ANALYSIS
+      # -----------------------------------------------
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         env:
