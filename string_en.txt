@@ -79,7 +79,7 @@ LITERAL_DISCR_LOG2 "Find <var>exp</var> such that $1b<sup><var>exp</var></sup> &
 LITERAL_DISCR_LOG3 "There is no such value of <var>exp</var>."
 
 ecm
-LITERAL_ECM1 "$1d-dígit level:"
+LITERAL_ECM1 "$1d-digit level:"
 LITERAL_ECM2 "Curve $1d using bounds B1=$2d and B2=$3l"
 
 ecmfront
@@ -179,7 +179,7 @@ LITERAL_FROM_BLOCKLY2 "There is nothing to print"
 fsquares
 LITERAL_BATCH_FSQUARES_CBACK1 "Internal error!"
 LITERAL_BATCH_FSQUARES_CBACK2 "Please send the number to the author of the calculator."
-LITERAL_BATCH_FSQUARES_CBACK3 ": El usuario detuvo el cálculo"
+LITERAL_BATCH_FSQUARES_CBACK3 ": The user stopped the calculation"
 
 gaussian
 LITERAL_GAUSSIAN1 "Factors of "
