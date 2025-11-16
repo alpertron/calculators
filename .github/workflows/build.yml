@@ -24,6 +24,8 @@ jobs:
         run: |
           sudo apt-get remove -y gcovr || true
           pip install gcovr==5.0
+      - name: Add pip bin to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
       # -----------------------------
       #  DOWNLOAD BUILD WRAPPER
       # -----------------------------
@@ -50,7 +52,7 @@ jobs:
       # -----------------------------
       - name: Run gcovr
         run: |
-          gcovr -r . --xml --xml-version=1 -o coverage.xml
+          gcovr -r . --xml -o coverage.xml
       # -----------------------------
       #  INSTALL SONAR SCANNER
       # -----------------------------
