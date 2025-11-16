@@ -47,12 +47,14 @@ jobs:
       # -----------------------------
       #  GENERATE COVERAGE (XML v1)
       # -----------------------------
-      - name: Generate coverage report
+      - name: Run gcovr
         run: |
           gcovr -r . \
-            --xml-pretty \
-            --xml-version=1 \
-            --output="${COVERAGE_FILE}"
+                --xml \
+                --output coverage.xml \
+                --html \
+                --html-details \
+                --output coverage.html
 
       # -----------------------------
       #  INSTALL SONAR SCANNER
