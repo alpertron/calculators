@@ -20,9 +20,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install gcovr
-        run: sudo apt-get update && sudo apt-get install -y gcovr
-
+      - name: Install gcovr 5.x (compatible with Sonar)
+        run: |
+          sudo apt-get remove -y gcovr || true
+          pip install gcovr==5.0
       # -----------------------------
       #  DOWNLOAD BUILD WRAPPER
       # -----------------------------
@@ -49,7 +50,7 @@ jobs:
       # -----------------------------
       - name: Run gcovr
         run: |
-          gcovr -r . --cobertura --output coverage.xml
+          gcovr -r . --xml --xml-version=1 -o coverage.xml
       # -----------------------------
       #  INSTALL SONAR SCANNER
       # -----------------------------
