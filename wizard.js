@@ -37,7 +37,7 @@ function clearWizardTextInput()
 
 function selectLoop()
 {   
-  get("next").value = get("next").innerHTML;
+  get("nextstep").value = get("next").innerHTML;
   get("wzddesc").innerHTML = get("wzddesc1").innerHTML;
   get("wzdexam").innerHTML = get("novars").innerHTML;
   wizardStep = 1;
@@ -45,7 +45,7 @@ function selectLoop()
   
 function wizardNext()
 {
-  let nextBtn = get("next");
+  let nextBtn = get("nextstep");
   let wzdDescText = get("wzddesc");
   let wzdExamText = get("wzdexam");
   let wzdInput = get("wzdinput");
@@ -110,7 +110,7 @@ function wizardNext()
 function typedOnWizard()
 {
   let inputValue = get("wzdinput").value;
-  let nextBtn = get("next");
+  let nextBtn = get("nextstep");
   if (inputValue !== "")
   {         // User typed something on input box.
     if (wizardStep === 1 || wizardStep === 9 || (inputValue.lastIndexOf("x") >= 0 || inputValue.lastIndexOf("c") >= 0 ||
@@ -138,7 +138,7 @@ function keyDownOnWizard(event)
   let keyCode = event.key;
   if (keyCode === "Enter")
   {
-    if (!get("next").disabled)
+    if (!get("nextstep").disabled)
     {                                // Next button is not disabled.
       wizardNext();                  // Perform same operation as if the user had pressed Next button.
     }

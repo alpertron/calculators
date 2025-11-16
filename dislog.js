@@ -125,7 +125,7 @@ function getCalcURLs()
 
 function getFormSendValue()
 {
-  userdata.value = get("userdata").textContent.replace("{base}", base.value).
+  userdata.value = get("formatUserData").textContent.replace("{base}", base.value).
           replace("{power}", pow.value).replace("{mod}", mod.value);
 }
 
