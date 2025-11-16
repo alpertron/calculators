@@ -6,7 +6,7 @@ function convertToString(ptr, str)
   let i, t;
   for (i=0; i<length; i++)
   {
-    t = str.charCodeAt(i);
+    t = str.codePointAt(i);
     if (t<128)
     {
       HEAPU8[(dest++) >> 0] = t;

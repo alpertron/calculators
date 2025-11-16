@@ -239,10 +239,10 @@ function b64decode(str,out)
   conv[33] = 63;                  // !
   for (idxDest=0,idxSrc=0; idxSrc<blocks; idxDest+=3,idxSrc+=4)
   {
-    byte0 = conv[str.charCodeAt(idxSrc)];
-    byte1 = conv[str.charCodeAt(idxSrc+1)];
-    byte2 = conv[str.charCodeAt(idxSrc+2)];
-    byte3 = conv[str.charCodeAt(idxSrc+3)];
+    byte0 = conv[str.codePointAt(idxSrc)];
+    byte1 = conv[str.codePointAt(idxSrc+1)];
+    byte2 = conv[str.codePointAt(idxSrc+2)];
+    byte3 = conv[str.codePointAt(idxSrc+3)];
     
     out[idxDest >>0 ] = (byte0<<2) + (byte1>>4);
     out[(idxDest+1) >> 0] = (byte1<<4) + (byte2>>2);
@@ -251,17 +251,17 @@ function b64decode(str,out)
   leftOver = len & 3;
   if (leftOver === 2)
   {
-    byte0 = conv[str.charCodeAt(idxSrc)];
-    byte1 = conv[str.charCodeAt(idxSrc+1)];
+    byte0 = conv[str.codePointAt(idxSrc)];
+    byte1 = conv[str.codePointAt(idxSrc+1)];
     
     out[idxDest >> 0] = (byte0<<2) + (byte1>>4);
     out[(idxDest+1) >> 0] = byte1<<4;
   }
   else if (leftOver === 3)
   {
-    byte0 = conv[str.charCodeAt(idxSrc)];
-    byte1 = conv[str.charCodeAt(idxSrc+1)];
-    byte2 = conv[str.charCodeAt(idxSrc+2)];
+    byte0 = conv[str.codePointAt(idxSrc)];
+    byte1 = conv[str.codePointAt(idxSrc+1)];
+    byte2 = conv[str.codePointAt(idxSrc+2)];
     
     out[idxDest >> 0] = (byte0<<2) + (byte1>>4);
     out[(idxDest+1) >> 0] = (byte1<<4) + (byte2>>2);

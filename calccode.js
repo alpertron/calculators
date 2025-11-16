@@ -51,20 +51,20 @@ function getCalculatorCode(jsFileName, workerParameter)
   else
   {
     let wasm = get("wasmb64").text;
-    while (wasm.charCodeAt(0) < 32)
+    while (wasm.codePointAt(0) < 32)
     {
       wasm = wasm.substring(1);
     }    
-    while (wasm.charCodeAt(wasm.length-1) < 32)
+    while (wasm.codePointAt(wasm.length-1) < 32)
     {
       wasm = wasm.substring(0, wasm.length-1);
     }    
     let length = wasm.length*3/4;
-    if (wasm.charCodeAt(wasm.length-1) === 61)
+    if (wasm.codePointAt(wasm.length-1) === 61)
     {
       length--;
     }
-    if (wasm.charCodeAt(wasm.length-2) === 61)
+    if (wasm.codePointAt(wasm.length-2) === 61)
     {
       length--;
     }

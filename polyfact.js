@@ -74,7 +74,7 @@ function comingFromWorker(e)
 
 function dowork(n)
 {
-  let app = n + (get("out").value.charCodeAt(0)-48)*8;
+  let app = n + (get("out").value.codePointAt(0)-48)*8;
   let res = get("result");
   let polyText = get("poly").value;
   let modText = get("mod").value;

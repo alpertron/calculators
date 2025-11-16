@@ -62,20 +62,20 @@ function startLowLevelCode(type)
   else
   {                                      // WebAssembly initialization.
     wasm = get("wasmb64").text;
-    while (wasm.charCodeAt(0) < 32)
+    while (wasm.codePointAt(0) < 32)
     {
       wasm = wasm.substring(1);
     }    
-    while (wasm.charCodeAt(wasm.length-1) < 32)
+    while (wasm.codePointAt(wasm.length-1) < 32)
     {
       wasm = wasm.substring(0, wasm.length-1);
     }
     length = wasm.length * 3 / 4;
-    if (wasm.charCodeAt(wasm.length - 1) === 61)
+    if (wasm.codePointAt(wasm.length - 1) === 61)
     {                                    // Base64 ending equal sign found.
       length--;
     }
-    if (wasm.charCodeAt(wasm.length - 2) === 61)
+    if (wasm.codePointAt(wasm.length - 2) === 61)
     {                                    // Another base64 ending equal sign found.
       length--;
     }
@@ -124,7 +124,7 @@ function copyStr(startOffset, str)
   let idx;
   for (idx = 0; idx < str.length; idx++)
   {
-    HEAPU8[(startOffset+idx) >> 0] = str.charCodeAt(idx);
+    HEAPU8[(startOffset+idx) >> 0] = str.codePointAt(idx);
   }
   HEAPU8[(startOffset+idx) >> 0] = 0;
 }
