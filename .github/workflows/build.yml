@@ -2,8 +2,7 @@ name: SonarCloud
 
 on:
   push:
-    branches:
-      - master
+    branches: [ master ]
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -12,77 +11,74 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      SONAR_HOST_URL: https://sonarcloud.io
-      SONAR_SCANNER_VERSION: 6.0.0
+      SONAR_HOST_URL: "https://sonarcloud.io"
       BUILD_WRAPPER_OUT_DIR: bw-out
       COVERAGE_FILE: coverage.xml
+      SONAR_SCANNER_VERSION: 5.0.1.3006
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential gcovr lcov curl unzip
+      - name: Install gcovr
+        run: sudo apt-get update && sudo apt-get install -y gcovr
 
-      ###############################################################
-      # 1) DOWNLOAD SONARCLOUD BUILD WRAPPER (CORRECT URL)
-      ###############################################################
+      # -----------------------------
+      #  DOWNLOAD BUILD WRAPPER
+      # -----------------------------
       - name: Download SonarCloud Build Wrapper
         run: |
-          curl -sSLo build-wrapper-linux-x86.zip \
-            "https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip"
+          curl -sSLo build-wrapper.zip "https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip"
+          unzip build-wrapper.zip -d bw
+          echo "=== Dump of extracted bw directory ==="
+          ls -R bw
 
-          unzip build-wrapper-linux-x86.zip
-          ls -l build-wrapper-linux-x86
-
-      ###############################################################
-      # 2) COMPILE WITH BUILD WRAPPER
-      ###############################################################
+      # -----------------------------
+      #  COMPILE USING BUILD WRAPPER
+      # -----------------------------
       - name: Build with Build Wrapper
         run: |
-          ./build-wrapper-linux-x86/build-wrapper-linux-x86 \
-            --out-dir $BUILD_WRAPPER_OUT_DIR \
-            make clean all
+          BW="$(find bw -type f -name 'build-wrapper-linux-x86*' | head -n 1)"
+          echo "Using build-wrapper: $BW"
+          chmod +x "$BW"
 
-      ###############################################################
-      # 3) GENERATE COVERAGE — COMPATIBLE WITH SONAR (gcovr 1.x style)
-      ###############################################################
+          "$BW" --out-dir "$BUILD_WRAPPER_OUT_DIR" make clean all
+
+      # -----------------------------
+      #  GENERATE COVERAGE (XML v1)
+      # -----------------------------
       - name: Generate coverage report
         run: |
-          gcovr \
+          gcovr -r . \
             --xml-pretty \
-            --output $COVERAGE_FILE \
-            --gcov-ignore-errors=all \
-            --exclude 'OldApplets/*' \
-            --exclude 'docs/*' \
-            --exclude 'sonar-scanner/*'
+            --xml-version=1 \
+            --output="${COVERAGE_FILE}"
 
-      ###############################################################
-      # 4) INSTALL SONAR SCANNER
-      ###############################################################
-      - name: Install SonarScanner
+      # -----------------------------
+      #  INSTALL SONAR SCANNER
+      # -----------------------------
+      - name: Install SonarScanner (manual)
         run: |
           curl -sSLo scanner.zip \
             "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip"
-          unzip scanner.zip -d .
-          mv sonar-scanner-* sonar-scanner
+
+          unzip scanner.zip -d scanner
+          mv scanner/sonar-scanner-${SONAR_SCANNER_VERSION}-linux sonar-scanner
           echo "${PWD}/sonar-scanner/bin" >> $GITHUB_PATH
 
-      ###############################################################
-      # 5) RUN SONAR SCANNER
-      ###############################################################
+      # -----------------------------
+      #  RUN SONAR SCAN
+      # -----------------------------
       - name: Run SonarScanner
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           sonar-scanner \
-            -Dsonar.host.url=${SONAR_HOST_URL} \
+            -Dsonar.host.url="${{ env.SONAR_HOST_URL }}" \
             -Dsonar.organization=alpertron \
             -Dsonar.projectKey=alpertron_calculators \
-            -Dsonar.cfamily.build-wrapper-output=${BUILD_WRAPPER_OUT_DIR} \
-            -Dsonar.coverageReportPaths=${COVERAGE_FILE} \
             -Dsonar.sources=. \
-            -Dsonar.exclusions="**/*.md,**/docs/**,OldApplets/**,**/build-wrapper-dump.json" \
+            -Dsonar.exclusions="**/*.md, **/docs/**, OldApplets/**, **/build-wrapper-dump.json" \
+            -Dsonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}" \
+            -Dsonar.coverageReportPaths="${{ env.COVERAGE_FILE }}" \
             -Dsonar.cfamily.cache.enabled=false
