@@ -26,6 +26,7 @@
 /* global bitsCanvas */
 /* global buffer */
 /* global getPixels */
+/* global HEAPU8 */
 /* global imgData */
 /* global pixels */
 /* global updateGraphic */
