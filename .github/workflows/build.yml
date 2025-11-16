@@ -49,13 +49,7 @@ jobs:
       # -----------------------------
       - name: Run gcovr
         run: |
-          gcovr -r . \
-                --xml \
-                --output coverage.xml \
-                --html \
-                --html-details \
-                --output coverage.html
-
+          gcovr -r . --xml-pretty --output coverage.xml
       # -----------------------------
       #  INSTALL SONAR SCANNER
       # -----------------------------
