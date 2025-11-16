@@ -72,12 +72,13 @@ jobs:
       # Download SonarScanner CLI
       # -------------------------------
       - name: Install SonarScanner
+        env:
+          SONAR_SCANNER_VERSION: 5.0.1.3006
         run: |
           curl -sSL https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip -o scanner.zip
           unzip scanner.zip -d .
           mv sonar-scanner-${SONAR_SCANNER_VERSION}-linux sonar-scanner
           echo "${PWD}/sonar-scanner/bin" >> $GITHUB_PATH
-
       # -------------------------------
       # Run SonarCloud analysis
       # -------------------------------
