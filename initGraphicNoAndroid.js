@@ -17,8 +17,10 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global Android */
+/* global asm */
 /* global asmGetInformation */
 /* global asmDrawPartialGraphic */
+/* global asmJSbuffer */
 /* global asmMoveGraphic */
 /* global asmNbrChanged */
 /* global bitsCanvas */
@@ -27,6 +29,7 @@
 /* global imgData */
 /* global pixels */
 /* global updateGraphic */
+/* global wasm */
 
 let startOffset;
 function startLowLevelCode(type)
