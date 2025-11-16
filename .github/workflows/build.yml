@@ -93,5 +93,5 @@ jobs:
             -Dsonar.cfamily.build-wrapper-output=${{ env.BUILD_WRAPPER_OUT_DIR }} \
             -Dsonar.coverageReportPaths=${{ env.COVERAGE_FILE }} \
             -Dsonar.sources=. \
-            -Dsonar.exclusions="**/*.md, **/docs/**" \
+            -Dsonar.exclusions="**/*.md, **/docs/**", **/*.java \
             -Dsonar.cfamily.cache.enabled=false
