@@ -13,60 +13,62 @@ jobs:
     env:
       SONAR_HOST_URL: "https://sonarcloud.io"
       BUILD_WRAPPER_OUT_DIR: bw-out
-      COVERAGE_FILE: coverage.xml
       SONAR_SCANNER_VERSION: 5.0.1.3006
 
     steps:
+
+      # -----------------------------
+      # CHECKOUT
+      # -----------------------------
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install gcovr 5.x (compatible with Sonar)
-        run: |
-          sudo apt-get remove -y gcovr || true
-          pip install gcovr==5.0
-      - name: Add pip bin to PATH
-        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
       # -----------------------------
-      #  DOWNLOAD BUILD WRAPPER
+      # INSTALL GCOVR (for calling gcov)
+      # -----------------------------
+      - name: Install gcovr
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcovr
+
+      # -----------------------------
+      # DOWNLOAD BUILD WRAPPER
       # -----------------------------
       - name: Download SonarCloud Build Wrapper
         run: |
           curl -sSLo build-wrapper.zip "https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip"
           unzip build-wrapper.zip -d bw
-          echo "=== Dump of extracted bw directory ==="
           ls -R bw
 
       # -----------------------------
-      #  COMPILE USING BUILD WRAPPER
+      # COMPILE WITH BUILD WRAPPER
       # -----------------------------
       - name: Build with Build Wrapper
         run: |
           BW="$(find bw -type f -name 'build-wrapper-linux-x86*' | head -n 1)"
-          echo "Using build-wrapper: $BW"
           chmod +x "$BW"
-
           "$BW" --out-dir "$BUILD_WRAPPER_OUT_DIR" make clean all
 
       # -----------------------------
-      #  GENERATE COVERAGE (XML v1)
+      # GENERATE GCOV COVERAGE (raw .gcov files)
       # -----------------------------
-      - name: Run gcovr
+      - name: Generate GCOV coverage
         run: |
-          gcovr -r . --xml -o coverage.xml
+          gcovr -r . --gcov-executable gcov
+
       # -----------------------------
-      #  INSTALL SONAR SCANNER
+      # INSTALL SONAR SCANNER
       # -----------------------------
       - name: Install SonarScanner (manual)
         run: |
           curl -sSLo scanner.zip \
             "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip"
-
           unzip scanner.zip -d scanner
           mv scanner/sonar-scanner-${SONAR_SCANNER_VERSION}-linux sonar-scanner
           echo "${PWD}/sonar-scanner/bin" >> $GITHUB_PATH
 
       # -----------------------------
-      #  RUN SONAR SCAN
+      # RUN SONAR SCAN
       # -----------------------------
       - name: Run SonarScanner
         env:
@@ -77,7 +79,7 @@ jobs:
             -Dsonar.organization=alpertron \
             -Dsonar.projectKey=alpertron_calculators \
             -Dsonar.sources=. \
-            -Dsonar.exclusions="**/*.md, **/docs/**, OldApplets/**, **/build-wrapper-dump.json" \
+            -Dsonar.exclusions="**/*.md, **/docs/**, OldApplets/**, **/*.java, **/build-wrapper-dump.json" \
             -Dsonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}" \
-            -Dsonar.coverageReportPaths="${{ env.COVERAGE_FILE }}" \
+            -Dsonar.cfamily.gcov.reportsPath=. \
             -Dsonar.cfamily.cache.enabled=false
