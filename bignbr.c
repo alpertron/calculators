@@ -1477,6 +1477,7 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
   double dLogBigNbr = logBigNbr(pBigNbr);
   int lenArray;
   int lenBytes;
+  pBase->sign = SIGN_POSITIVE;
   if (pBigNbr->nbrLimbs > 10)
   {
     for (base = 2; base <= 100; base++)
