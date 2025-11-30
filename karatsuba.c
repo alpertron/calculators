@@ -78,15 +78,13 @@ static inline void multiplyWithBothLenLL(const limb *factor1, const limb *factor
   (void)memcpy(result, &arr[2 * (karatLength - length)], lenBytes);
   if (pResultLen != NULL)
   {
-    (void)memcpy(result, &arr[2 * (karatLength - length)], lenBytes);
-    if ((karatLength > length) && (arr[2 * (karatLength - length)-1].x == 0))
+  	(void)memcpy(result, &arr[2 * (karatLength - length)], lenBytes);
+    length = len1 + len2;
+    while (length > 1 && (arr[length - 1].x == 0))
     {
-      *pResultLen = (length * 2) - 1;
+      length--;
     }
-    else
-    {
-      *pResultLen = length * 2;
-    }
+    *pResultLen = length;
   }
 }
 

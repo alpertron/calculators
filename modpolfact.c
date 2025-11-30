@@ -465,10 +465,10 @@ static void DistinctDegreeFactorization(int polyDeg)
       {
         char* ptrOut = outputText;
         oldTimeElapsed = elapsedTime;
-        copyStr(&ptrOutput, "1<p>");
+        copyStr(&ptrOut, "1<p>");
         // Distinct degree factorization mod $1b: searching for factors of degree
         // $2d (max. $3d) of factor number $4d of $5d.
-        formatString(&ptrOutput, LITERAL_DISTINCT_DEGREE_FACT4,
+        formatString(&ptrOut, LITERAL_DISTINCT_DEGREE_FACT4,
           &primeMod, currentDegree, (polyDegree + 1) / 2,
           nbrFactor + 1, nbrFactorsFound);
         copyStr(&ptrOut, "</p>");

@@ -283,6 +283,21 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
   }
   if (nbrLimbs == 0)
   {   // Both divisor and dividend have the same number of limbs.
+    int mostSignificantLimbDividend = pDividend->limbs[nbrLimbsDividend - 1].x;
+    int mostSignificantLimbDivisor = pDivisor->limbs[nbrLimbsDivisor - 1].x;
+    int upperBoundQuotient = 
+      (mostSignificantLimbDividend+1) / mostSignificantLimbDivisor;
+    int lowerBoundQuotient =
+      mostSignificantLimbDividend / (mostSignificantLimbDivisor+1);
+    if (lowerBoundQuotient == upperBoundQuotient)
+    {
+      if (pDividend->sign != pDivisor->sign)
+      {
+        lowerBoundQuotient = -lowerBoundQuotient;
+      }
+      intToBigInteger(pQuotient, lowerBoundQuotient);
+      return EXPR_OK;
+    }
     for (nbrLimbs = nbrLimbsDividend - 1; nbrLimbs > 0; nbrLimbs--)
     {
       if (pDividend->limbs[nbrLimbs].x != pDivisor->limbs[nbrLimbs].x)
@@ -295,6 +310,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       intToBigInteger(pQuotient, 0);
       return EXPR_OK;
     }
+    nbrLimbs = 0;    // Restore difference.
   }
   if (nbrLimbsDividend == 1)
   {   // If dividend is small, perform the division directly.
@@ -312,12 +328,12 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     }
     subtractdivide(pQuotient, 0, divisor);
   }
-  else if (nbrLimbsDivisor < 64)
+  else if (nbrLimbsDivisor < 32)
   {
     classicalDivision(pDividend, pDivisor, pQuotient, NULL);
   }
   else
-  {        // Divisor has more than 64 limbs. Use Newton algorithm 
+  {        // Divisor has more than 32 limbs. Use Newton algorithm 
            // to find the inverse and then multiply by dividend.
     int bitLength;
     int bitLengthNbrCycles;
@@ -330,6 +346,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     limb *ptrQuotient;
     limb *ptrQuot;
     int lenBytes;
+    int limbLength;
     unsigned int power2U;
     unsigned int power2Complement;
 
@@ -346,6 +363,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       lenBytes = nbrLimbs * (int)sizeof(limb);
       (void)memcpy(&adjustedArgument[0], &pDivisor->limbs[nbrLimbsDivisor - nbrLimbs], lenBytes);
     }
+    // Shift left the divisor so the most significant bit of most significant limb is one.
     MultiplyBigNbrByMinPowerOf2(&power2, adjustedArgument, nbrLimbs, adjustedArgument);
     // Initialize approximate inverse.
     inverse = LIMB_RANGE / ((double)adjustedArgument[nbrLimbs - 1].x + 
@@ -380,33 +398,78 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     // Each loop increments precision.
     // Use Newton iteration: x_{n+1} = x_n * (2 - x_n)
     bitLengthNbrCycles--;
+    limbLength = 3;     // Start using 3 limbs.
     while (bitLengthNbrCycles >= 0)
     {
       limb *ptrArrAux;
-      int limbLength;
-
+      bool differencePositive;
+      int oldLimbLength = limbLength;
       bitLength = bitLengthCycle[bitLengthNbrCycles];
-      limbLength = (bitLength + (3 * BITS_PER_GROUP)-1) / BITS_PER_GROUP;
+      limbLength = (bitLength + (3 * BITS_PER_GROUP) - 1) / BITS_PER_GROUP;
+      // Get new precision in limbs.
       if (limbLength > nbrLimbs)
       {
         limbLength = nbrLimbs;
       }
-      // Compute x(2-Nx).
-      // Multiply by divisor.
-      multiply(&approxInv[nbrLimbs-limbLength], &adjustedArgument[nbrLimbs - limbLength], arrAux, limbLength, NULL);
-      // Subtract arrAux from 2.
-      ptrArrAux = &arrAux[limbLength];
-      for (idx = limbLength - 1; idx > 0; idx--)
-      {
-        ptrArrAux->x = MAX_INT_NBR - ptrArrAux->x;
-        ptrArrAux++;
-      }
-      ptrArrAux->x = 1 - ptrArrAux->x;
-      // Multiply arrAux by approxInv.
-      multiply(&arrAux[limbLength], &approxInv[nbrLimbs - limbLength], approxInv, limbLength, NULL);
-      lenBytes = limbLength * (int)sizeof(limb);
-      (void)memmove(&approxInv[nbrLimbs - limbLength], &approxInv[limbLength - 1], lenBytes);
       bitLengthNbrCycles--;
+
+      // Compute x + x(1-Nx). The product Nx uses full precision (limbLength)
+      // while the product x(1-Nx) uses half precision (oldLimbLength),
+      // because 1-Nx is near zero.
+      // Multiply by divisor.
+      multiply(&approxInv[nbrLimbs-limbLength], &adjustedArgument[nbrLimbs - limbLength],
+               arrAux, limbLength, NULL);
+      // Subtract arrAux from 1.
+      ptrArrAux = &arrAux[limbLength-1];
+      if (arrAux[(2 * limbLength) - 1].x > 0)
+      {   // Subtract 1.
+        differencePositive = false;
+      }
+      else
+      {   // Change sign to convert number to positive.
+        for (idx = limbLength; idx > 0; idx--)
+        {
+          ptrArrAux->x = MAX_INT_NBR - ptrArrAux->x;
+          ptrArrAux++;
+        }
+        differencePositive = true;
+      }
+      // Get pointer to most significant limb in the expression 1 - Nx.
+      for (idx = 2*limbLength - 2; idx > limbLength; idx--)
+      {
+        if (arrAux[idx].x != 0)
+        {
+          break;
+        }
+      }
+      // Multiply arrAux by approxInv using oldLimbLength. Store result into arrAux.
+      ptrArrAux = &arrAux[idx - oldLimbLength + 1];
+      multiply(ptrArrAux, &approxInv[nbrLimbs - oldLimbLength],
+        arrAux, oldLimbLength, NULL);
+      // Delete limbs not used in the previous multiplication.
+      if (oldLimbLength != limbLength)
+      {
+        int bytesToClear = 2 * (limbLength - oldLimbLength) * (int)sizeof(limb) + 100;
+        memset(&arrAux[2 * oldLimbLength], 0, bytesToClear);
+      }
+      ptrArrAux = &arrAux[2 * oldLimbLength + limbLength - 3 - idx];
+      limb* ptrApproxInv = &approxInv[nbrLimbs - limbLength - 1];
+      size_t indexApproxInv = ptrApproxInv - &approxInv[0];
+      if (ptrApproxInv < &approxInv[0])
+      {
+        ptrApproxInv -= indexApproxInv;
+        ptrArrAux -= indexApproxInv;
+        limbLength += (int)indexApproxInv;
+      }
+      // Add approxInv.
+      if (differencePositive)
+      {
+        AddBigNbr(ptrApproxInv, ptrArrAux, ptrApproxInv, limbLength);
+      }
+      else
+      {
+        SubtractBigNbr(ptrApproxInv, ptrArrAux, ptrApproxInv, limbLength);
+      }
     }
     // Multiply approxInv by argument to obtain the quotient.
     if (nbrLimbsDividend >= nbrLimbs)
@@ -462,7 +525,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     {                   // Increment quotient.
       for (idx = 0; idx <= nbrLimbsQuotient; idx++)
       {
-        (ptrQuotient + idx)->x ++;
+        (ptrQuotient + idx)->x++;
         if (((unsigned int)(ptrQuotient + idx)->x & MAX_INT_NBR_U) != 0U)
         {
           break;
@@ -481,38 +544,35 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
           (ptrQuotient + idx)->x = MAX_VALUE_LIMB;
         }
       }
+    }
+    if ((unsigned int)(ptrQuotient - 1)->x > (LIMB_RANGE / 8U * 7U)  ||
+      (unsigned int)(ptrQuotient - 1)->x < (LIMB_RANGE / 8U))
+    {
+      int nbrLimbsMult;
       if (approxInv[(2 * nbrLimbs) - 1].x != 0)
       {    // Most significant byte is not zero, so it is part of the quotient.
         ptrQuot = &approxInv[(2 * nbrLimbs) - nbrLimbsQuotient];
       }
       // Test whether the quotient is correct.
       // It is correct only if multiplied by the divisor, it is <= than the dividend.
-      if (nbrLimbsQuotient > nbrLimbsDivisor)
+      multiplyWithBothLen(pDivisor->limbs, ptrQuot, arrAux,
+          nbrLimbsDivisor, nbrLimbsQuotient, &nbrLimbsMult);
+      if (nbrLimbsMult == nbrLimbsDividend)
       {
-        lenBytes = nbrLimbsDivisor * (int)sizeof(limb);
-        (void)memcpy(&approxInv[0], pDivisor->limbs, lenBytes);
-        lenBytes = (nbrLimbsQuotient - nbrLimbsDivisor) * (int)sizeof(limb);
-        (void)memset(&approxInv[nbrLimbsDivisor], 0, lenBytes);
-        multiply(&approxInv[0], ptrQuot, arrAux, nbrLimbsQuotient, NULL);
-      }
-      else
-      {
-        lenBytes = (nbrLimbsDivisor - nbrLimbsQuotient) * (int)sizeof(limb);
-        (void)memset(&approxInv[2 * nbrLimbs], 0, lenBytes);
-        multiply(pDivisor->limbs, ptrQuot, arrAux, nbrLimbsDivisor, NULL);
-      }
-      ptrDividend = &pDividend->limbs[pDividend->nbrLimbs - 1];
-      ptrDest = &arrAux[pDividend->nbrLimbs - 1];
-      for (idx = pDividend->nbrLimbs - 1; idx > 0; idx--)
-      {
-        if (ptrDividend->x != ptrDest->x)
+        ptrDividend = &pDividend->limbs[pDividend->nbrLimbs - 1];
+        ptrDest = &arrAux[pDividend->nbrLimbs - 1];
+        for (idx = pDividend->nbrLimbs - 1; idx > 0; idx--)
         {
-          break;
+          if (ptrDividend->x != ptrDest->x)
+          {
+            break;
+          }
+          ptrDividend--;
+          ptrDest--;
         }
-        ptrDividend--;
-        ptrDest--;
       }
-      if (ptrDividend->x < ptrDest->x)
+      if ((nbrLimbsMult > nbrLimbsDividend) ||
+        ((nbrLimbsMult == nbrLimbsDividend) && (ptrDividend->x < ptrDest->x)))
       {  // Decrement quotient.
         ptrQuotient = ptrQuot;
         for (idx = 0; idx < nbrLimbsQuotient; idx++)

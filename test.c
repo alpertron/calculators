@@ -29,7 +29,7 @@
 #include "fromBlockly.h"
 #include "isprime.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 11
+#define DEBUG_CODE 13
 #endif
 #ifdef __EMSCRIPTEN__
 extern char inputString[];
@@ -130,6 +130,26 @@ int main(int argc, char* argv[])
   {
     Dec2Bin(argv[2], divisor.limbs, (int)strlen(argv[2]), &divisor.nbrLimbs);
     divisor.sign = SIGN_POSITIVE;
+  }
+  ptrOutput = output;
+  Bin2Dec(&ptrOutput, dividend.limbs, dividend.nbrLimbs, 0);
+  if (dividend.sign == SIGN_POSITIVE)
+  {
+    (void)printf("Dividend = %s\n", output);
+  }
+  else
+  {
+    (void)printf("Divisor = -%s\n", output);
+  }
+  ptrOutput = output;
+  Bin2Dec(&ptrOutput, divisor.limbs, divisor.nbrLimbs, 0);
+  if (divisor.sign == SIGN_POSITIVE)
+  {
+    (void)printf("Divisor = %s\n", output);
+  }
+  else
+  {
+    (void)printf("Divisor = -%s\n", output);
   }
   // Insert garbage after dividend and divisor.
   (void)memset(&dividend.limbs[dividend.nbrLimbs], 0x45, 12);

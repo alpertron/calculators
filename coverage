@@ -4,6 +4,8 @@ flags="flags_coverage=--coverage"
 #flags="flags_coverage=--coverage flags_sanitize=-fsanitize=address"
 rm *.info *.out
 make clean
+mkdir -p string
+perl internationalize.pl string_en.txt string/strings.h
 for var in 64 32
 do
 # make testmodmult $flags bits=$var

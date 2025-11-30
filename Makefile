@@ -112,6 +112,10 @@ modmult: $(tsqcubes_files) $(h_files)
 testmodmult: $(modmult_files) $(h_files)
 	gcc $(flags_other) -DDEBUG_CODE=30 -DFACTORIZATION_APP=1 $(modmult_files) -lm -o $@
 
+division_files = division.c sqroot.c bigint.c bignbr.c
+division: $(division_files) $(h_files)
+	gcc $(flags_other) -DDEBUG_CODE=4 -DFACTORIZATION_APP=1 $(modmult_files) -lm -o $@
+
 prod_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c test.c
 prod: $(tsqcubes_files) $(h_files)
