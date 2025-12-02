@@ -220,7 +220,7 @@ LITERAL_FACTOR_MODULAR_POLY "List of factors"
 
 output
 LITERAL_SHOW_EQ_NBRS "($1d) and ($2d)"
-LITERAL_COPYRIGHT "Written by Dario Alpern. Last updated on 29 November 2025."
+LITERAL_COPYRIGHT "Written by Dario Alpern. Last updated on 1 December 2025."
 
 polfact
 LITERAL_POLYFACT1 "Your polynomial"

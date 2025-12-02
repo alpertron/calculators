@@ -29,19 +29,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <EnableASAN>true</EnableASAN>
@@ -49,7 +49,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <EnableASAN>false</EnableASAN>
@@ -156,6 +156,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;FACTORIZATION_APP=1;ENABLE_VERBOSE;FACTORIZATION_FUNCTIONS=1;_LIB;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USING64BITS_;USING_BLOCKLY=1;ENABLE_VERBOSE;POLYEXPR=1</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/F 3000000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -177,6 +178,7 @@
     <ClCompile Include="quadraticeq.c" />
     <ClCompile Include="quartics.c" />
     <ClCompile Include="sumSquares.c" />
+    <ClCompile Include="test.c" />
     <ClCompile Include="tsqcubes.c" />
     <ClCompile Include="baseconv.c" />
     <ClCompile Include="batch.c" />
@@ -224,7 +226,6 @@
     <ClCompile Include="sqroot.c">
       <DeploymentContent>true</DeploymentContent>
     </ClCompile>
-    <ClCompile Include="test.c" />
     <ClCompile Include="showtime.c" />
     <ClCompile Include="tsquares.c" />
   </ItemGroup>

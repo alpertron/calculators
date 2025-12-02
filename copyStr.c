@@ -131,7 +131,7 @@ void formatString(char** pptrString, const char* format, ...)
 #endif
         else if (type == 'v')
         {
-          argv[idx].c = va_arg(args, int);
+          argv[idx].c = (char)va_arg(args, int);
         }
         else if (type == 's')
         {

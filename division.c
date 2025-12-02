@@ -464,11 +464,11 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       // Add approxInv.
       if (differencePositive)
       {
-        AddBigNbr(ptrApproxInv, ptrArrAux, ptrApproxInv, limbLength);
+        AddBigNbr(ptrApproxInv, ptrArrAux, ptrApproxInv, limbLength+1);
       }
       else
       {
-        SubtractBigNbr(ptrApproxInv, ptrArrAux, ptrApproxInv, limbLength);
+        SubtractBigNbr(ptrApproxInv, ptrArrAux, ptrApproxInv, limbLength+1);
       }
     }
     // Multiply approxInv by argument to obtain the quotient.

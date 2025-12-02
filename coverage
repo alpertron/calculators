@@ -106,6 +106,7 @@ echo -e "\n\n**** ECM ****" >> coverage.out
 ./ecm "100057^2 * 100069" >> coverage.out
 ./ecm $'#Example\nNumDivs(20046077)\nNumDivs(20046147)\nNumDivs(20046161)' >> coverage.out
 ./ecm $'x=3;x=n(x);c<=10;x-1\nx=3;x=n(x);c<=10;x-1' >> coverage.out
+./ecm "2**1278*(2^1279-1)" >> coverage.out
 lcov --capture --directory . --output-file ecm.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-1-${var}.json
 make clean

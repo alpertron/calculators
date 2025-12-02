@@ -27,9 +27,6 @@
     <ClCompile Include="baseconv.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
-    <ClCompile Include="test.c">
-      <Filter>Archivos de código fuente</Filter>
-    </ClCompile>
     <ClCompile Include="expression.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
@@ -190,6 +187,9 @@
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
     <ClCompile Include="MontMultGraphic.c">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
+    <ClCompile Include="test.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
   </ItemGroup>
