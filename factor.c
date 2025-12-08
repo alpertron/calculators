@@ -502,8 +502,8 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
   {
     oldTimeElapsed = elapsedTime;
     ptrStatus = status;
-    formatString(&ptrStatus, "4<p>$1s", LITERAL_PROCESS_EXP1);  // Time elapsed:
-    GetDHMS(&ptrStatus, elapsedTime / 10);
+    copyStr(&ptrStatus, "4<p>");
+    formatString(&ptrStatus, LITERAL_PROCESS_EXP1, elapsedTime / 10);  // Time elapsed:
     formatString(&ptrStatus, LITERAL_PROCESS_EXP2, Exponent);   // Exponent power +/- 1.
     databack(status);
 }
@@ -1633,9 +1633,8 @@ void showECMStatus(void)
   }
   oldTimeElapsed = elapsedTime;
   ptrStatus = status;
-  formatString(&ptrStatus, "4<p>$1s ", LITERAL_PROCESS_EXP1);  // Time elapsed:
-  GetDHMS(&ptrStatus, elapsedTime / 10);
-  copyStr(&ptrStatus, "&nbsp;&nbsp;&nbsp;");  // Separate with three spaces.
+  copyStr(&ptrStatus, "4<p>");
+  formatString(&ptrStatus, LITERAL_PROCESS_EXP1, elapsedTime / 10);  // Time elapsed:
   int percentage;
   switch (StepECM)
   {

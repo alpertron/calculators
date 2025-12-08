@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -28,7 +27,6 @@ extern limb approxInv[MAX_LEN];
 extern limb adjustedArgument[MAX_LEN];
 extern limb arrAux[MAX_LEN];
 extern int bitLengthCycle[20];
-
 // This routine uses Newton iteration: if x is an approximate inverse square root of N,
 // a better approximation is: x(3-Nxx)/2. After the inverse square root is computed,
 // the square root is found just by multiplying by N.
@@ -81,7 +79,6 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, const limb *number, int le
   ptrDest->x = (int)uiDest;
   *pPower2 = shLeft;
 }
-
 // It is faster to perform classical division than using Newton algorithm.
 // Use adjustedArgument to hold the remainder.
 // Any of pQuotient or pRemainder can be NULL.
@@ -109,7 +106,6 @@ void classicalDivision(const BigInteger* pDividend, const BigInteger* pDivisor,
   limb* ptrDividend;
   limb* ptrQuotient = NULL;
   int lenBytes = nbrLimbsDividend * (int)sizeof(limb);
-
   (void)memcpy(adjustedArgument, pDividend->limbs, lenBytes);
   adjustedArgument[nbrLimbsDividend].x = 0;
   if (pQuotient != NULL)
@@ -264,6 +260,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
   int nbrLimbs;
   int nbrLimbsDividend;
   int nbrLimbsDivisor;
+  bool quotientSign;
 
   assert(pDividend->nbrLimbs >= 1);
   assert(pDivisor->nbrLimbs >= 1);
@@ -275,6 +272,24 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
   // Get number of limbs of quotient.
   nbrLimbsDividend = pDividend->nbrLimbs;
   nbrLimbsDivisor = pDivisor->nbrLimbs;
+  if (nbrLimbsDividend == 1)
+  {   // If dividend is small, perform the division directly.
+    int quot;
+    if (nbrLimbsDivisor > 1)
+    {
+      quot = 0;
+    }
+    else
+    {
+      quot = pDividend->limbs[0].x / pDivisor->limbs[0].x;
+      if (pDividend->sign != pDivisor->sign)
+      {
+        quot = -quot;
+      }
+    }
+    intToBigInteger(pQuotient, quot);
+    return EXPR_OK;
+  }
   nbrLimbs = nbrLimbsDividend - nbrLimbsDivisor;
   if (nbrLimbs < 0)
   {   // Absolute value of dividend is less than absolute value of divisor.
@@ -285,10 +300,10 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
   {   // Both divisor and dividend have the same number of limbs.
     int mostSignificantLimbDividend = pDividend->limbs[nbrLimbsDividend - 1].x;
     int mostSignificantLimbDivisor = pDivisor->limbs[nbrLimbsDivisor - 1].x;
-    int upperBoundQuotient = 
-      (mostSignificantLimbDividend+1) / mostSignificantLimbDivisor;
+    int upperBoundQuotient =
+      (mostSignificantLimbDividend + 1) / mostSignificantLimbDivisor;
     int lowerBoundQuotient =
-      mostSignificantLimbDividend / (mostSignificantLimbDivisor+1);
+      mostSignificantLimbDividend / (mostSignificantLimbDivisor + 1);
     if (lowerBoundQuotient == upperBoundQuotient)
     {
       if (pDividend->sign != pDivisor->sign)
@@ -310,14 +325,17 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       intToBigInteger(pQuotient, 0);
       return EXPR_OK;
     }
-    nbrLimbs = 0;    // Restore difference.
+    nbrLimbs = 0;    // Restore difference.    
   }
-  if (nbrLimbsDividend == 1)
-  {   // If dividend is small, perform the division directly.
-    pQuotient->limbs[0].x = pDividend->limbs[0].x / pDivisor->limbs[0].x;
-    pQuotient->nbrLimbs = 1;
+  if ((pDividend->sign == pDivisor->sign) || BigIntIsZero(pDividend))
+  {
+    quotientSign = SIGN_POSITIVE;
   }
-  else if (nbrLimbsDivisor == 1)
+  else
+  {
+    quotientSign = SIGN_NEGATIVE;
+  }
+  if (nbrLimbsDivisor == 1)
   {   // Divisor is small: use divide by int.
       // Sign of quotient is determined later.
       // pDivisor may be overwritten by dividend in next copy.
@@ -328,12 +346,13 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     }
     subtractdivide(pQuotient, 0, divisor);
   }
-  else if (nbrLimbsDivisor < 32)
+  else if (nbrLimbsDivisor < 64)
   {
     classicalDivision(pDividend, pDivisor, pQuotient, NULL);
   }
   else
-  {        // Divisor has more than 32 limbs. Use Newton algorithm 
+  {
+          // Divisor has more than 32 limbs. Use Newton algorithm 
            // to find the inverse and then multiply by dividend.
     int bitLength;
     int bitLengthNbrCycles;
@@ -461,14 +480,22 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
         ptrArrAux -= indexApproxInv;
         limbLength += (int)indexApproxInv;
       }
-      // Add approxInv.
-      if (differencePositive)
+      if ((ptrArrAux + limbLength - 1)->x >= HALF_INT_RANGE)
       {
-        AddBigNbr(ptrApproxInv, ptrArrAux, ptrApproxInv, limbLength+1);
+        (ptrArrAux + limbLength)->x = MAX_INT_NBR;
       }
       else
       {
-        SubtractBigNbr(ptrApproxInv, ptrArrAux, ptrApproxInv, limbLength+1);
+        (ptrArrAux + limbLength)->x = 0;
+      }
+      // Add approxInv.
+      if (differencePositive)
+      {
+        AddBigNbr(ptrApproxInv, ptrArrAux, ptrApproxInv, limbLength + 1);
+      }
+      else
+      {
+        SubtractBigNbr(ptrApproxInv, ptrArrAux, ptrApproxInv, limbLength + 1);
       }
     }
     // Multiply approxInv by argument to obtain the quotient.
@@ -595,14 +622,6 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     (void)memcpy(&pQuotient->limbs[0], ptrQuot, lenBytes);
     pQuotient->nbrLimbs = nbrLimbsQuotient;
   }
-  if ((pDividend->sign == pDivisor->sign) ||
-    ((pQuotient->limbs[0].x == 0) && (pQuotient->nbrLimbs == 1)))
-  {
-    pQuotient->sign = SIGN_POSITIVE;
-  }
-  else
-  {
-    pQuotient->sign = SIGN_NEGATIVE;
-  }
+  pQuotient->sign = quotientSign;
   return EXPR_OK;
 }

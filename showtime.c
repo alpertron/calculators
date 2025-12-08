@@ -24,6 +24,7 @@
 #include "expression.h"
 #include "showtime.h"
 #include "output.h"
+#include "copyStr.h"
 
 #ifdef __EMSCRIPTEN__
 double originalTenthSecond;
@@ -76,9 +77,9 @@ void showElapsedTime(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
   // Time elapsed: 
-  copyStr(&ptrOutput, LITERAL_SHOW_TIME_ELAPSED);
 #ifdef __EMSCRIPTEN__
-  GetDHMSt(&ptrOutput, (int)(tenths() - originalTenthSecond));
+  formatString(&ptrOutput, LITERAL_SHOW_TIME_ELAPSED_TENTHS,
+    (int)(tenths() - originalTenthSecond));
 #endif
   *pptrOutput = ptrOutput;
 }
@@ -87,11 +88,13 @@ void showElapsedTime(char **pptrOutput)
 void showElapsedTimeSec(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
-  copyStr(&ptrOutput, "<p>");
   // Time elapsed: 
-  copyStr(&ptrOutput, LITERAL_SHOW_TIME_ELAPSED);
-  GetDHMS(&ptrOutput, (int)(tenths() - originalTenthSecond) / 10);
+#ifdef __EMSCRIPTEN__
+  copyStr(&ptrOutput, "<p>");
+  formatString(&ptrOutput, LITERAL_SHOW_TIME_ELAPSED_SEC,
+    (int)(tenths() - originalTenthSecond) / 10);
   copyStr(&ptrOutput, "</p>");
+#endif
   *ptrOutput = 0;   // Add string terminator.
   *pptrOutput = ptrOutput;
 }

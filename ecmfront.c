@@ -414,22 +414,19 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
       if (nbrPrimalityTests > 0)
       {
         startListLine(&ptrOutput);
-        formatString(&ptrOutput, LITERAL_ECMFRONT16, nbrPrimalityTests);
-        GetDHMSt(&ptrOutput, timePrimalityTests);
+        formatString(&ptrOutput, LITERAL_ECMFRONT16, nbrPrimalityTests, timePrimalityTests);
         endListLine(&ptrOutput);
       }
       if (nbrECM > 0)
       {
         startListLine(&ptrOutput);
-        formatString(&ptrOutput, LITERAL_ECMFRONT17, nbrECM);
-        GetDHMSt(&ptrOutput, timeECM - timeSIQS);
+        formatString(&ptrOutput, LITERAL_ECMFRONT17, nbrECM, timeECM - timeSIQS);
         endListLine(&ptrOutput);
       }
       if (nbrSIQS > 0)
       {
         startListLine(&ptrOutput);
-        formatString(&ptrOutput, LITERAL_ECMFRONT18, nbrSIQS);
-        GetDHMSt(&ptrOutput, timeSIQS);
+        formatString(&ptrOutput, LITERAL_ECMFRONT18, nbrSIQS, timeSIQS);
         endListLine(&ptrOutput);
       }
       endList(&ptrOutput);

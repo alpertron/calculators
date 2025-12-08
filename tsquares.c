@@ -543,9 +543,8 @@ void ShowStatus(void)
   oldTimeElapsed = elapsedTime;
   ptrStatus = status;
   copyStr(&ptrStatus, "4<p>");
-  // Time elapsed 
-  copyStr(&ptrStatus, LITERAL_SHOW_STATUS1);
-  GetDHMS(&ptrStatus, elapsedTime / 10);
+  // Time elapsed:
+  formatString(&ptrStatus, LITERAL_SHOW_STATUS1, elapsedTime / 10);
   // &nbsp;&nbsp;&nbsp;Attempting sum of two squares. Attempt #$1d
   formatString(&ptrStatus, LITERAL_SHOW_STATUS2, attempts);
   *ptrStatus = 0;

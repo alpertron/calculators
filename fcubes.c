@@ -461,9 +461,10 @@ void fcubesText(char *input, int grpLen)
   }
   (void)BatchProcessing(input, &toProcess, &ptrOutput, NULL, batchCubesCallback);
 #ifdef __EMSCRIPTEN__
-  formatString(&ptrOutput, "<p>$1s ", LITERAL_FCUBES3);
   int elapsedTime = (int)(tenths() - originalTenthSecond);
-  GetDHMSt(&ptrOutput, elapsedTime);
+  copyStr(&ptrOutput, "<p>");
+  formatString(&ptrOutput, LITERAL_FCUBES3, elapsedTime);
+  copyStr(&ptrOutput, "</p>");
 #endif
   copyStr(&ptrOutput, "<p>");
   showCopyright(&ptrOutput);

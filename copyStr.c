@@ -16,13 +16,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include <stdio.h>
 #include <stdarg.h>
-#include <ctype.h>
 #include <string.h>
 #include <assert.h>
 #include "string/strings.h"
 #include "bignbr.h"
+#if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
+#include "showtime.h"
+#endif
 #ifdef POLYEXPR
 #include "polynomial.h"
 #include "rootseq.h"
@@ -60,16 +61,18 @@ static int getRangeNumber(const char** pptrOutput)
 // $nf where:
 //  n - argument number
 //  f - format specifier:
-//      d - integer in decimal format
-//      u - unsigned integer in decimal format
-//      l - long integer in decimal format
-//      e - exponent
-//      s - string
-//      b - BigInteger number
 //      a - array of NumberLength limbs
-//      v - variable
+//      b - BigInteger number
+//      d - integer in decimal format
+//      e - exponent
+//      l - long integer in decimal format
 //      p - power of variable
 //      q - equation number
+//      s - string
+//      t - time in tenths of seconds
+//      u - unsigned integer in decimal format
+//      v - variable
+//      z - time in seconds
 //      ? - conditional (used for plurals)
 //          followed by:
 //          n?string?? - if argument is n, string is included, else ignored
@@ -115,7 +118,7 @@ void formatString(char** pptrString, const char* format, ...)
       {
         argType[idx] = type;
         if ((type == 'd') || (type == 'u') || (type == 'e') ||
-          (type == '?') || (type == 'q'))
+          (type == '?') || (type == 'q') || (type == 't') || (type == 'z'))
         {
           argv[idx].i = va_arg(args, int);
         }
@@ -199,6 +202,18 @@ void formatString(char** pptrString, const char* format, ...)
         copyStr(&ptrString, "<span class=\"eq\">(");
         int2dec(&ptrString, argv[idx].i);
         copyStr(&ptrString, ")</span>");
+      }
+      else if (type == 't')
+      {
+#if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
+        GetDHMSt(&ptrString, argv[idx].i);
+#endif
+      }
+      else if (type == 'z')
+      {
+#if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
+        GetDHMS(&ptrString, argv[idx].i);
+#endif
       }
       else if (type == 'l')
       {

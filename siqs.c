@@ -119,8 +119,7 @@ static void ShowSIQSInfo(int timeSieve, int nbrCongruencesFound, int matrixBLeng
   {
     copyStr(&ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
     // End sieve in
-    copyStr(&ptrText, LITERAL_SHOW_SIQS_INFO3);
-    GetDHMS(&ptrText, u / 2);
+    formatString(&ptrText, LITERAL_SHOW_SIQS_INFO3, u/2);
   }
   copyStr(&ptrText, "</p>");
   databack(SIQSInfo);
