@@ -367,6 +367,11 @@ enum eExprErr BigIntRemainder(const BigInteger *pDividend,
     intToBigInteger(pRemainder, remainder);
     return EXPR_OK;
   }
+  if (nbrLimbsDividend == 1)
+  {
+    intToBigInteger(pRemainder, pDividend->limbs[0].x % pDivisor->limbs[0].x);
+    return EXPR_OK;
+  }
   if (nbrLimbsDivisor < 64)
   {
     classicalDivision(pDividend, pDivisor, NULL, pRemainder);

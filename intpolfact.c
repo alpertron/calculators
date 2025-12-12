@@ -707,6 +707,8 @@ static bool doStep1(int dividendMod32768[], int divisorMod32768[])
   // Check that f(1) divides F(1) and f(-1) divides F(-1).
   // Accumulate even coefficients of F in operand1 and odd
   // coefficients in operand2.
+  // F(1) and f(1) equal even plus odd coefficients of F(x) and f(x).
+  // F(-1) and f(-1) equal even minus odd coefficients of F(x) and f(x).
   intToBigInteger(&operand1, 0);
   intToBigInteger(&operand2, 0);
   ptrDest = &common.poly.polyS[1];
@@ -848,7 +850,7 @@ static void forEachCurrentFactor(int stepNbr, int* pNbrFactors,
   if (!linkedBigIntIsZero(lambda[nbrVector][currentFactor]))
   {                 // Multiply this polynomial.
     const int* ptrCoeffSrc = pstFactorInfo->ptrPolyLifted;    // Source
-    int* ptrCoeffDest = common.poly.poly2;                          // Destination
+    int* ptrCoeffDest = common.poly.poly2;                    // Destination
     int nbrLength;
     int degreeFactor = pstFactorInfo->degree;
     int currentDegree;
@@ -919,13 +921,13 @@ static bool AttemptToFactorStepNbr(int stepNbr, int nbrVectors,
 {
   int currentDegree;
   int degreeProd;
-  int* ptrMod32768;
+  int* ptrCoeffMod32768;
   const int* ptrSrc;
   int* ptrDest;
   struct sFactorInfo* pstFactorInfo;
   int nbrTmp[1000];
-  int dividendMod32768[2 * (MAX_DEGREE + 1)];
-  int divisorMod32768[2 * (MAX_DEGREE + 1)];
+  int polyDividendMod32768[2 * (MAX_DEGREE + 1)];
+  int polyDivisorMod32768[2 * (MAX_DEGREE + 1)];
 #if DEBUG_VANHOEIJ
   copyStr(&ptrDebugOutput, "stepNbr = ");
   int2dec(&ptrDebugOutput, stepNbr);
@@ -975,7 +977,7 @@ static bool AttemptToFactorStepNbr(int stepNbr, int nbrVectors,
     // In the same loop get the coefficients of the divisor polynomial
     // by computing the coefficient mod 32768.
     ptrSrc = &common.poly.poly5[1];
-    ptrMod32768 = divisorMod32768;
+    ptrCoeffMod32768 = polyDivisorMod32768;
     for (currentDegree = 0; currentDegree <= common.poly.poly5[0]; currentDegree++)
     {
       UncompressBigIntegerB(ptrSrc, &operand1);
@@ -989,41 +991,41 @@ static bool AttemptToFactorStepNbr(int stepNbr, int nbrVectors,
       {
         return false;     // Coefficient is too low.
       }
-      *ptrMod32768 = 1;
-      ptrMod32768++;
+      *ptrCoeffMod32768 = 1;
+      ptrCoeffMod32768++;
       if (*ptrSrc >= 0)
       {
-        *ptrMod32768 = *(ptrSrc + 1) & 32767;
+        *ptrCoeffMod32768 = *(ptrSrc + 1) & 32767;
       }
       else
       {
-        *ptrMod32768 = (-*(ptrSrc + 1)) & 32767;
+        *ptrCoeffMod32768 = (-*(ptrSrc + 1)) & 32767;
       }
-      ptrMod32768++;
+      ptrCoeffMod32768++;
       ptrSrc += numLimbs(ptrSrc);
       ptrSrc++;
     }
     modulusIsZero = true;   // Perform integer division.
     // Multiply all coefficients by leadingCoeff and store in common.poly.polyS.
     // In the same loop get the polynomial mod 32768.
-    ptrMod32768 = dividendMod32768;
+    ptrCoeffMod32768 = polyDividendMod32768;
     common.poly.polyS[0] = common.poly.polyNonRepeatedFactors[0];
     ptrSrc = &common.poly.polyNonRepeatedFactors[1];
     ptrDest = &common.poly.polyS[1];
     for (currentDegree = 0; currentDegree <= common.poly.polyS[0]; currentDegree++)
     {
       UncompressBigIntegerB(ptrSrc, &operand1);
-      *ptrMod32768 = 1;
-      ptrMod32768++;
+      *ptrCoeffMod32768 = 1;
+      ptrCoeffMod32768++;
       if (operand1.sign == SIGN_POSITIVE)
       {
-        *ptrMod32768 = operand1.limbs[0].x & 32767;
+        *ptrCoeffMod32768 = operand1.limbs[0].x & 32767;
       }
       else
       {
-        *ptrMod32768 = (-operand1.limbs[0].x) & 32767;
+        *ptrCoeffMod32768 = (-operand1.limbs[0].x) & 32767;
       }
-      ptrMod32768++;
+      ptrCoeffMod32768++;
       (void)BigIntMultiply(&operand1, &leadingCoeff, &operand2);
       NumberLength = operand2.nbrLimbs;
       BigInteger2IntArray(ptrDest, &operand2);
@@ -1034,7 +1036,7 @@ static bool AttemptToFactorStepNbr(int stepNbr, int nbrVectors,
     }
     if (stepNbr == 1)
     {
-      if (!doStep1(dividendMod32768, divisorMod32768))
+      if (!doStep1(polyDividendMod32768, polyDivisorMod32768))
       {
         return false;
       }
@@ -1133,6 +1135,66 @@ static void ComputeCoeffBounds(void)
   }
 }
 
+// Check whether the product of up to 3 factors mod p^b
+// is a divisor of the original polynomial.
+int findEasyFactors(int nbrFactors)
+{
+  int ctr1;
+  int currentAttempts;
+  int newNbrFactors;
+  CopyBigInt(&halfPowerMod, &powerMod);
+  subtractdivide(&halfPowerMod, -1, 2); // halfPowerMod <- (powerMod+1)/2
+  GetMontgomeryParms(powerMod.nbrLimbs);
+  // Polynomials in AttemptToFactor are multiplied by the leading
+  // coefficient, so multiply the coefficient bound as well.
+  (void)BigIntMultiply(&bound, &leadingCoeff, &bound);
+  for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
+  {
+    intToLinkedBigInt(&lambda[0][ctr1], 0);
+  }
+  newNbrFactors = nbrFactors;
+  for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
+  {
+    intToLinkedBigInt(&lambda[0][ctr1], 1);
+    (void)AttemptToFactor(1, nbrFactors, &newNbrFactors);
+    intToLinkedBigInt(&lambda[0][ctr1], 0);
+  }
+  currentAttempts = 0;
+#ifdef __EMSCRIPTEN__
+  maxAttempts = nbrFactors * (nbrFactors - 1) / 2;
+#endif
+  for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
+  {
+    intToLinkedBigInt(&lambda[0][ctr1], 1);
+    for (int ctr2 = ctr1 + 1; ctr2 < nbrFactors; ctr2++)
+    {
+      intToLinkedBigInt(&lambda[0][ctr2], 1);
+      (void)AttemptToFactor(1, nbrFactors, &newNbrFactors);
+      currentAttempts++;
+#ifdef __EMSCRIPTEN__
+      int elapsedTime = (int)(tenths() - originalTenthSecond);
+      if ((elapsedTime / 10) != (oldTimeElapsed / 10))
+      {
+        char outputInfo[1000];
+        char* ptrOut = outputInfo;
+
+        oldTimeElapsed = elapsedTime;
+        copyStr(&ptrOut, "1<p>");
+        formatString(&ptrOut, LITERAL_VAN_HOEIJ1, currentAttempts, maxAttempts);
+        copyStr(&ptrOut, "</p>");
+        showElapsedTimeSec(&ptrOut);
+        databack(outputInfo);
+      }
+#endif
+      intToLinkedBigInt(&lambda[0][ctr2], 0);
+    }
+    intToLinkedBigInt(&lambda[0][ctr1], 0);
+  }
+  // Restore value of bound.
+  (void)BigIntDivide(&bound, &leadingCoeff, &bound);
+  return newNbrFactors;
+}
+
 // Perform Van Hoeij algorithm 
 // On input: common.poly.values = integer polynomial.
 // prime: integer prime used for factoring the polynomial
@@ -1177,8 +1239,6 @@ static void vanHoeij(int prime, int numFactors)
   int degreePolyToFactor = common.poly.polyNonRepeatedFactors[0];
   int newNumberLength;
   int newNbrFactors;
-  int ctr1;
-  int currentAttempts;
 #ifdef __EMSCRIPTEN__
   int maxAttempts;
 #endif
@@ -1224,58 +1284,7 @@ static void vanHoeij(int prime, int numFactors)
 #if DEBUG_HENSEL_LIFTING
   ptrDebugOutput = ptrOutput2; ptrOutput2 = NULL;
 #endif
-  // Check whether the product of up to 3 factors mod p^b
-  // is a divisor of the original polynomial.
-  CopyBigInt(&halfPowerMod, &powerMod);
-  subtractdivide(&halfPowerMod, -1, 2); // halfPowerMod <- (powerMod+1)/2
-  GetMontgomeryParms(powerMod.nbrLimbs);
-  // Polynomials in AttemptToFactor are multiplied by the leading
-  // coefficient, so multiply the coefficient bound as well.
-  (void)BigIntMultiply(&bound, &leadingCoeff, &bound);
-  for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
-  {
-    intToLinkedBigInt(&lambda[0][ctr1], 0);
-  }
-  newNbrFactors = nbrFactors;
-  for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
-  {
-    intToLinkedBigInt(&lambda[0][ctr1], 1);
-    (void)AttemptToFactor(1, nbrFactors, &newNbrFactors);
-    intToLinkedBigInt(&lambda[0][ctr1], 0);
-  }
-  currentAttempts = 0;
-#ifdef __EMSCRIPTEN__
-  maxAttempts = nbrFactors * (nbrFactors - 1) / 2;
-#endif
-  for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
-  {
-    intToLinkedBigInt(&lambda[0][ctr1], 1);
-    for (int ctr2 = ctr1 + 1; ctr2 < nbrFactors; ctr2++)
-    {
-      intToLinkedBigInt(&lambda[0][ctr2], 1);
-      (void)AttemptToFactor(1, nbrFactors, &newNbrFactors);
-      currentAttempts++;
-#ifdef __EMSCRIPTEN__
-      int elapsedTime = (int)(tenths() - originalTenthSecond);
-      if ((elapsedTime / 10) != (oldTimeElapsed / 10))
-      {
-        char outputInfo[1000];
-        char *ptrOut = outputInfo;
-   
-        oldTimeElapsed = elapsedTime;
-        copyStr(&ptrOut, "1<p>");
-        formatString(&ptrOut, LITERAL_VAN_HOEIJ1, currentAttempts, maxAttempts);
-        copyStr(&ptrOut, "</p>");
-        showElapsedTimeSec(&ptrOut);
-        databack(outputInfo);
-      }
-#endif
-      intToLinkedBigInt(&lambda[0][ctr2], 0);
-    }
-    intToLinkedBigInt(&lambda[0][ctr1], 0);
-  }
-  // Restore value of bound.
-  (void)BigIntDivide(&bound, &leadingCoeff, &bound);
+  newNbrFactors = findEasyFactors(nbrFactors);
   if (newNbrFactors <= 1)
   {   // Zero or 1 factor left. Polynomial completely factored, so go out.
     return;

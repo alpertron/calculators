@@ -19,7 +19,7 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:description" content="La potencia perfecta puede ser un cubo, una quinta o séptima potencia.">
-<meta property="article:published_time" content="2025-12-08">
+<meta property="article:published_time" content="2025-12-12">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/TCUADCUB.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/TSQCUBES.HTM">
@@ -281,7 +281,7 @@ para hallar <var>d</var> = <var>a</var><sup>2</sup> + <var>b</var><sup>2</sup>.<
 <li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).</li>
 <li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.</li>
 <li> <strong>Ans</strong>: obtiene la última respuesta.</li>
-<li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong> para lógica binaria. Las operaciones se hacen en binario (base 2). Se agregan infinitos ceros (unos) a la izquerda de los números positivos (negativos).</li>
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong> para lógica binaria. Las operaciones se hacen en binario (base 2). Se agregan infinitos ceros (unos) a la izquierda de los números positivos (negativos).</li>
 <li> <strong>SHL</strong> o <strong>&lt;&lt;</strong>: Si <var>b</var> &ge; 0, <var>a</var> SHL <var>b</var> desplaza el valor <var>a</var> a la izquierda la cantidad de bits especificada por <var>b</var>. Esto equivale a <var>a</var> &times; 2<sup><var>b</var></sup>. En caso contrario, <var>a</var> SHL <var>b</var> desplaza el valor <var>a</var> a la derecha la cantidad de bits especificada por &minus;<var>b</var>. Esto equivale a floor(<var>a</var> / 2<sup>&minus;<var>b</var></sup>). Ejemplo: 5 SHL 3 = 40.</li>
 <li> <strong>SHR</strong> o <strong>&gt;&gt;</strong>: Si <var>b</var> &ge; 0, <var>a</var> SHR <var>b</var> desplaza el valor <var>a</var> a la derecha la cantidad de bits especificada por <var>b</var>. Esto equivale a floor(<var>a</var> / 2<sup><var>b</var></sup>). En caso contrario, <var>a</var> SHR <var>b</var> desplaza el valor <var>a</var> a la izquierda la cantidad de bits especificada por &minus;<var>b</var>. Esto equivale a <var>a</var> &times; 2<sup>&minus;<var>b</var></sup>. Ejemplo: -19 SHR 2 = -5.</li>
 <li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero). Ejemplo: 6! = 6 &times; 5 &times; 4 &times; 3 &times; 2 = 720.</li>
@@ -301,7 +301,7 @@ para hallar <var>d</var> = <var>a</var><sup>2</sup> + <var>b</var><sup>2</sup>.<
 <li> <strong>Jacobi(m,n)</strong>: obtiene el símbolo de Jacobi de <var>m</var> y <var>n</var>. Cuando el segundo argumento es primo, el resultado es cero si <var>m</var> es múltiplo de <var>n</var>, es uno si hay una solución a <var>x</var>&sup2; &equiv; <var>m</var> (mód <var>n</var>) y es igual a &minus;1 cuando la congruencia mencionada no tiene soluciones.</li>
 <li> <strong>Random(m,n)</strong>: número entero aleatorio entre <var>m</var> y <var>n</var>.</li>
 <li> <strong>Abs(n)</strong>: valor absoluto de <var>n</var>.</li>
-<li> <strong>Sign(n)</strong>: retorna cero si <var>n</var> es zero, &minus;1 si es negativo o 1 si es positivo.</li>
+<li> <strong>Sign(n)</strong>: retorna cero si <var>n</var> es cero, &minus;1 si es negativo o 1 si es positivo.</li>
 <li> <strong>IsPrime(n)</strong>: retorna cero si <var>n</var> no es un primo probable y &minus;1 si lo es. Ejemplo: IsPrime(5) = &minus;1.</li>
 <li> <strong>Sqrt(n)</strong>: parte entera de la raíz cuadrada del argumento.</li>
 <li> <strong>Iroot(n,r)</strong>: Raíz r-ésima entera del primer argumento. Ejemplo: Iroot(8, 3) = 2.</li>
@@ -353,7 +353,7 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <h2>Código fuente</h2>
 <p>Se puede bajar el código fuente de este programa desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 8 de diciembre de 2025.</p>
+<p>Escrito por Dario Alpern. Actualizado el 12 de diciembre de 2025.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -527,8 +527,8 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
   "name": "Suma de dos cuadrados y una potencia perfecta",
   "description": "Aplicación Web application que descompone un número en una suma de dos cuadrados y un cubo, quinta o séptima potencia.",
   "image": ["https://www.alpertron.com.ar/tsqcubes.png"],
-  "datePublished": "2025-12-08",
-  "dateModified": "2025-12-08",
+  "datePublished": "2025-12-12",
+  "dateModified": "2025-12-12",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {

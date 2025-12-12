@@ -187,7 +187,7 @@ LITERAL_GAUSSIAN2 "El valor es "
 
 intpolfact
 LITERAL_INTEGRAL_LLL1 "Calculando LLL n.º $1d en una matriz de $2d &times; $2d."
-LITERAL_VAN_HOEIJ1 "Obteniendo factores de dos factores modulares: prueba $1d de $2d"
+LITERAL_VAN_HOEIJ1 "Obteniendo factores de dos factores modulares: intento n.º $1d de $2d"
 LITERAL_VAN_HOEIJ2 "Paso 7"
 LITERAL_VAN_HOEIJ3 "Paso 8"
 LITERAL_VAN_HOEIJ4 "Verificando si los polinomios hallados son factores irreducibles."
@@ -220,7 +220,7 @@ LITERAL_FACTOR_MODULAR_POLY "Lista de factores"
 
 output
 LITERAL_SHOW_EQ_NBRS "($1d) y ($2d)"
-LITERAL_COPYRIGHT "Hecho por Darío Alpern. Actualizado el 8 de diciembre de 2025."
+LITERAL_COPYRIGHT "Hecho por Darío Alpern. Actualizado el 12 de diciembre de 2025."
 
 polfact
 LITERAL_POLYFACT1 "Polinomio ingresado"
