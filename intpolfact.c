@@ -1139,6 +1139,9 @@ static void ComputeCoeffBounds(void)
 // is a divisor of the original polynomial.
 int findEasyFactors(int nbrFactors)
 {
+#ifdef __EMSCRIPTEN__
+  int maxAttempts;
+#endif
   int ctr1;
   int currentAttempts;
   int newNbrFactors;
@@ -1239,9 +1242,6 @@ static void vanHoeij(int prime, int numFactors)
   int degreePolyToFactor = common.poly.polyNonRepeatedFactors[0];
   int newNumberLength;
   int newNbrFactors;
-#ifdef __EMSCRIPTEN__
-  int maxAttempts;
-#endif
   double dExponDifference = 6.0 * (double)nbrFactors * LOG_2 / log((double)prime);
   exponDifference = (int)dExponDifference;
   numberLLL = 0;
