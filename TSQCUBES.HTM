@@ -285,7 +285,7 @@ to find <var>d</var> = <var>a</var><sup>2</sup> + <var>b</var><sup>2</sup>.</li>
 <li> <strong>SHR</strong> or <strong>&gt;&gt;</strong>: When <var>b</var> &ge; 0, <var>a</var> SHR <var>b</var> shifts <var>a</var> right the number of bits specified by <var>b</var>. This is equivalent to floor(<var>a</var> / 2<sup><var>b</var></sup>). Otherwise, <var>a</var> SHR <var>b</var> shifts <var>a</var> left the number of bits specified by &minus;<var>b</var>. This is equivalent to <var>a</var> &times; 2<sup>&minus;<var>b</var></sup>. Example: -19 SHR 2 = -5.</li>
 <li> <strong>n!</strong>: factorial (<var>n</var> must be greater than or equal to zero). Example: 6! = 6 &times; 5 &times; 4 &times; 3 &times; 2 = 720.</li>
 <li> <strong>n!! ... !</strong>: multiple factorial (<var>n</var> must be greater than or equal to zero). It is the product of <var>n</var> times <var>n</var> &minus; <var>k</var> times <var>n</var> &minus; <var>2k</var> ... (all numbers greater than zero) where <var>k</var> is the number of exclamation marks. Example: 7!! = 7 &times; 5 &times; 3 &times; 1 = 105.</li>
-<li> <strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>). Example: 12# = 11 &times; 7 &times; 5 &times; 3 &times; 2 = 2310.</li>
+<li> <strong>p#</strong>: primorial (product of all primes less than or equal to <var>p</var>). Example: 12# = 11 &times; 7 &times; 5 &times; 3 &times; 2 = 2310.</li>
 <li> <strong>B(n)</strong>: Probable prime immediately before <em>n</em>. Example: B(24) = 23.</li>
 <li> <strong>F(n)</strong>: Fibonacci number F<sub>n</sub> from the sequence 0, 1, 1, 2, 3, 5, 8, 13, 21, etc. where each element equals the sum of the previous two members of the sequence. Example: F(7) = 13.</li>
 <li> <strong>L(n)</strong>: Lucas number L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub></li>
@@ -484,7 +484,7 @@ The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 </aside>
 <div id="strings">
 <div id="btn1">Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt1,Integer root\n\nFirst argument: radicand\nSecond argument: root order,iroot2,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random2,Absolute value,Abs1,Sign,Sign1</div>
-<div id="btn2">Variable,x,Initialize variable,x=,Variable is less than,x&lt;,,,Variable is less or equal than,x&lt;=,Counter,c,Counter is less than,c&lt;,Counter is less or equal than,c&lt;=,Separator,;</div>
+<div id="btn2">Variable,x,Initialize variable,x=,Variable is less than,x&lt;,,,Variable is less than or equal to,x&lt;=,Counter,c,Counter is less than,c&lt;,Counter is less than or equal to,c&lt;=,Separator,;</div>
 <div id="btn3">Equal,=,Not equal,!=,,,Greater,&gt;,Not greater,&lt;=,Less,&lt;,Not less,&gt;=</div>
 <div id="btn4">Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ,,,Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT </div>
 <div id="btn5">,,Greatest Common Divisor\n\nOne or more arguments can be used,GCD2,Least Common Multiple\n\nOne or more arguments can be used,LCM2,The value is prime?,IsPrime1</div>
