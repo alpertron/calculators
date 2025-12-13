@@ -808,7 +808,6 @@ button:disabled {color: #808080; background-color: #606060}
 <label for="getFile" id="lgetFile">Seleccione archivo</label>
 </div>
 </fieldset>
-
 <fieldset id="functions"><legend>Funciones</legend>
 <div>
 <label for="funccat">Categoría:</label> 
@@ -826,7 +825,6 @@ button:disabled {color: #808080; background-color: #606060}
 </optgroup>
 </select>
 </div>
-
 <div class="funcbtns" id="funcbtns">
 <button type="button">(</button><button type="button">)</button><button type="button">&#9166;</button>
 <button type="button">+</button><button type="button">-</button><button type="button">*</button>
@@ -835,30 +833,20 @@ button:disabled {color: #808080; background-color: #606060}
 <button type="button">Random(</button><button type="button">Abs(</button><button type="button">Sign(</button>
 </div>
 </fieldset>
-
 <p id="explan">Escriba una expresión numérica o un ciclo por línea. Ejemplo: x=3;x=n(x);c&lt;=100;x&#8209;1</p>
 </div>
-
 <div id="help" aria-live="polite">
 <p>Esta aplicación web le permite factorizar números o expresiones numéricas utilizando dos algoritmos rápidos: el método de curvas elípticas (ECM) y el método de criba cuadrática especial (SIQS).</p>
-
 <p>El programa utiliza almacenamiento local para recordar el avance de la factorización. Esto le permite continuar la factorización de un número grande en varias sesiones: basta con recargar esta página para reanudar el proceso exactamente donde quedó.</p>
-
 <div class="noand">
 <p>Todos los cálculos se realizan de manera local en su computadora. Por este motivo, podrá desconectarla de Internet mientras la factorización continúa sin interrupciones. Una vez ejecutada por primera vez, esta aplicación puede iniciarse sin conexión.</p>
-
 <p>El código fuente está escrito en lenguaje C y se compila a JavaScript y WebAssembly, que son formatos comprendidos por los navegadores web. WebAssembly suele ser más rápido, aunque no todos los navegadores lo soportan. Podrá ver qué versión se está utilizando al factorizar un número.</p>
 </div>
-
 <p>Existe una <a href="/videos/videosEcmc.htm">lista de videos</a> sobre el funcionamiento de esta calculadora.</p>
-
 <p>También puede consultar los <a href="RECECM.HTM" title="Récords de factorización ECM">récords de factorización</a> obtenidos con esta aplicación.</p>
-
 <h2><button type="button">Expresiones</button></h2>
-
 <div class="panel" id="exprorig">
 <p>Usted puede ingresar expresiones que utilicen los siguientes operadores y paréntesis:</p>
-
 <ul>
 <li> <strong>+</strong> para suma.</li>
 <li> <strong>-</strong> para resta.</li>
@@ -866,113 +854,74 @@ button:disabled {color: #808080; background-color: #606060}
 <li> <strong>/</strong> para división entera.</li>
 <li> <strong>%</strong> para obtener el resto de la división entera.</li>
 <li> <strong>^</strong> o <strong>**</strong> para exponenciación (el exponente debe ser mayor o igual que cero).</li>
-
 <li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>, 
 <strong>&lt;=</strong>, <strong>&gt;=</strong>, <strong>!=</strong> para comparaciones.
 Estos operadores devuelven cero si la comparación es falsa y –1 si es verdadera.</li>
-
 <li> <strong>Ans</strong>: obtiene la última respuesta generada.</li>
-
 <li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong>  
 para operaciones de lógica binaria.  
 Las operaciones se realizan en base 2.  
 Los números positivos se rellenan con infinitos ceros a la izquierda, y los negativos con infinitos unos.</li>
-
 <li> <strong>SHL</strong> o <strong>&lt;&lt;</strong>:  
 Si <var>b</var> ≥ 0, <var>a</var> SHL <var>b</var> desplaza <var>a</var> hacia la izquierda <var>b</var> bits, lo que equivale a multiplicar por 2<sup>b</sup>.  
 Si <var>b</var> &lt; 0, desplaza <var>a</var> a la derecha –<var>b</var> bits, equivalente a floor(<var>a</var> / 2<sup>−b</sup>).  
 Ejemplo: 5 SHL 3 = 40.</li>
-
 <li> <strong>SHR</strong> o <strong>&gt;&gt;</strong>:  
 Si <var>b</var> ≥ 0, <var>a</var> SHR <var>b</var> desplaza <var>a</var> a la derecha <var>b</var> bits, equivalente a floor(<var>a</var> / 2<sup>b</sup>).  
 Si <var>b</var> &lt; 0, desplaza <var>a</var> a la izquierda –<var>b</var> bits.
 Ejemplo: –19 SHR 2 = –5.</li>
-
 <li><strong>n!</strong>: factorial de <var>n</var> (con <var>n</var> ≥ 0).  
 Ejemplo: 6! = 720.</li>
-
 <li><strong>n!!...!</strong>: factorial múltiple.  
 Es el producto de <var>n</var>, <var>n</var>–<var>k</var>, <var>n</var>–2<var>k</var>, etc., donde <var>k</var> es la cantidad de signos de exclamación, y todos los valores deben ser positivos.  
 Ejemplo: 7!! = 7 × 5 × 3 × 1 = 105.</li>
-
 <li><strong>p#</strong>: primorial, es decir, el producto de los números primos ≤ <var>p</var>.  
 Ejemplo: 12# = 2310.</li>
-
-<li><strong>B(n)</strong>: número probablemente primo inmediatamente anterior a <var>n</var>.  
-Ejemplo: B(24) = 23.</li>
-
+<li><strong>B(n)</strong>: número probablemente primo inmediatamente anterior a <var>n</var>. Ejemplo: B(24) = 23.</li>
 <li><strong>F(n)</strong>: número de Fibonacci F<sub>n</sub>, donde la sucesión inicia en 0, 1, 1, 2, 3, 5, 8, 13...  
 Ejemplo: F(7) = 13.</li>
-
 <li><strong>L(n)</strong>: número de Lucas L<sub>n</sub> = F<sub>n–1</sub> + F<sub>n+1</sub>.</li>
-
-<li><strong>N(n)</strong>: número probablemente primo inmediatamente posterior a <var>n</var>.  
-Ejemplo: N(24) = 29.</li>
-
+<li><strong>N(n)</strong>: número probablemente primo inmediatamente posterior a <var>n</var>. Ejemplo: N(24) = 29.</li>
 <li><strong>P(n)</strong>: número de particiones irrestrictas de <var>n</var> (descomposiciones en sumas sin importar el orden).  
 Ejemplo: P(4) = 5.</li>
-
 <li><strong>Gcd(m,n,...)</strong>: máximo común divisor.  
 Ejemplo: GCD(12,16) = 4.</li>
-
 <li><strong>Lcm(m,n,...)</strong>: mínimo común múltiplo.  
 Ejemplo: LCM(12,16,24) = 48.</li>
-
 <li><strong>FloorDiv(m,n)</strong>: parte entera del cociente m/n.  
 Ejemplos: floordiv(10,7) = 1, floordiv(–10,7) = –2.</li>
-
 <li><strong>Mod(m,n)</strong>: m módulo |n|.  
 Ejemplos: Mod(10,7)=3, Mod(–10,7)=4.</li>
-
 <li><strong>Modinv(m,n)</strong>: inverso modular de <var>m</var> módulo <var>n</var>, solo válido cuando ambos números son coprimos.  
 Ejemplo: Modinv(3,7) = 5.</li>
-
 <li><strong>Modpow(m,n,r)</strong>: calcula m<sup>n</sup> mod r.  
 Ejemplo: Modpow(3,4,7) = 4.</li>
-
 <li><strong>Totient(n)</strong>: cantidad de enteros positivos menores que <var>n</var> que son coprimos con él.  
 Ejemplo: Totient(6) = 2.</li>
-
 <li><strong>Jacobi(m,n)</strong>: símbolo de Jacobi.</li>
-
 <li><strong>Random(m,n)</strong>: número entero aleatorio entre <var>m</var> y <var>n</var>.</li>
-
 <li><strong>Abs(n)</strong>: valor absoluto.</li>
-
 <li><strong>Sign(n)</strong>: devuelve 0 si n = 0, 1 si n &gt; 0, –1 si n &lt; 0.</li>
-
 <li><strong>IsPrime(n)</strong>: devuelve –1 si n es primo probable y 0 si no lo es.</li>
-
 <li><strong>Sqrt(n)</strong>: parte entera de la raíz cuadrada.</li>
-
 <li><strong>Iroot(n,r)</strong>: raíz entera r-ésima.  
 Ejemplo: Iroot(8,3) = 2.</li>
-
 <li><strong>NumFact(n)</strong>: cantidad de factores primos distintos.  
 Ejemplo: NumFact(28) = 2.</li>
-
 <li><strong>MinFact(n)</strong>: menor factor primo.  
 Ejemplo: MinFact(28) = 2.</li>
-
 <li><strong>MaxFact(n)</strong>: mayor factor primo.  
 Ejemplo: MaxFact(28) = 7.</li>
-
 <li><strong>NumDivs(n)</strong>: cantidad de divisores positivos.  
 Ejemplo: NumDivs(28) = 6.</li>
-
 <li><strong>SumDivs(n)</strong>: suma de divisores positivos.  
 Ejemplo: SumDivs(28)=56.</li>
-
 <li><strong>NumDigits(n,r)</strong>: cantidad de dígitos de <var>n</var> en base r.  
 Ejemplo: NumDigits(13,2)=4.</li>
-
 <li><strong>SumDigits(n,r)</strong>: suma de dígitos en la base indicada.</li>
-
 <li><strong>RevDigits(n,r)</strong>: invierte los dígitos de <var>n</var> en base r.</li>
-
 <li><strong>ConcatFact(m,n)</strong>: concatena factores primos según el modo especificado.</li>
 </ul>
-
 <table>
 <caption>Modos de la función ConcatFact</caption>
 <tr><th scope="col">Modo</th><th scope="col">Orden de los factores</th><th scope="col">Factores repetidos</th><th scope="col">Ejemplo</th></tr>
@@ -981,7 +930,6 @@ Ejemplo: NumDigits(13,2)=4.</li>
 <tr><td>2</td><td>Creciente</td><td>Sí</td><td>concatfact(2,36)=2233</td></tr>
 <tr><td>3</td><td>Decreciente</td><td>Sí</td><td>concatfact(3,36)=3322</td></tr>
 </table>
-
 <p>Puede usar el prefijo <em>0x</em> para ingresar números hexadecimales.  
 Por ejemplo, 0x38 es igual a 56.</p>
 </div>
@@ -1025,13 +973,9 @@ Por ejemplo, 0x38 es igual a 56.</p>
 <div class="panel">
 <p>El algoritmo de factorización ECM se puede ejecutar de manera paralela sin dificultad.  
 Para hacerlo, inicie el proceso de factorización en la primera computadora desde la curva 1; en la segunda computadora comience desde la curva 10.000; en la tercera computadora desde la curva 20.000; y así sucesivamente.</p>
-
 <p>Para modificar el número de curva, presione el botón <strong>Más</strong>, ingrese el valor en la caja correspondiente que aparece en la nueva ventana y luego pulse <strong>Nueva curva</strong>.</p>
-
 <p>Cuando alguna de las computadoras encuentre un factor, vuelva a presionar el botón <strong>Más</strong>, ingrese el factor hallado y finalmente haga clic en <strong>Factor</strong> para continuar la descomposición en su dispositivo.</p>
 </div>
-
-
 <h2><button type="button">Factorización utilizando el método de criba cuadrática (SIQS)</button></h2>
 <div class="panel">
 <p>La notación <var>k</var> &equiv; <var>m</var> (mod <var>n</var>) significa que el resto de la división de <var>k</var> entre <var>n</var> es igual al resto de la división de <var>m</var> entre <var>n</var>. Al número <var>n</var> se lo denomina módulo.</p>
@@ -1064,89 +1008,64 @@ Para hacerlo, inicie el proceso de factorización en la primera computadora desd
 </table></div>
 <h2><button type="button">Configuración</button></h2>
 <div class="panel">
-
 <p>Usted puede modificar la configuración de esta aplicación presionando el botón <strong>Config</strong> cuando el programa no se encuentra realizando una factorización.  
 Al hacerlo, se abrirá una nueva ventana donde podrá seleccionar los siguientes ajustes:</p>
-
 <ul>
 <li><strong>Dígitos por grupo</strong>:  
 Para facilitar la lectura, los números grandes se dividen en grupos separados por espacios.  
 Con esta opción, usted puede especificar cuántos dígitos contendrá cada grupo.</li>
-
 <li><strong>Información</strong>:  
 Si está activada, la aplicación mostrará información adicional sobre los factores hallados.</li>
-
 <li><strong>Impresión bonita</strong>:  
 Si esta casilla está seleccionada, los exponentes aparecerán en superíndice y el signo de multiplicación será “×”.  
 Además, cuando un número tiene más de 30 dígitos, se mostrará la cantidad total de dígitos.  
 Si la casilla está desactivada, los exponentes se indicarán con el símbolo “^” y la multiplicación se mostrará mediante asteriscos.  
 En este modo, nunca se indica la cantidad de dígitos, lo cual facilita copiar los resultados hacia otros programas matemáticos.</li>
-
 <li><strong>Salida hexadecimal</strong>:  
 Si se activa esta opción, la aplicación mostrará los números en formato hexadecimal en lugar de decimal.  
 Para ingresar números en hexadecimal, estos deben comenzar con la secuencia <code>0x</code>.  
 Por ejemplo: <code>0x38</code> equivale a 56.  
 Los números en hexadecimal se muestran empleando un tipo de letra monoespaciado.</li>
-
 <li><strong>Teclado</strong>:  
 Permite seleccionar entre un teclado virtual numérico o uno completo (alfanumérico).  
 El teclado virtual aparece automáticamente en pantallas táctiles cuando usted selecciona una caja de entrada.</li>
-
 <li><strong>Usar tablas de Cunningham en el servidor</strong>:  
 Si está activada esta opción y el número a factorizar tiene la forma <var>a</var><sup><var>b</var></sup> ± 1, la aplicación intentará recuperar factores conocidos desde un servidor Web.  
 Para reducir el tamaño de la base de datos, sólo se incluyen factores primos de al menos 14 dígitos, por lo cual el programa deberá calcular los factores menores por sí mismo.  
 Estos factores provienen de la <a href="http://myfactors.mooo.com/">lista de Jonathan Crombie</a>, que contiene 2.674.850 factores de números de Cunningham.</li>
 </ul>
-
 <p>La configuración se almacena en su dispositivo, de modo que, si vuelve a abrir la calculadora, los ajustes permanecerán intactos.</p>
-
 </div>
-
-
 <h2><button type="button">Factorización en lotes</button></h2>
 <div class="panel">
-
 <p>Escriba una expresión por línea y luego presione el botón <strong>Sólo evaluar</strong> o <strong>Factorizar</strong>.</p>
-
 <p>Las líneas en blanco o aquellas que comienzan con el carácter numeral <code>#</code> (comentarios) se copiarán tal cual en la salida.</p>
-
 <p><strong>Expresiones para ciclos:</strong>  
 Con una sola línea usted puede evaluar, probar primalidad o factorizar secuencias de números.  
 Para ello, introduzca entre cuatro y cinco expresiones separadas por punto y coma:</p>
-
 <ul>
 <li><strong>Primera expresión</strong>: Debe comenzar con <code>x=</code> e indica el valor inicial de la variable <var>x</var>.</li>
-
 <li><strong>Segunda expresión</strong>: Debe comenzar con <code>x=</code> e indica cómo debe actualizarse <var>x</var>.</li>
-
 <li><strong>Tercera expresión</strong>: Es la condición de finalización del ciclo.  
 Si su valor es distinto de cero (verdadero), el ciclo termina; si vale cero (falso), continúa.</li>
-
 <li><strong>Cuarta expresión</strong>: Indica el número a evaluar o factorizar.</li>
-
 <li><strong>Quinta expresión (opcional)</strong>:  
 Si su valor es distinto de cero (verdadero), se muestra o factoriza la cuarta expresión.  
 Si vale cero (falso), la cuarta expresión se ignora.</li>
 </ul>
-
 <p>Excepto la primera, las demás expresiones deben incluir la variable <var>x</var> y/o el contador <var>c</var>.</p>
-
 <p>Si la condición de finalización permanece falsa después de procesar 1000 números, aparecerá el botón <strong>Continuar</strong>.  
 Al presionarlo, el programa procesará los 1000 valores siguientes y así sucesivamente.</p>
-
 <p><strong>Ejemplo 1:</strong> Hallar los factores de los primeros 100 números de la forma “primo impar menos 1”.  
 La línea a escribir es:  
 <code>x=3; x=n(x); c&lt;=100; x-1</code></p>
-
 <p><strong>Ejemplo 2:</strong> Hallar los números de Smith menores de 10000.  
 Un número de Smith es un compuesto cuyo valor, expresado en base 10, tiene la misma suma de dígitos que la suma de dígitos de la factorización de sus factores primos.  
 La línea a escribir es:  
 <code>x=1; x=x+1; x&lt;10000; x; sumdigits(x,10)==sumdigits(concatfact(2,x),10) and not isprime(x)</code></p>
-
 <p>La cuarta expresión puede reemplazarse por una cadena de formato seguida de varias expresiones.  
 La cadena de formato determina qué debe mostrarse en pantalla.  
 Dentro de esa cadena pueden utilizarse cláusulas de conversión comenzando con el carácter “%” (en mayúsculas o minúsculas):</p>
-
 <ul>
 <li><strong>%D</strong>: muestra la expresión como número decimal.</li>
 <li><strong>%X</strong>: muestra la expresión en hexadecimal.</li>
@@ -1154,19 +1073,13 @@ Dentro de esa cadena pueden utilizarse cláusulas de conversión comenzando con 
 <li><strong>%FD</strong>: factoriza la expresión y muestra los factores en decimal.</li>
 <li><strong>%FX</strong>: factoriza la expresión y muestra los factores en hexadecimal.</li>
 </ul>
-
 <p>Las expresiones se escriben después de la cadena de formato, y deben estar separadas por dos puntos.  
 También deben incluirse dos puntos entre la cadena y la primera expresión.</p>
-
 <p>Para mostrar un símbolo de porcentaje real dentro de la cadena de formato, escriba <code>%%</code>.  
 Para mostrar una comilla, utilice <code>%'</code>.</p>
-
 <p><strong>Ejemplo 3:</strong> Para cada número entre –100 y 100, mostrar si es primo y luego mostrar su factorización tanto en decimal como en hexadecimal:</p>
-
 <p><code>x=-100; x=x+1; x&lt;=100; "%d es primo: %l, %Fd, %Fx":x:isprime(x):x:x</code></p>
-
 <p><strong>Ejemplo 4:</strong> Obtener 33331 dígitos de π usando el algoritmo de Gauss–Legendre (script de Samuel Eraut):</p>
-
 <p><code>
 x=10^99999+10^66666/4+10^66666/sqrt(2*10^66666);
 x=(x/10^66666+x%10^33333)/2*10^66666 +
@@ -1176,19 +1089,14 @@ c&lt;=15;
 (x/10^66666+x%10^33333)^2/4/((x/10^33333)%10^33333)/1000;
 c==15
 </code></p>
-
 <p>En este algoritmo, las tres partes del número <var>x</var> se interpretan como:</p>
-
 <ul>
 <li><var>a</var> = dígitos más significativos,</li>
 <li><var>t</var> = parte intermedia,</li>
 <li><var>b</var> = los 33333 dígitos menos significativos.</li>
 </ul>
-
 <p>Los nombres <var>a</var>, <var>b</var> y <var>t</var> coinciden con los utilizados en la descripción de Wikipedia sobre el método Gauss–Legendre.</p>
-
 <p><strong>Ejemplo 5:</strong> Obtener 33331 dígitos de π usando la fórmula de Bailey–Borwein–Plouffe (BBP), código también escrito por Samuel Eraut:</p>
-
 <p><code>
 x=0;
 x = x + ( 2^(110742-c*4)/(8*(c-1)+1)
@@ -1199,12 +1107,10 @@ c&lt;=27674;
 x*10^33330/2^110736;
 c==27674
 </code></p>
-
 </div>
 <div class="noand">
 <h2><button type="button">Código fuente</button></h2>
 </div>
-
 <div class="panel">
 <div class="noand">
 <p>Usted puede descargar el código fuente de esta aplicación y del antiguo applet de factorización desde  
@@ -1213,51 +1119,40 @@ El código está escrito en lenguaje C, por lo que es necesario utilizar
 <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar el código JavaScript correspondiente.</p>
 </div>
 </div>
-
 <p>Escrito por Dario Alpern. Actualizado el 12 de diciembre de 2025.</p>
 </div>
-
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
 <div id="status"></div>
-
 <div id="sharediv" class="pad">
 <button id="share" type="button">¡Compartir factorización!</button>
 </div>
-
 <div id="sktest" class="pad">
 <button type="button" id="skptest" title="Omitir comprobación de primalidad">
 Omitir<br>comprobación
 </button>
 </div>
-
 <div id="savefile" class="pad">
 <button type="button" id="tofile" title="Almacenar los resultados en un archivo externo">
 Escribir resultados<br>en un archivo
 </button>
 </div>
-
 <div id="cont" class="pad">
 <button type="button" id="continue" title="Mostrar más resultados. Presionar este botón borra los resultados anteriores.">
 Continuar
 </button>
 </div>
-
 <div id="footer">
 <p><span class="new">¡Nuevo!</span> Usted puede instalar una aplicación para Android que incluye esta calculadora desde  
 <a href="https://play.google.com/store/apps/details?id=ar.com.alpertron.calculators">Google Play</a>.</p>
-
 <p><span class="new">¡Nuevo!</span> El procesamiento en lotes ahora admite varias expresiones por ciclo.  
 Puede consultar los detalles en la sección de ayuda.</p>
-
 <p>Si encuentra algún error o desea enviar un comentario, por favor complete el  
 <a href="#" id="formlink">formulario</a>.</p>
-
 <p>Si le gustan estas calculadoras y desea apoyar el software libre sin anuncios molestos, puede  
 <a href="https://www.PayPal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MR65QPWZM5JT6&source=url&locale.x=es_ES">
 hacer una donación mediante PayPal</a>.</p>
 </div>
-
 </article>
 </main>
 <div id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
