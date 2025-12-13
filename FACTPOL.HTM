@@ -210,7 +210,7 @@ e-q,e-q:before,e-q:after,.outerbox {color:yellow}
 </li>
 </ol>
 </div>
-<noscript><p><strong>La calculadora no funciona con Javascript deshabilitado. Por favor revise la configuración de su navegador.</strong></p></noscript>
+<noscript><p><strong>La calculadora no funciona con JavaScript deshabilitado. Por favor revise la configuración de su navegador.</strong></p></noscript>
 <div class="applet" id="valueapp">
 <div id="polyinput">
 <label for="poly">Polinomio</label><input type="text" id="poly" value="" class="input" autocomplete="off" autocapitalize="off" spellcheck="false">
@@ -228,7 +228,7 @@ e-q,e-q:before,e-q:after,.outerbox {color:yellow}
 </div>
 <div id="lower">
 <label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6">
-<span class="nolf"><label for="out">Salida</label> <select id="out"><optgroup label="Seleccione tipo de salida"> <option value="0" selected>Impresión bonita</option><option value="1">TeX</option><option value="2">Pari/GP</option></optgroup></select></span>
+<span class="nolf"><label for="out">Salida</label> <select id="out"><optgroup label="Seleccione tipo de salida"> <option value="0" selected>Impresión bonita</option><option value="1">TeX</option><option value="2">PARI/GP</option></optgroup></select></span>
 </div>
 </div>
 <div id="help" aria-live="polite" class="pad">
@@ -286,7 +286,7 @@ porque no hay necesidad de cambiar de teclado numérico a alfabético y vicevers
 Debido a esto, la aplicación acepta polinomios de grado no superior a 1000.</p>
 <p>El programa permite tres opciones de salida: la opción <em>Impresión bonita</em> se utiliza para ver los exponentes como superíndices
 y ver las raíces con el formato tradicional; la opción <em>TeX</em> permite mostrar la salida en este formato, que es el que se usa en muchos foros de matemáticas;
-finalmente la opción Pari-GP se utiliza cuando hay que copiar los datos a otra aplicación. La salida es compatible con la aplicación Pari-GP, para copiar a otras aplicaciones solo se deben realizar cambios menores.</p>
+finalmente la opción PARI/GP se utiliza cuando hay que copiar los datos a otra aplicación. La salida es compatible con la aplicación PARI/GP, para copiar a otras aplicaciones solo se deben realizar cambios menores.</p>
 <p>Cuando la caja <em>Módulo</em> vale cero, la aplicación muestra las raíces del polinomio mediante números racionales y radicaciones. El programa soporta grados de los factores hasta 5.
 Por el teorema de Abel y Ruffini, algunos polinomios de grado 5 no se pueden expresar mediante radicandos.</p>
 </div>
@@ -474,6 +474,7 @@ Todos los pasos requieren polinomios mónicos, así que antes de comenzar, debem
 <p>Las siguientes etapas no funcionan si hay factores repetidos, así que el primer paso consiste en factorizar el polinomio de manera que no haya factores repetidos.</p>
 <p>La derivada del polinomio <var>f</var>(<var>x</var>) = <var>f</var><sub>0</sub> + <var>f</var><sub>1</sub>&#8290;<var>x</var> + <var>f</var><sub>2</sub>&#8290;<var>x</var><sup>2</sup> + ... + <var>f</var><sub>n</sub>&#8290;<var>x</var><sup>n</sup> es
 <var>f</var>'(<var>x</var>) = <var>f</var><sub>1</sub> + 2&#8290;<var>f</var><sub>2</sub>&#8290;<var>x</var> + ... + <var>n</var>&#8290;<var>f</var><sub>n</sub>&#8290;<var>x</var><sup>n &minus; 1</sup></p>
+<p>Si <var>f</var>'(<var>x</var>) &equiv; 0 (mod <var>p</var>), el polinomio es una potencia exacta de grado <var>p</var>.
 <p>El algoritmo recursivo es:</p>
 <p><code>
 función FFR(f)<br>
@@ -545,7 +546,7 @@ función FGI(f, d, p)<br>
 &nbsp;&nbsp;mientras tamaño(list of factors) &lt; n/d<br>
 &nbsp;&nbsp;{<br>
 &nbsp;&nbsp;&nbsp;&nbsp;h &larr; polinomio al azar con grado(h) &lt; n;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;e &larr; (q<sup>d</sup> &minus; 1) / 2;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;e &larr; (p<sup>d</sup> &minus; 1) / 2;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;g &larr; h<sup>e</sup> &minus; 1 (mod f);<br>
 &nbsp;&nbsp;&nbsp;&nbsp;por cada elemento u de la lista de factores<br>
 &nbsp;&nbsp;&nbsp;&nbsp;{<br>
@@ -591,7 +592,7 @@ El siguiente algoritmo puede elevar de módulo <var>m</var> a <var>m</var><sup>2
 <p><code>a[0] = mcd(f, der(f));<br>
 b[1] = f / a[0];<br>
 c[1] = der(f) / a[0];<br>
-d[1] = c[1] - der(f[1]);<br>
+d[1] = c[1] - der(b[1]);<br>
 i = 1;<br>
 repetir<br>
 &nbsp;&nbsp;a[i] = mcd(b[i], d[i]);<br>
@@ -728,7 +729,7 @@ En caso contrario, solo se muestran funciones trigonométricas.</p>
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "browserRequirements": "Requires HTML5. Requires Javascript.",
+  "browserRequirements": "Requires HTML5. Requires JavaScript.",
   "name": "Calculadora de factorización de polinomios",
   "description": "Aplicación Web que factoriza polinomios enteros y módulo una potencia de número primo.",
   "operatingSystem": "Any",

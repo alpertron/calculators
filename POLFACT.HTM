@@ -210,7 +210,7 @@ e-q,e-q:before,e-q:after,.outerbox {color:yellow}
 </li>
 </ol>
 </div>
-<noscript><p><strong>The calculator does not work with Javascript disabled. Please check your browser settings.</strong></p></noscript>
+<noscript><p><strong>The calculator does not work with JavaScript disabled. Please check your browser settings.</strong></p></noscript>
 <div class="applet" id="valueapp">
 <div id="polyinput">
 <label for="poly">Polynomial</label><input type="text" id="poly" value="" class="input" autocomplete="off" autocapitalize="off" spellcheck="false">
@@ -228,7 +228,7 @@ e-q,e-q:before,e-q:after,.outerbox {color:yellow}
 </div>
 <div id="lower">
 <label for="digits">Digits per group</label> <input type="number" id="digits" value="6">
-<span class="nolf"><label for="out">Output</label> <select id="out"><optgroup label="Select output type"><option value="0" selected>Pretty print</option><option value="1">TeX</option><option value="2">Pari/GP</option></optgroup></select></span>
+<span class="nolf"><label for="out">Output</label> <select id="out"><optgroup label="Select output type"><option value="0" selected>Pretty print</option><option value="1">TeX</option><option value="2">PARI/GP</option></optgroup></select></span>
 </div>
 </div>
 <div id="help" aria-live="polite" class="pad">
@@ -237,7 +237,7 @@ It can also evaluate, factor, and find exact roots of quotients of polynomials b
 <p>You can enter polynomials quickly by using <em>dot notation</em>. For example, to enter 2<var>x</var><sup>4</sup> + 3<var>x</var><sup>2</sup> + 1, you can type: <kbd>2.4 + 3.2 + 1</kbd></p>
 <h2><button type="button">Integer polynomials</button></h2>
 <div class="panel">
-<p>Integer polynomials in one variable are expressions that include a variable named <var>x</var>, integer numbers and the addition, subtraction and multiplication operators.</p>
+<p>Integer polynomials in one variable are expressions that include a variable named <var>x</var>, integer numbers or integer coefficients and the addition, subtraction and multiplication operators.</p>
 <p>They can be expressed in the form: <var>f</var>(<var>x</var>) = <var>f</var><sub>0</sub> + <var>f</var><sub>1</sub>&#8290;<var>x</var> + <var>f</var><sub>2</sub>&#8290;<var>x</var><sup>2</sup> + ... + <var>f</var><sub>n</sub>&#8290;<var>x</var><sup>n</sup>.</p>
 <p>The number <var>n</var> is the degree of the polynomial. The coefficient <var>f</var><sub>n</sub> is the leading coefficient and the coefficient <var>f</var><sub>0</sub> is the trailing coefficient.
 They can be written as deg(<var>f</var>), lc(<var>f</var>) and tc(<var>f</var>) respectively.</p>
@@ -250,15 +250,15 @@ They can be written as deg(<var>f</var>), lc(<var>f</var>) and tc(<var>f</var>) 
 <var>h</var><sub><var>i</var></sub> = <var>f</var><sub><var>i</var> &minus; deg(<var>g</var>)</sub> &#8290; <var>g</var><sub>deg(<var>g</var>)</sub> + <var>f</var><sub><var>i</var> + 1 &minus; deg(<var>g</var>)</sub> &#8290; <var>g</var><sub>deg(<var>g</var>) &minus; 1</sub> + ... + <var>f</var><sub>i</sub> &#8290; <var>g</var><sub>0</sub> otherwise.</p>
 <p>The factorization of integer polynomials is a process to find one or more irreducible polynomials whose product is the original polynomial. An irreducible polynomial cannot be expressed as a product of two or more integer polynomials.</p>
 <p>For example: <var>x</var><sup>4</sup> &minus; 1 = (<var>x</var><sup>2</sup> + 1) &#8290; (<var>x</var> + 1) &#8290; (<var>x</var> &minus; 1)</p>
-<p>It can be shown that any integer polynomial can be factored in only one way in irreducible polynomials.</p>
+<p>It can be shown that any integer polynomial can be factored uniquely in irreducible polynomials.</p>
 </div>
 <h2><button type="button">Polynomials modulo a prime number</button></h2>
 <div class="panel">
 <p>Multiplication of polynomials modulo a prime number can be performed in the usual way by multiplying the different terms of the polynomial
 and then adding the coefficients of the same degree. Finally, the coefficients are reduced modulo that prime.</p>
 <p>For example, the product of 3x<sup>2</sup> + 5x + 1 and 6x<sup>2</sup> + 4x + 3 modulo 7 is 18x<sup>4</sup> + (30+12)x<sup>3</sup> + (9+20+6)x<sup>2</sup> + (15+4)x + 3 modulo 7 which equals 4x<sup>4</sup> + 5x + 3</p>
-<p>It can be shown that the polynomials modulo a prime can be factored into the leading coefficient and monic prime polynomials in only one way (monic polynomials have the leading coefficient equal to one.)</p>
-<p>It can also be shown that if there are no repeated factors, the polynomial can be factored modulo a power of that prime in only one way.</p>
+<p>It can be shown that the polynomials modulo a prime can be factored into the leading coefficient and monic irreducible polynomials uniquely (monic polynomials have the leading coefficient equal to one.)</p>
+<p>It can also be shown that if there are no repeated factors, the polynomial can be factored modulo a power of that prime uniquely.</p>
 </div>
 <h2><button type="button">Application usage</button></h2>
 <div class="panel">
@@ -273,7 +273,7 @@ Then press the button "Factor expression".</p>
 <li><kbd>6x<span role="img" aria-label=" caret">^</span>8+x<span role="img" aria-label=" caret">^</span>5+3</kbd></li>
 <li><kbd>2*<span role="img" aria-label="left parenthesis">(</span>x+6<span role="img" aria-label="right parenthesis">)</span>*<span role="img" aria-label="left parenthesis">(</span>x-5<span role="img" aria-label="right parenthesis">)</span>+xx<span role="img" aria-label=" caret">^</span>4+23x</kbd></li>
 </ul>
-<p>The exponentiation symbol is not present in some mobile devices, so two asterisks ** can by typed as the exponentiation operator.
+<p>The exponentiation symbol is not present in some mobile devices, so two asterisks ** can be typed as the exponentiation operator.
 So, equivalent expressions would be:</p>
 <ul>
 <li><kbd>6x**8+x**5+3</kbd></li>
@@ -287,14 +287,14 @@ need to switch between alphabetical and numerical keyboards for simple polynomia
 That's why the applet accepts polynomials of degree up to 1000.</p>
 <p>The program has three options for output: with the option <em>Pretty print</em> you can see the exponents as superscripts
 and the roots have the traditional, printed format; the option <em>TeX</em> shows the output in this format, which is used in many mathematical forums;
-finally, the option <em>Pari-GP</em> is used when you have to copy the data to another application. The output is compatible with the application Pari-GP, only minor changes are required to copy the data to other math programs.</p>
+finally, the option <em>PARI/GP</em> is used when you have to copy the data to another application. The output is compatible with the application PARI/GP, only minor changes are required to copy the data to other math programs.</p>
 <p>After the applet finishes factoring, it multiplies the factors in order to validate if they are equal to the input polynomial.</p>
 <p>When the modulus box is zero, the application finds the roots of the polynomial factors using radical expressions. The program supports degrees up to 5.
 By Abel-Ruffini theorem, some polynomials of degree 5 cannot be expressed by radical expressions.</p>
 </div>
 <h2><button type="button">Expressions</button></h2>
 <div class="panel">
-<p>You can use any letter to represent the variable. Multiple variables are not accepted. The program always use the letter <var>x</var> to show the output.</p>
+<p>You can use any letter to represent the variable. Multiple variables are not accepted. The program always uses <var>x</var> to show the output.</p>
 <p>You can also enter expressions that use the following operators and parentheses:</p>
 <ul>
 <li><strong role="img" aria-label="plus sign">+</strong> for addition</li>
@@ -333,7 +333,7 @@ By Abel-Ruffini theorem, some polynomials of degree 5 cannot be expressed by rad
 <li> <strong>Mod(m,n)</strong>: value of <var>m</var> modulo the absolute value of <var>n</var>. Examples: Mod(10, 7) = 3 and Mod(-10, 7) = 4.</li>
 <li> <strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when <var>m</var> and <var>n</var> are coprime, meaning that they do not have common factors. Example: Modinv(3,7) = 5 because 3 &times; 5 &equiv; 1 (mod 7)</li>
 <li> <strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>. Example: Modpow(3, 4, 7) = 4, because 3<sup>4</sup> &equiv; 4 (mod 7).</li>
-<li> <strong>Jacobi(m,n)</strong>: obtains the Jacobi symbol of <var>m</var> and <var>n</var>. When the second argument is prime, the result is zero when <var>m</var> is multiple of <var>n</var>, it is one if there is a solution of <var>x</var>&sup2; &equiv; <var>m</var> (mod <var>n</var>) and it is equal to &minus;1 when the mentioned congruence has no solution.</li>
+<li> <strong>Jacobi(m,n)</strong>: obtains the Jacobi symbol of <var>m</var> and <var>n</var>. When the second argument is prime, the result is zero when <var>m</var> is a multiple of <var>n</var>, it is one if there is a solution of <var>x</var>&sup2; &equiv; <var>m</var> (mod <var>n</var>) and it is equal to &minus;1 when the mentioned congruence has no solution.</li>
 <li> <strong>Random(m,n)</strong>: integer random number between <var>m</var> and <var>n</var>.</li>
 <li> <strong>Abs(n)</strong>: absolute value of <var>n</var>.</li>
 <li> <strong>Sign(n)</strong>: returns zero if <var>n</var> is zero, &minus;1 if negative or 1 if positive.</li>
@@ -387,7 +387,7 @@ If the divisor polynomial is not monic, sometimes the division cannot be perform
 </div>
 <h2><button type="button">Greatest common divisor of polynomials</button></h2>
 <div class="panel">
-<p>The greatest common divisor of two polynomials is the polynomial of the highest possible degree, that divides both polynomials.</p>
+<p>The greatest common divisor of two polynomials is the polynomial of the highest possible degree that divides both polynomials.</p>
 <p>For example: gcd(<var>x</var><sup>2</sup> + 6&#8290;<var>x</var> + 5, 2&#8290;<var>x</var><sup>2</sup> + 13&#8290;<var>x</var> + 15) = <var>x</var> + 5</p>
 <h3>GCD of polynomials modulo a prime number</h3>
 <p>The greatest common divisor can be found using the Euclidean algorithm as follows:</p>
@@ -406,7 +406,7 @@ function gcdm(poly1, poly2, p)<br>
 
 <h3>GCD of integer polynomials</h3>
 <p>While the same algorithm could be used for finding the gcd of two integer polynomials, the coefficients of the intermediate polynomials increase very quickly, so this is not useful.</p>
-<p>There are two methods to find the gcd: the subresultant algorithm and the modular algorithm. The latter, invented by William Brown, uses gcd of polynomials modulo a prime, so this is better for our purposes.</p>
+<p>There are two methods to find the gcd: the subresultant algorithm and the modular algorithm. The latter, invented by William Brown, uses the gcd of polynomials modulo a prime, so this is better for our purposes.</p>
 <p><code>
 function gcdp(poly1, poly2)<br>
 {<br>
@@ -458,7 +458,7 @@ function gcdp(poly1, poly2)<br>
 </code></p>
 <p>The content of a polynomial is the greatest common divisor of all coefficients of that polynomial. The sign of the content matches the sign of the leading coefficient. It is expressed as cont(f) in the previous algorithm.</p>
 <p>The coefficients of the result of the Chinese Remainder Algorithm (function CRA) computed modulo <var>m</var><var>p</var>, must be in the range &minus;<var>m</var><var>p</var>/2 to <var>m</var><var>p</var>/2.</p>
-<p>The idea behind this algorithm is to compute several gcd of the input polynomials modulo different primes. We can see that their degrees are greater or equal than the degree of the polynomial gcd.</p>
+<p>The idea behind this algorithm is to compute several gcd of the input polynomials modulo different primes. We can see that their degrees are greater than or equal to the degree of the polynomial gcd.</p>
 <p>There are three cases:</p>
 <ul>
 <li>The degree of the modular gcd is greater than the degree of previous modular gcd: the new result is discarded because it has incorrect degree.</li>
@@ -469,11 +469,12 @@ function gcdp(poly1, poly2)<br>
 </div>
 <h2><button type="button">Factoring polynomials modulo a prime number</button></h2>
 <div class="panel">
-<p>The factoring algorithm can be divided in four steps: square-free factorization, distinct degree factorization, equal degree factorization and factor lift. All steps require monic polynomials, so before starting, we will have to multiply all coefficients by the modular multiplicative inverse of the leading coefficient of the polynomial.</p>
+<p>The factoring algorithm can be divided into four steps: square-free factorization, distinct degree factorization, equal degree factorization and factor lift. All steps require monic polynomials, so before starting, we will have to multiply all coefficients by the modular multiplicative inverse of the leading coefficient of the polynomial.</p>
 <h3>Square-free factorization</h3>
 <p>The next steps do not work if there are repeated factors, so the first step is to factor the polynomial in such a way that there are no repeated factors.</p>
 <p>The derivative of the polynomial <var>f</var>(<var>x</var>) = <var>f</var><sub>0</sub> + <var>f</var><sub>1</sub>&#8290;<var>x</var> + <var>f</var><sub>2</sub>&#8290;<var>x</var><sup>2</sup> + ... + <var>f</var><sub>n</sub>&#8290;<var>x</var><sup>n</sup> is
 <var>f</var>'(<var>x</var>) = <var>f</var><sub>1</sub> + 2&#8290;<var>f</var><sub>2</sub>&#8290;<var>x</var> + ... + <var>n</var>&#8290;<var>f</var><sub>n</sub>&#8290;<var>x</var><sup>n &minus; 1</sup></p>
+<p>When <var>f</var>'(<var>x</var>) &equiv; 0 (mod <var>p</var>), the polynomial is a <var>p</var>-th power.
 <p>The recursive algorithm is:</p>
 <p><code>
 function SFF(f)<br>
@@ -545,7 +546,7 @@ function EDF(f, d, p)<br>
 &nbsp;&nbsp;while size(list of factors) &lt; n/d<br>
 &nbsp;&nbsp;{<br>
 &nbsp;&nbsp;&nbsp;&nbsp;h &larr; random polynomial with deg(h) &lt; n;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;e &larr; (q<sup>d</sup> &minus; 1) / 2;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;e &larr; (p<sup>d</sup> &minus; 1) / 2;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;g &larr; h<sup>e</sup> &minus; 1 (mod f);<br>
 &nbsp;&nbsp;&nbsp;&nbsp;for each element u of list of factors<br>
 &nbsp;&nbsp;&nbsp;&nbsp;{<br>
@@ -590,7 +591,7 @@ function EDF(f, d, p)<br>
 <p><code>a[0] = gcd(f, der(f));<br>
 b[1] = f / a[0];<br>
 c[1] = der(f) / a[0];<br>
-d[1] = c[1] - der(f[1]);<br>
+d[1] = c[1] - der(b[1]);<br>
 i = 1;<br>
 repeat<br>
 &nbsp;&nbsp;a[i] = gcd(b[i], d[i]);<br>
@@ -609,11 +610,11 @@ output a[1], ..., a[i-1];
 <p>Once the bound <var>B</var> is found, we have to compute the least value of <var>e</var> such that 2&#8290;B &lt; <var>p</var><sup>e</sup>.</p>
 <p>Now we factor the polynomial mod <var>p</var><sup>e</sup> which has <var>r</var> different factors. If <var>r</var> &gt; 10, we can try a different value of <var>p</var>, so we minimize the number of factors found. The application tries up to 5 different primes.</p>
 <p>We will now combine the factors found modulo <var>p</var><sup>e</sup> to get integer polynomial factors. There are 2<sup>r</sup> possible combinations, but most of them can be easily discarded.</p>
-<p>Let the combination of factors found are <var>f</var><sub>0</sub>, <var>f</var><sub>1</sub>, ..., <var>f</var><sub>s</sub>. Compute <var>a</var> &equiv; lc(<var>f</var>) &#8290; tc(<var>f</var><sub>0</sub>)&#8290; tc(<var>f</var><sub>1</sub>) &#8290; ... &#8290;tc(<var>f</var><sub>s</sub>) (mod <var>p</var><sup>e</sup>) and <var>b</var> &equiv; lc(<var>f</var>) &#8290; tc(<var>f</var>) (mod <var>p</var><sup>e</sup>). In both cases the products must be in the range &minus;<var>p</var><sup>e</sup>/2 to <var>p</var><sup>e</sup>/2.
+<p>Let the combination of factors found are <var>f</var><sub>0</sub>, <var>f</var><sub>1</sub>, ..., <var>f</var><sub>s</sub>. Compute <var>a</var> &equiv; lc(<var>f</var>) &#8290; tc(<var>f</var><sub>0</sub>)&#8290; tc(<var>f</var><sub>1</sub>) &#8290; ... &#8290; tc(<var>f</var><sub>s</sub>) (mod <var>p</var><sup>e</sup>) and <var>b</var> &equiv; lc(<var>f</var>) &#8290; tc(<var>f</var>) (mod <var>p</var><sup>e</sup>). In both cases the products must be in the range &minus;<var>p</var><sup>e</sup>/2 to <var>p</var><sup>e</sup>/2.
 If <var>a</var> does not divide <var>b</var>, we can discard that combination.</p>
 <p>For the very few combinations that remain, compute a &equiv; lc (<var>f</var>) &#8290; <var>f</var><sub>0</sub> &#8290; <var>f</var><sub>1</sub> &#8290; ... &#8290; <var>f</var><sub>s</sub> (mod <var>p</var><sup>e</sup>). Again, this time the coefficients of this polynomial must be in the range &minus;<var>p</var><sup>e</sup>/2 to <var>p</var><sup>e</sup>/2.
 Compute <var>b</var> = gcdp(<var>a</var>, lc(<var>f</var>) &#8290; <var>f</var>). If the degree of <var>b</var> is zero, discard this combination. Otherwise, the polynomial <var>b</var> is a proper factor of <var>f</var>.</p>
-<p>Even though the steps are very fast, for some polynomials the number of combinations is very huge. So, the program uses Van Hoeij algorithm which uses LLL algorithm to determine quickly the combinations to use.</p>
+<p>Even though the steps are very fast, for some polynomials the number of combinations is very large. So, the program uses Van Hoeij's algorithm which uses the LLL algorithm to determine quickly the combinations to use.</p>
 </div>
 <h2><button type="button">Roots</button></h2>
 <div class="panel">
@@ -640,7 +641,7 @@ Otherwise, only trigonometric functions are shown.</p>
 </div>
 <div class="panel">
 <div class="noand">
-<p>You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
+<p>You can download the source of the current program and the old polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
 </div>
 <p>Written by Dario Alpern. Last updated 12 December 2025.</p>
@@ -727,7 +728,7 @@ Otherwise, only trigonometric functions are shown.</p>
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "browserRequirements": "Requires HTML5. Requires Javascript.",
+  "browserRequirements": "Requires HTML5. Requires JavaScript.",
   "name": "Polynomial factorization calculator",
   "description": "Web application that factors integer polynomials and polynomials modulo a power of a prime number. It also shows roots using radical expressions.",
   "image": ["https://www.alpertron.com.ar/polfact.png"],
