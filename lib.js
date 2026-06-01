@@ -1,6 +1,6 @@
 /*global mergeInto, HEAPU8, Module, LibraryManager */
 mergeInto(LibraryManager.library, 
-{
+{  
   databack: function(data)
   {
     function pointerStringify(offset)
@@ -8,11 +8,11 @@ mergeInto(LibraryManager.library,
       let charCache = new Array(128);  // Preallocate the cache for the common single byte chars
       let charFromCodePt = String.fromCodePoint || String.fromCharCode;
       let result = [];
-
+    
       let codePt, byte1;
-
+    
       result.length = 0;
-
+    
       while (HEAPU8[offset >> 0] !== 0)
       {
         byte1 = HEAPU8[(offset++) >> 0];
@@ -24,7 +24,7 @@ mergeInto(LibraryManager.library,
         {
           codePt = ((byte1 & 0x1F) << 6) | (HEAPU8[(offset++) >> 0] & 0x3F);
         }
-        result.push(charCache[codePt >> 0] || (charCache[codePt >> 0] = charFromCodePt(codePt)));
+        result.push(charCache[codePt >> 0] || (charCache[codePt >> 0] = charFromCodePt(codePt >> 0)));
       }
       return result.join("");
     }
@@ -53,11 +53,11 @@ mergeInto(LibraryManager.library,
       let charCache = new Array(128);  // Preallocate the cache for the common single byte chars
       let charFromCodePt = String.fromCodePoint || String.fromCharCode;
       let result = [];
-
+    
       let codePt, byte1;
- 
+    
       result.length = 0;
-
+    
       while (HEAPU8[offset >> 0] !== 0)
       {
         byte1 = HEAPU8[(offset++) >> 0];
@@ -69,7 +69,7 @@ mergeInto(LibraryManager.library,
         {
           codePt = ((byte1 & 0x1F) << 6) | (HEAPU8[(offset++) >> 0] & 0x3F);
         }
-        result.push(charCache[codePt >> 0] || (charCache[codePt >> 0] = charFromCodePt(codePt)));
+        result.push(charCache[codePt >> 0] || (charCache[codePt >> 0] = charFromCodePt(codePt >> 0)));
       }
       return result.join("");
     }

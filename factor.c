@@ -39,8 +39,10 @@ char lowerText[MAX_LEN*16];
 extern mmCback modmultCallback;
 extern int64_t lModularMult;
 extern char *ptrInputText;
-int nbrPrimes;
-int indexPrimes;
+int intPrime;
+int intStep1Bound;
+int64_t longPrime;
+int64_t longStep2Bound;
 #endif
 
 union uCommon common;
@@ -1558,7 +1560,7 @@ static void insertBigFactor(struct sFactors *pstFactors, const BigInteger *divis
   {     // For each known factor...
     int *ptrFactor = pstCurFactor->ptrFactor;
     NumberLength = *ptrFactor;
-    IntArray2BigInteger(ptrFactor, &Temp2);    // Convert known factor to Big Integer.
+    IntArray2BigInteger(ptrFactor, &Temp2);     // Convert known factor to Big Integer.
     BigIntGcd(divisor, &Temp2, &Temp3);         // Temp3 is the GCD between known factor and divisor.
     if ((Temp3.nbrLimbs == 1) && (Temp3.limbs[0].x < 2))
     {                                           // divisor is not a new factor (GCD = 0 or 1).
@@ -1570,8 +1572,9 @@ static void insertBigFactor(struct sFactors *pstFactors, const BigInteger *divis
       pstCurFactor++;
       continue;
     }
-    // At this moment both GCD and known factor / GCD are new known factors. Replace the known factor by
-    // known factor / GCD and generate a new known factor entry.
+    // At this moment both GCD (Temp3) and known factor / GCD are new known factors.
+    // Replace the known factor by the GCD and generate a new known factor entry 
+    // where old known factor / GCD is stored.
     pstNewFactor->multiplicity = pstCurFactor->multiplicity;
     int expon = PowerCheck(&Temp3, &Temp4);
     if (expon > 1)
@@ -1590,22 +1593,38 @@ static void insertBigFactor(struct sFactors *pstFactors, const BigInteger *divis
     BigInteger2IntArray(ptrNewFactorLimbs, &Temp3);      
     pstNewFactor->ptrFactor = ptrNewFactorLimbs;
     pstNewFactor->upperBound = pstCurFactor->upperBound;
+    int ecNumber = EC % 50000000;
     if (typeFactor < 50000000)
     {          // Factor found using ECM.
-      pstNewFactor->type = TYP_EC + EC;
       typeFactor = pstCurFactor->type / 50000000 * 50000000;
+      pstCurFactor->type = TYP_EC + ecNumber;
       if (typeFactor == 0)
       {
-        pstCurFactor->type = TYP_DIVISION + EC;
+        pstNewFactor->type = TYP_DIVISION + ecNumber;
       }
       else
       {
-        pstCurFactor->type = typeFactor + EC;
+        pstNewFactor->type = typeFactor + ecNumber;
       }
     }
     else
     {          // Found otherwise.
-      pstNewFactor->type = typeFactor;
+      if ((pstCurFactor->type / 50000000) == 0)
+      {
+        if ((typeFactor == TYP_LEHMAN) || (typeFactor == TYP_SIQS))
+        {
+          pstNewFactor->type = typeFactor + ecNumber;
+        }
+        else
+        {
+          pstNewFactor->type = TYP_DIVISION + ecNumber;
+        }
+      }
+      else
+      {
+        pstNewFactor->type = pstCurFactor->type;
+      }
+      pstCurFactor->type = typeFactor;
     }
     pstNewFactor++;
     pstFactors->multiplicity++;
@@ -1639,11 +1658,11 @@ void showECMStatus(void)
   switch (StepECM)
   {
   case 1:
-    percentage = indexPrimes / (nbrPrimes / 100);
+    percentage = intPrime / (intStep1Bound / 100);
     formatString(&ptrStatus, LITERAL_SHOW_ECM_STATUS1, percentage);   // Step 1: xx%
     break;
   case 2:
-    percentage = (maxIndexM == 0) ? 0 : (indexM / (maxIndexM / 100));
+    percentage = (maxIndexM == 0) ? 0 : (int)(longPrime / (longStep2Bound / 100));
     formatString(&ptrStatus, LITERAL_SHOW_ECM_STATUS2, percentage);   // Step 2: xx %
     break;
   case 3:

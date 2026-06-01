@@ -81,9 +81,6 @@
     <ClCompile Include="quad.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
-    <ClCompile Include="fft.c">
-      <Filter>Archivos de código fuente</Filter>
-    </ClCompile>
     <ClCompile Include="gcdrings.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
@@ -190,6 +187,15 @@
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
     <ClCompile Include="test.c">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
+    <ClCompile Include="fftUtil.c">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
+    <ClCompile Include="ntt.c">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
+    <ClCompile Include="fft.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
   </ItemGroup>

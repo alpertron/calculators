@@ -39,8 +39,8 @@ LITERAL_ARGUMENT_SQROOT "Argumento de la raíz cuadrada"
 LITERAL_DENOMINATOR "Denominador"
 
 cubiceq
-LITERAL_FROM1 "<p>De $1q:</p>"
-LITERAL_FROM2 "<p>De $1q y $2q:</p>"
+LITERAL_FROM1 "De $1q:"
+LITERAL_FROM2 "De $1q y $2q:"
 LITERAL_REPLACING1 "Sustituyendo $1q en $2q:"
 LITERAL_CASUSIRR1 "El discriminante es positivo, lo que indica que las tres raíces son reales. En este caso no es posible representar las raíces mediante expresiones radicales de números reales, por lo que se debe utilizar trigonometría."
 LITERAL_CASUSIRR7 "Comenzando con la fórmula de la triplicación del ángulo:"
@@ -220,7 +220,10 @@ LITERAL_FACTOR_MODULAR_POLY "Lista de factores"
 
 output
 LITERAL_SHOW_EQ_NBRS "($1d) y ($2d)"
-LITERAL_COPYRIGHT "Hecho por Darío Alpern. Actualizado el 12 de diciembre de 2025."
+LITERAL_COPYRIGHT "Hecho por Darío Alpern. Actualizado el 30 de mayo de 2026."
+
+pminus1
+LITERAL_PMINUS1_1 "p&minus;1 usando límites B1=$2d y B2=$3l"
 
 polfact
 LITERAL_POLYFACT1 "Polinomio ingresado"
@@ -353,8 +356,8 @@ LITERAL_QUADMOD4 "Módulo: "
 LITERAL_QUADMOD5 "No hay soluciones."
 
 quadraticeq
-LITERAL_STEPS_QUADR1 "Para eliminar el término lineal se debe hacer la sustitución:"
-LITERAL_STEPS_QUADR2 "El valor indicado en la sustitución es la mitad del coeficiente lineal."
+LITERAL_STEPS_QUADR1 "Se puede eliminar el término lineal mediante la siguiente sustitución:"
+LITERAL_STEPS_QUADR2 "Mostrando solo los términos lineales:"
 LITERAL_STEPS_QUADR3 "Distribuyendo:"
 LITERAL_STEPS_QUADR4 "Simplificando:"
 LITERAL_QUADRATIC_EQ1 "Dividiendo la ecuación por el coeficiente cuadrático:"

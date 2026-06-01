@@ -11,7 +11,7 @@ do
 # make testmodmult $flags bits=$var
 # echo -e "\n\n**** TESTMODMULT ****" >> coverage.out
 # ./testmodmult >> coverage.out
-make ecm $flags bits=$var
+make ecm $flags bits=$var || exit $?
 echo -e "\n\n**** ECM ****" >> coverage.out
 ./ecm "10**150000" >> coverage.out
 ./ecm "10**300000" >> coverage.out
@@ -109,11 +109,11 @@ echo -e "\n\n**** ECM ****" >> coverage.out
 ./ecm "2**1278*(2^1279-1)" >> coverage.out
 lcov --capture --directory . --output-file ecm.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-1-${var}.json
-make clean
+make clean || exit $?
 done
 for var in 64 32
 do
-make blockly $flags bits=$var
+make blockly $flags bits=$var || exit $?
 
 echo -e "\n\n**** BLOCKLY ****" >> coverage.out
 ./blockly xml.txt 0 >> coverage.out
@@ -139,7 +139,7 @@ echo -e "\n\n**** BLOCKLY ****" >> coverage.out
 ./blockly xml.txt 20 >> coverage.out
 lcov --capture --directory . --output-file blockly.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-2-${var}.json
-make clean
+make clean || exit $?
 done
 for var in 64 32
 do
@@ -148,7 +148,7 @@ do
 # ./testmodmult >> coverage.out
 lcov --capture --directory . --output-file testmodmult.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-2-${var}.json
-make clean
+make clean || exit $?
 done
 for var in 64 32
 do
@@ -355,7 +355,7 @@ make clean
 done
 for var in 64 32
 do
-make fsquares $flags bits=$var
+make fsquares $flags bits=$var || exit $?
 echo -e "\n\n**** FSQUARES ****" >> coverage.out
 ./fsquares "-2" >> coverage.out
 ./fsquares "10**15000" >> coverage.out
@@ -367,11 +367,11 @@ echo -e "\n\n**** FSQUARES ****" >> coverage.out
 ./fsquares "10**200+54154255642" >> coverage.out
 lcov --capture --directory . --output-file fsquares.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-4-${var}.json
-make clean
+make clean || exit $?
 done
 for var in 64 32
 do
-make tsqcubes $flags bits=$var
+make tsqcubes $flags bits=$var || exit $?
 echo -e "\n\n**** TSQCUBES ****" >> coverage.out
 ./tsqcubes "-2" 3 >> coverage.out
 ./tsqcubes "10**150" 3 >> coverage.out
@@ -385,11 +385,11 @@ echo -e "\n\n**** TSQCUBES ****" >> coverage.out
 ./tsqcubes "10**200+54154255642" 3 >> coverage.out
 lcov --capture --directory . --output-file fsquares.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-5-${var}.json
-make clean
+make clean || exit $?
 done
 for var in 64 32
 do
-make fcubes $flags bits=$var
+make fcubes $flags bits=$var || exit $?
 echo -e "\n\n**** FCUBES ****" >> coverage.out
 ./fcubes 0 >> coverage.out
 ./fcubes 16 >> coverage.out
@@ -399,11 +399,11 @@ echo -e "\n\n**** FCUBES ****" >> coverage.out
 ./fcubes "10**200+54154255642" >> coverage.out
 lcov --capture --directory . --output-file fcubes.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-6-${var}.json
-make clean
+make clean || exit $?
 done
 for var in 64 32
 do
-make dilog $flags bits=$var
+make dilog $flags bits=$var || exit $?
 echo -e "\n\n**** DILOG ****" >> coverage.out
 ./dilog -1 4 5 >> coverage.out
 ./dilog 3 -1 5 >> coverage.out
@@ -425,11 +425,11 @@ echo -e "\n\n**** DILOG ****" >> coverage.out
 ./dilog 2032414569157564 1769265429188412 4503599627324003 >> coverage.out
 lcov --capture --directory . --output-file dilog.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-7-${var}.json
-make clean
+make clean || exit $?
 done
 for var in 64 32
 do
-make quad $flags bits=$var
+make quad $flags bits=$var || exit $?
 echo -e "\n\n**** QUAD ****" >> coverage.out
 ./quad 0 0 0 0 0 0 0 >> coverage.out
 ./quad 0 0 0 0 5 6 0 >> coverage.out
@@ -474,11 +474,11 @@ echo -e "\n\n**** QUAD ****" >> coverage.out
 ./quad A B C D E F 1 >> coverage.out
 lcov --capture --directory . --output-file quad.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-8-${var}.json
-make clean
+make clean || exit $?
 done
 for var in 64 32
 do
-make contfrac $flags bits=$var
+make contfrac $flags bits=$var || exit $?
 echo -e "\n\n**** CONTFRAC ****" >> coverage.out
 ./contfrac 1 2 3 0 0 >> coverage.out
 ./contfrac 1 0 991 0 0 >> coverage.out
@@ -499,11 +499,11 @@ echo -e "\n\n**** CONTFRAC ****" >> coverage.out
 ./contfrac 1 2 3 1 0 >> coverage.out
 lcov --capture --directory . --output-file contfrac.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-9-${var}.json
-make clean
+make clean || exit $?
 done
 for var in 64 32
 do
-make quadmod $flags bits=$var
+make quadmod $flags bits=$var || exit $?
 echo -e "\n\n**** QUADMOD ****" >> coverage.out
 ./quadmod 1 2 3 7 >> coverage.out
 ./quadmod 1 0 991 "n(10^5)" >> coverage.out
@@ -546,11 +546,11 @@ echo -e "\n\n**** QUADMOD ****" >> coverage.out
 ./quadmod T Q R M >> coverage.out
 lcov --capture --directory . --output-file quadmod.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-10-${var}.json
-make clean
+make clean || exit $?
 done
 for var in 64 32
 do
-make gaussian $flags bits=$var
+make gaussian $flags bits=$var || exit $?
 echo -e "\n\n**** GAUSSIAN ****" >> coverage.out
 ./gaussian 5 1 >> coverage.out
 ./gaussian 1 1 >> coverage.out
@@ -583,11 +583,11 @@ echo -e "\n\n**** GAUSSIAN ****" >> coverage.out
 ./gaussian "GCD(60+50i, 19+22i)" 0 >> coverage.out
 lcov --capture --directory . --output-file gaussian.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-11-${var}.json
-make clean
+make clean || exit $?
 done
 for var in 64 32
 do
-make sumquad $flags bits=$var
+make sumquad $flags bits=$var || exit $?
 echo -e "\n\n**** SUMQUAD ****" >> coverage.out
 ./sumquad 100 >> coverage.out
 ./sumquad 200 >> coverage.out
@@ -596,11 +596,11 @@ echo -e "\n\n**** SUMQUAD ****" >> coverage.out
 ./sumquad "422500*289" >> coverage.out
 lcov --capture --directory . --output-file sumquad.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-12-${var}.json
-make clean
+make clean || exit $?
 done
 for var in 64 32
 do
-make divisors $flags bits=$var
+make divisors $flags bits=$var || exit $?
 echo -e "\n\n**** DIVISORS ****" >> coverage.out
 ./divisors 0 >> coverage.out
 ./divisors 2 >> coverage.out
@@ -609,20 +609,20 @@ echo -e "\n\n**** DIVISORS ****" >> coverage.out
 ./divisors "422500*289*7" >> coverage.out
 lcov --capture --directory . --output-file divisors.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-13-${var}.json
-make clean
+make clean || exit $?
 done
 for var in 64 32
 do
-make isprime $flags bits=$var
+make isprime $flags bits=$var || exit $?
 echo -e "\n\n**** ISPRIME ****" >> coverage.out
 ./isprime -3 -5 -7 -9 4759 81463477561 25326001 341550071728321 1000000000000000003 >> coverage.out
 ./isprime 0 1 2 3 4 15 65537 -4294967296 >> coverage.out
 lcov --capture --directory . --output-file isprime.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-14-${var}.json
-make clean
+make clean || exit $?
 done
 gcovr --merge-mode-functions=merge-use-line-min --add-tracefile "run-*.json" --sonarqube > coverage.xml
 rm run*json
 rm *.gcda
 rm *.gcno
-make clean
+make clean || exit $?

@@ -39,8 +39,8 @@ LITERAL_ARGUMENT_SQROOT "Square root argument"
 LITERAL_DENOMINATOR "Denominator"
 
 cubiceq
-LITERAL_FROM1 "<p>From $1q:</p>"
-LITERAL_FROM2 "<p>From $1q and $2q:</p>"
+LITERAL_FROM1 "From $1q:"
+LITERAL_FROM2 "From $1q and $2q:"
 LITERAL_REPLACING1 "Replacing $1q in $2q:"
 LITERAL_CASUSIRR1 "The discriminant is positive, which implies that all three roots are real. In this case the roots cannot be represented by radical expressions of real numbers, so we must use trigonometry."
 LITERAL_CASUSIRR7 "Starting with the formula of the triple angle:"
@@ -220,7 +220,10 @@ LITERAL_FACTOR_MODULAR_POLY "List of factors"
 
 output
 LITERAL_SHOW_EQ_NBRS "($1d) and ($2d)"
-LITERAL_COPYRIGHT "Written by Dario Alpern. Last updated on 12 December 2025."
+LITERAL_COPYRIGHT "Written by Dario Alpern. Last updated on 30 May 2026."
+
+pminus1
+LITERAL_PMINUS1_1 "p&minus;1 using bounds B1=$2d and B2=$3l"
 
 polfact
 LITERAL_POLYFACT1 "Your polynomial"
@@ -353,8 +356,8 @@ LITERAL_QUADMOD4 "Modulus: "
 LITERAL_QUADMOD5 "There are no solutions."
 
 quadraticeq
-LITERAL_STEPS_QUADR1 "To eliminate the linear term, we will perform the following substitution:"
-LITERAL_STEPS_QUADR2 "The constant value in the substitution equals half of the linear coefficient."
+LITERAL_STEPS_QUADR1 "We can eliminate the linear term by performing the substitution:"
+LITERAL_STEPS_QUADR2 "Writing only the linear terms:"
 LITERAL_STEPS_QUADR3 "Expanding brackets:"
 LITERAL_STEPS_QUADR4 "Simplifying:"
 LITERAL_QUADRATIC_EQ1 "Dividing the equation by the quadratic coefficient:"

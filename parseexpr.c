@@ -187,7 +187,6 @@ static void BigNbrToOutput(char** pptrOutput, const BigInteger* pValue)
 
 enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput)
 {
-  (void)exponOperatorCounter;
   const char* pInput = *ppInput;
   char* ptrOutput = *ppOutput;
   const char* ptrInput = pInput;
@@ -429,12 +428,18 @@ static enum eExprErr parsePrevTokenIsNumber(const char** ppInput, char** ppOutpu
   const struct sFuncOperExpr* pstOperatorExpr;
   prevTokenIsNumber = false;
   pstOperatorExpr = binaryOperExpr;
-  if (isFunc(&pInput, &pstOperatorExpr) || forceMultiplication)
+  bool funcPresent = isFunc(&pInput, &pstOperatorExpr);
+  if (funcPresent || forceMultiplication)
   {              // Operator name was found.
     short oper;
     char priority;
     bool isInfix = false;
-    if (forceMultiplication)
+    if (funcPresent && (pstOperatorExpr >= binaryOperExpr))
+    {
+      priority = pstOperatorExpr->priority;
+      oper = pstOperatorExpr->token;
+    }
+    else if (forceMultiplication)
     {
       priority = 2;
       oper = OPER_MULTIPLY;

@@ -106,15 +106,10 @@ struct stSiqs
   char threshold;
 };
 
-#define MAX_PRIME_SIEVE 7  // Only numbers 7 or 11 are accepted here.
-#if MAX_PRIME_SIEVE == 11
-#define SIEVE_SIZE (2*3*5*7*11)
-#define GROUP_SIZE ((2-1)*(3-1)*(5-1)*(7-1)*(11-1))
-#else
-#define SIEVE_SIZE (2*3*5*7)
-#define GROUP_SIZE ((2-1)*(3-1)*(5-1)*(7-1))
-#endif
+#define SIEVE_SIZE (2*3*5*7/* *11*/)
+#define GROUP_SIZE ((2-1)*(3-1)*(5-1)*(7-1)/* *(11-1)*/)
 #define HALF_SIEVE_SIZE (SIEVE_SIZE/2)
+#define MAX_SIEVE_PRIME (10*SIEVE_SIZE)
 
 struct stEcm
 {
@@ -144,6 +139,7 @@ struct stEcm
   limb Aux4[MAX_LEN];
   limb Xaux[MAX_LEN];
   limb Zaux[MAX_LEN];
+//  limb Buffer[30000000];
   limb root[GROUP_SIZE][MAX_LEN];
   int sieveidx[GROUP_SIZE];
   limb GcdAccumulated[MAX_LEN];
@@ -152,7 +148,7 @@ struct stEcm
   limb *fieldTZ;
   limb *fieldUX;
   limb *fieldUZ;
-  unsigned char sieve[10 * SIEVE_SIZE];
+  unsigned char sieve[MAX_SIEVE_PRIME];
   unsigned char sieve2310[SIEVE_SIZE];
   unsigned char ProcessExpon[(332199 + 7) / 8];
   unsigned char primes[((2 * 332199) + 3 + 7) / 8];

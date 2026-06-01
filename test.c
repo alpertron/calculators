@@ -54,9 +54,9 @@ int Factor3[] = { 29504, 29490, 19798, 633, 181, 0, 0, 0, 0, 0 };
 int Factor4[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 int Factor5[] = { 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0, 0, 0, 0 };
 int Factor6[] = { 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0, 0, 0, 0 };
-int factor7[2002];
+int factor7[20002];
 int factor8[2002];
-int factors[5000];
+int factors[50000];
 int quotientPoly[20];
 char results[300000];
 struct sFactors astFactors[1000];
@@ -214,11 +214,11 @@ int main(int argc, char* argv[])
   fsquaresText(input, 6);
   (void)printf("%s\n", output);
 #elif DEBUG_CODE == 8
-  char* ptrInput;
   char* ptrOutput;
   enum eExprErr rc;
-  int NumberLength;
-  BigInteger num, mod, inv;
+  BigInteger num;
+  BigInteger mod;
+  BigInteger inv;
 
   if (argc != 3)
   {
@@ -249,7 +249,13 @@ int main(int argc, char* argv[])
       (void)memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
       TestNbr[NumberLength].x = 0;
       GetMontgomeryParms(NumberLength);
+      // Convert number to Montgomery domain.
+      modmult(num.limbs, MontgomeryMultR2, num.limbs);
       (void)ModInvBigNbr(num.limbs, inv.limbs, mod.limbs, NumberLength);
+      // Convert back from Montgomery domain.
+      (void)memset(num.limbs, 0, NumberLength * sizeof(limb));
+      num.limbs[0].x = 1;
+      modmult(num.limbs, inv.limbs, inv.limbs);
       ptrOutput = output;
       Bin2Dec(&ptrOutput, inv.limbs, NumberLength, 200);
     }
@@ -429,14 +435,18 @@ int main(int argc, char* argv[])
   }
 #endif
 #elif DEBUG_CODE == 18
-  int resultLen, k;
+  (void)argv;
+  int resultLen;
   (void)memset(factors, 0xEE, 1000 * sizeof(limb));
-  for (k = 0; k < 500; k++)
+  for (int k = 0; k < 20000; k++)
   {
     factor7[k] = 0x7FFFFFFF;
   }
   (void)memset(factors, 0x00, 2000 * sizeof(limb));
-  fftMultiplication((limb*)factor7, (limb*)factor7, (limb*)factors, 4, &resultLen);
+  for (int m = 0; m < 1000; m++)
+  {
+    fftMultiplication((limb*)factor7, (limb*)factor7, (limb*)factors, 20000, 20000, &resultLen);
+  }  
 #elif DEBUG_CODE == 19
   limb tempVal[4];
   limb tempRes[4];

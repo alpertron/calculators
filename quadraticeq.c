@@ -33,23 +33,46 @@ extern const char* ptrSin;
 extern const char* ptrCos;
 extern const char* ptrPi;
 extern const char* ptrI;
+extern int eqNbr;
 
 void stepsForQuadraticEquation(char origVar, char substVar)
 {
   char currVar = origVar;
   if (!BigIntIsZero(&RatLinear.numerator))
   {
-    // To eliminate the linear term, we will perform the following substitution:
-    formatString(&ptrOutput, "<p>$1s</p><p>", LITERAL_STEPS_QUADR1);
+    // We can eliminate the linear term by performing the substitution:
+    formatString(&ptrOutput, "<p>$1s</p><p>$2v = $3v + $4v", LITERAL_STEPS_QUADR1, origVar, substVar, 'A');
+    generateEqNbr();        // Equation 2.
+    formatString(&ptrOutput, "</p><p>($1v + $2v)$3e", substVar, 'A', 2);
+    showCoeffBeforeParen(&RatLinear);
+    formatString(&ptrOutput, "($1v + $2v)", substVar, 'A');
+    showPlusMinusRational(&RatIndependent);
+    showText(" = 0</p><p>");
+    // y^2 + 2Ay + A^2
+    formatString(&ptrOutput, "$1v$2e + 2$3s$4v$3s$1v + $4v$2e", substVar, 2, ptrTimes, 'A');
+    showCoeffBeforeParen(&RatLinear);
+    // y + A
+    formatString(&ptrOutput, "($1v + $2v)", substVar, 'A');
+    showPlusMinusRational(&RatIndependent);
+    showText(" = 0</p>");
+    // Expanding brackets writing only the linear terms:
+    formatString(&ptrOutput, "</p><p>$1s</p><p>2$2s$3v$2s$4v", LITERAL_STEPS_QUADR2, ptrTimes, 'A', substVar);
+    showCoeffBeforeParen(&RatLinear);
+    showVariable(&ptrOutput, substVar);
+    BigRationalMultiplyByInt(&RatLinear, -1, &Rat2);
+    formatString(&ptrOutput, " = 0</p><p>2$1s$2v = $3r</p><p>", ptrTimes, 'A', &Rat2);
+    BigRationalDivideByInt(&Rat2, 2, &Rat2);
+    formatString(&ptrOutput, "$1v = $2r</p><p>", 'A', &Rat2);
+    formatString(&ptrOutput, LITERAL_FROM1, eqNbr);  // Equation 2.
+    showText("</p><p>");
     showVariable(&ptrOutput, origVar);
     showText(" = ");
     showVariable(&ptrOutput, substVar);
-    BigRationalDivideByInt(&RatLinear, -2, &Rat2);
     showPlusMinusRational(&Rat2);
-    showText("</p><p>");
-    // The constant value in the substitution equals half of the linear coefficient.
-    showText(LITERAL_STEPS_QUADR2);
     currVar = substVar;
+    generateEqNbr();        // Equation 3.
+    showText("</p><p>");
+    formatString(&ptrOutput, LITERAL_FROM1, eqNbr-2);  // Equation 1.
     // Show a(y-k)^2 + b(y-k) + c = 0.
     showText("</p><p>");
     startParen();
@@ -114,6 +137,8 @@ void stepsForQuadraticEquation(char origVar, char substVar)
   if (currVar != origVar)
   {
     showText("<p>");
+    formatString(&ptrOutput, LITERAL_FROM1, eqNbr);  // Equation 3.
+    showText("</p><p>");
     showVariable(&ptrOutput, origVar);
     BigIntChSign(&Rat2.numerator);
     showPlusMinusRational(&Rat2);
@@ -161,7 +186,18 @@ void ProcessQuadraticEquation(enum eSign* pSignDescr)
       showRatCoeffAndPowerVar(NULL, -2, 'x');
       showRatCoeffAndPowerVar(&RatLinear, 1, 'x');
       showRatCoeffAndPowerVar(&RatIndependent, 0, 'x');
-      showText(" = 0</p>");
+      showText(" = 0");
+      generateEqNbr();        // Equation 1.
+      showText("</p>");
+    }
+    else
+    {
+      if (!BigIntIsZero(&Linear))
+      {
+        showText("<p>");
+        generateEqNbr();     // Equation 1.
+        showText("</p>");
+      }
     }
     stepsForQuadraticEquation('x', 'y');
   }

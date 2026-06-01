@@ -24,7 +24,6 @@
 /* global getHeight */
 /* global getWidth */
 /* global initMenubarEvents */
-/* global instantiate */
 /* global isNotSpecialKey */
 /* global moveGraphic */
 /* global ptrToString */

@@ -36,7 +36,6 @@ bool lineEndingCRLF;
 int valuesProcessed;
 char outputExpr[200000];
 #ifdef __EMSCRIPTEN__
-char *ptrInputText;
 char emptyInputText;
 #endif
 static char* ptrExprToProcess;

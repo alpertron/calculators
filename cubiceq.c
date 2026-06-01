@@ -333,8 +333,10 @@ static void CasusIrreducibilis(int multiplicity, char currLetter, bool fromQuart
   Rat1.numerator.sign = SIGN_POSITIVE;
   if (teach)
   {
+    showText("<p>");
     // From $1q and $2q:
     formatString(&ptrOutput, LITERAL_FROM2, eqNbr - 2, eqNbr);  // Equations 4 and 6.
+    showText("</p>");
   }
   for (int ctr = 0; ctr <= 4; ctr += 2)
   {
@@ -663,8 +665,9 @@ static void showCardanoMethod(char currLetter)
   BigRationalMultiply(&Rat2, &Rat1, &Rat2);
   showRational(&Rat2);
   generateEqNbr();     // Equation 4
-  showText("</p>");
+  showText("</p><p>");
   formatString(&ptrOutput, LITERAL_FROM2, eqNbr - 3, eqNbr - 2);  // Equations 1 and 2.
+  showText("</p>");
   // Show r^3 + s^3 + q = 0
   showPowerVar(&ptrOutput, 3, 'r');
   showText(" + ");
@@ -682,8 +685,9 @@ static void showCardanoMethod(char currLetter)
   showText(ptrTimes);
   showPowerVar(&ptrOutput, 3, 's');
   showRatCoeffAndPowerVar(&RatDeprIndependent, 3, 'r');
-  showText(" = 0</p>");
+  showText(" = 0</p><p>");
   formatString(&ptrOutput, LITERAL_FROM1, eqNbr - 1);   // Equation 4.
+  showText("</p>");
   showPowerVar(&ptrOutput, 6, 'r');
   showPlusMinusRational(&Rat2);
   showRatCoeffAndPowerVar(&RatDeprIndependent, 3, 'r');
@@ -879,8 +883,9 @@ static void linearCoeffNotZero(int multiplicity, char currLetter, bool fromQuart
     }
     if (fromQuartic)
     {
-      formatString(&ptrOutput, LITERAL_FROM1, eqNbr - 2);
       showText("<p>");
+      formatString(&ptrOutput, LITERAL_FROM1, eqNbr - 2);
+      showText("</p><p>");
       showVariable(&ptrOutput, 'm');
       showText(" = ");
       if (!BigIntIsZero(&Quadratic))

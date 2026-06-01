@@ -18,7 +18,6 @@
 //
 #include <string.h>
 #include <stdint.h>
-#include <math.h>
 #include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
@@ -26,16 +25,13 @@
 #include "commonstruc.h"
 #include "skiptest.h"
 #include "copyStr.h"
-
-#if MAX_PRIME_SIEVE == 11
-#define MAX_SIEVE_PRIME    5000
-#else
-#define MAX_SIEVE_PRIME    (10 * SIEVE_SIZE)
-#endif
+#include "ecmInternal.h"
 
 #ifdef __EMSCRIPTEN__
-extern int nbrPrimes;
-extern int indexPrimes;
+extern int intPrime;
+extern int intStep1Bound;
+extern int64_t longPrime;
+extern int64_t longStep2Bound;
 extern char* ptrLowerText;
 extern char lowerText[MAX_LEN * 16];
 #endif
@@ -47,35 +43,30 @@ static int boundStep1;
 static int64_t boundStep2;
 static int sqrtBoundStep1;
 static int NumberSizeBytes;
-
 struct sBounds
 {
   int digitLevel;
   int nbrCurves;
   int boundStep1;
   int sqrtBoundStep1;
-  int nbrPrimes;
 };
 
 const struct sBounds stEcmBounds[] =
 {
-  { 15, 25, 2000, 45, 303 },                // ECM bounds for 15 digits
-  { 20, 90, 11000, 105, 1335 },             // ECM bounds for 20 digits
-  { 25, 300, 50000, 224, 5133 },            // ECM bounds for 25 digits
-  { 30, 700, 250000, 501, 22044 },          // ECM bounds for 30 digits
-  { 35, 1800, 1000000, 1001, 78498 },       // ECM bounds for 35 digits
-  { 40, 5100, 3000000, 1733, 216816 },      // ECM bounds for 40 digits
-  { 45, 10600, 11000000, 3317, 726517 },    // ECM bounds for 45 digits
-  { 50, 19300, 43000000, 6558, 2604535 },   // ECM bounds for 50 digits
-  { 55, 49000, 110000000, 10489, 6303309 }, // ECM bounds for 55 digits
+  { 15, 25, 2000, 45 },                // ECM bounds for 15 digits
+  { 20, 90, 11000, 105 },              // ECM bounds for 20 digits
+  { 25, 300, 50000, 224 },             // ECM bounds for 25 digits
+  { 30, 700, 250000, 501 },            // ECM bounds for 30 digits
+  { 35, 1800, 1000000, 1001 },         // ECM bounds for 35 digits
+  { 40, 5100, 3000000, 1733 },         // ECM bounds for 40 digits
+  { 45, 10600, 11000000, 3317 },       // ECM bounds for 45 digits
+  { 50, 19300, 43000000, 6558 },       // ECM bounds for 50 digits
+  { 55, 49000, 110000000, 10489 },     // ECM bounds for 55 digits
 };
 
 /* ECM limits for 30, 35, ..., 95 digits */
 static int limits[] = { 10, 10, 10, 10, 10, 15, 22, 26, 60, 130, 200, 270, 350 };
 
-static void add3(limb* x3, limb* z3, const limb* x2, const limb* z2,
-  const limb* x1, const limb* z1, const limb* x, const limb* z);
-static void duplicate(limb* x2, limb* z2, const limb* x1, const limb* z1);
 
 /******************************************************/
 /* Start of code adapted from Paul Zimmermann's ECM4C */
@@ -328,44 +319,35 @@ static void prac(int multiplier, limb* x, limb *z)
   add3(x, z, xA, zA, xB, zB, xC, zC);
 }
 
-/* adds Q=(x2:z2) and R=(x1:z1) and puts the result in (x3:z3),
-using 5/6 mul, 6 add/sub and 6 mod. One assumes that Q-R=P or R-Q=P where P=(x:z).
-Uses the following global variables:
-- n : number to factor
-- x, z : coordinates of P
-- u, v, w : auxiliary variables
-Modifies: x3, z3, u, v, w.
-(x3,z3) may be identical to (x2,z2) and to (x,z)
-*/
-static void add3(limb* x3, limb* z3, const limb* x2, const limb* z2,
-  const limb* x1, const limb* z1, const limb* x, const limb* z)
+void add3(limb* sum_x, limb* sum_z, const limb* Q_x, const limb* Q_z,
+  const limb* R_x, const limb* R_z, const limb* diff_x, const limb* diff_z)
 {
   limb* t = common.ecm.fieldTX;
   limb* u = common.ecm.fieldTZ;
   limb* v = common.ecm.fieldUX;
   limb* w = common.ecm.fieldUZ;
-  SubtBigNbrModN(x2, z2, v, TestNbr, NumberLength); // v = x2-z2
-  AddBigNbrModN(x1, z1, w, TestNbr, NumberLength);      // w = x1+z1
+  SubtBigNbrModN(Q_x, Q_z, v, TestNbr, NumberLength); // v = x2-z2
+  AddBigNbrModN(R_x, R_z, w, TestNbr, NumberLength);      // w = x1+z1
   modmult(v, w, u);       // u = (x2-z2)*(x1+z1)
-  AddBigNbrModN(x2, z2, w, TestNbr, NumberLength);      // w = x2+z2
-  SubtBigNbrModN(x1, z1, t, TestNbr, NumberLength); // t = x1-z1
+  AddBigNbrModN(Q_x, Q_z, w, TestNbr, NumberLength);      // w = x2+z2
+  SubtBigNbrModN(R_x, R_z, t, TestNbr, NumberLength); // t = x1-z1
   modmult(t, w, v);       // v = (x2+z2)*(x1-z1)
   AddBigNbrModN(u, v, t, TestNbr, NumberLength);        // t = 2*(x1*x2-z1*z2)
   modmult(t, t, w);       // w = 4*(x1*x2-z1*z2)^2
   SubtBigNbrModN(u, v, t, TestNbr, NumberLength);   // t = 2*(x2*z1-x1*z2)
   modmult(t, t, v);       // v = 4*(x2*z1-x1*z2)^2
-  if (!memcmp(x, x3, NumberSizeBytes))
+  if (!memcmp(diff_x, sum_x, NumberSizeBytes))
   {
-    (void)memcpy(u, x, NumberSizeBytes);
+    (void)memcpy(u, diff_x, NumberSizeBytes);
     (void)memcpy(t, w, NumberSizeBytes);
-    modmult(z, t, w);
-    modmult(v, u, z3);
-    (void)memcpy(x3, w, NumberSizeBytes);
+    modmult(diff_z, t, w);
+    modmult(v, u, sum_z);
+    (void)memcpy(sum_x, w, NumberSizeBytes);
   }
   else
   {
-    modmult(w, z, x3); // x3 = 4*z*(x1*x2-z1*z2)^2
-    modmult(x, v, z3); // z3 = 4*x*(x2*z1-x1*z2)^2
+    modmult(w, diff_z, sum_x); // sum_x = 4*z*(x1*x2-z1*z2)^2
+    modmult(diff_x, v, sum_z); // sum_z = 4*x*(x2*z1-x1*z2)^2
   }
 }
 
@@ -376,24 +358,25 @@ Uses the following global variables:
 - u, v, w : auxiliary variables
 Modifies: x2, z2, u, v, w
 */
-static void duplicate(limb* x2, limb* z2, const limb* x1, const limb* z1)
+void duplicate(limb* dupl_x, limb* dupl_z, const limb* P_x, const limb* P_z)
 {
   limb* u = common.ecm.fieldUZ;
   limb* v = common.ecm.fieldTX;
   limb* w = common.ecm.fieldTZ;
-  AddBigNbrModN(x1, z1, w, TestNbr, NumberLength);      // w = x1+z1
+  AddBigNbrModN(P_x, P_z, w, TestNbr, NumberLength);      // w = x1+z1
   modmult(w, w, u);       // u = (x1+z1)^2
-  SubtBigNbrModN(x1, z1, w, TestNbr, NumberLength); // w = x1-z1
+  SubtBigNbrModN(P_x, P_z, w, TestNbr, NumberLength); // w = x1-z1
   modmult(w, w, v);       // v = (x1-z1)^2
-  modmult(u, v, x2);      // x2 = u*v = (x1^2 - z1^2)^2
+  modmult(u, v, dupl_x);      // x2 = u*v = (x1^2 - z1^2)^2
   SubtBigNbrModN(u, v, w, TestNbr, NumberLength);   // w = u-v = 4*x1*z1
   modmult(common.ecm.fieldAA, w, u);
   AddBigNbrModN(u, v, u, TestNbr, NumberLength);        // u = (v+b*w)
-  modmult(w, u, z2);      // z2 = (w*u)
+  modmult(w, u, dupl_z);      // z2 = (w*u)
 }
+
 /* End of code adapted from Paul Zimmermann's ECM4C */
 
-static int gcdIsOne(const limb* value)
+int gcdIsOne(const limb* value)
 {
   UncompressLimbsBigInteger(value, &common.ecm.Temp1);
   UncompressLimbsBigInteger(TestNbr, &common.ecm.Temp2);
@@ -416,23 +399,18 @@ static int gcdIsOne(const limb* value)
   return 2;      // GCD is greater than one.
 }
 
-static void GenerateSieve(int initial)
+void GenerateSieve(int initial)
 {
+  int index;
   int i;
-  int j;
   int Q;
   int initModQ;
-  for (i = 0; i < (10 * SIEVE_SIZE); i += SIEVE_SIZE)
+  for (index = 0; index < MAX_SIEVE_PRIME; index += SIEVE_SIZE)
   {
-    (void)memcpy(&common.ecm.sieve[i], common.ecm.sieve2310, SIEVE_SIZE);
+    (void)memcpy(&common.ecm.sieve[index], common.ecm.sieve2310, SIEVE_SIZE);
   }
-#if MAX_PRIME_SIEVE == 11
-  j = 5;
+  index = 5;
   Q = 13; /* Point to prime 13 */
-#else
-  j = 4;
-  Q = 11; /* Point to prime 11 */
-#endif
   do
   {
     if (initial > (Q * Q))
@@ -450,7 +428,7 @@ static void GenerateSieve(int initial)
       {    // initModQ is even
         i = Q - (initModQ / 2);
       }
-      for (; i < (10 * SIEVE_SIZE); i += Q)
+      for (; i < MAX_SIEVE_PRIME; i += Q)
       {
         common.ecm.sieve[i] = 1; /* Composite */
       }
@@ -458,9 +436,9 @@ static void GenerateSieve(int initial)
     else
     {
       i = (Q * Q) - initial;
-      if (i < (20 * SIEVE_SIZE))
+      if (i < (2 * MAX_SIEVE_PRIME))
       {
-        for (i = i / 2; i < (10 * SIEVE_SIZE); i += Q)
+        for (i = i / 2; i < MAX_SIEVE_PRIME; i += Q)
         {
           common.ecm.sieve[i] = 1; /* Composite */
         }
@@ -470,8 +448,8 @@ static void GenerateSieve(int initial)
         break;
       }
     }
-    j++;
-    Q = SmallPrime[j];
+    index++;
+    Q = SmallPrime[index];
   } while (Q < MAX_SIEVE_PRIME);
 }
 
@@ -480,10 +458,10 @@ static void GenerateSieve(int initial)
 /*******************************/
 static enum eEcmResult ecmStep1(void)
 {
-  int I;
-  int P;
+  int powerPrime;
+  int prime;
   int i;
-  int u;
+  int sievedNumber;
   int retcode;
   int bufSize = (NumberLength + 1) * (int)sizeof(limb);
   (void)memcpy(common.ecm.Xaux, common.ecm.X, bufSize);
@@ -492,11 +470,8 @@ static enum eEcmResult ecmStep1(void)
   for (int pass = 0; pass < 2; pass++)
   {
     /* For powers of 2 */
-#ifdef __EMSCRIPTEN__
-    indexPrimes = 0;
-#endif
     StepECM = 1;
-    for (I = 1; I <= boundStep1; I *= 2)
+    for (powerPrime = 1; powerPrime <= boundStep1; powerPrime *= 2)
     {
       duplicate(common.ecm.X, common.ecm.Z, common.ecm.X, common.ecm.Z);
       if (pass == 0)
@@ -516,7 +491,8 @@ static enum eEcmResult ecmStep1(void)
         }
       }
     }
-    for (I = 3; I <= boundStep1; I *= 3)
+    /* For powers of 3 */
+    for (powerPrime = 3; powerPrime <= boundStep1; powerPrime *= 3)
     {
       duplicate(common.ecm.W1, common.ecm.W2, common.ecm.X, common.ecm.Z);
       add3(common.ecm.X, common.ecm.Z, common.ecm.X, common.ecm.Z, common.ecm.W1, common.ecm.W2, common.ecm.X, common.ecm.Z);
@@ -543,13 +519,14 @@ static enum eEcmResult ecmStep1(void)
     indexM = 1;
     do
     {
+      prime = SmallPrime[indexM];
 #ifdef __EMSCRIPTEN__
-      indexPrimes++;
+      intPrime = prime;
 #endif
-      P = SmallPrime[indexM];
-      for (int64_t IP = P; IP <= boundStep1; IP *= P)
+      for (int64_t largePrimePower = prime; largePrimePower <= boundStep1;
+        largePrimePower *= prime)
       {
-        prac(P, common.ecm.X, common.ecm.Z);
+        prac(prime, common.ecm.X, common.ecm.Z);
       }
       indexM++;
       if (pass == 0)
@@ -569,43 +546,41 @@ static enum eEcmResult ecmStep1(void)
         }
       }
     } while (SmallPrime[indexM - 1] <= sqrtBoundStep1);
-    P += 2;
+    prime += 2;
 
     /* Initialize sieve2310[n]: 1 if gcd(P+2n,2310) > 1, 0 otherwise */
-    u = P;
+    sievedNumber = prime;
     for (i = 0; i < SIEVE_SIZE; i++)
     {
       common.ecm.sieve2310[i] =
-        ((((u % 3) == 0)
-          || ((u % 5) == 0)
-          || ((u % 7) == 0)
-#if MAX_PRIME_SIEVE == 11
-          || ((u % 11) == 0)
-#endif
+        ((((sievedNumber % 3) == 0)
+          || ((sievedNumber % 5) == 0)
+          || ((sievedNumber % 7) == 0)
+          || ((sievedNumber % 11) == 0)
           ) ? (unsigned char)1 : (unsigned char)0);
-      u += 2;
+      sievedNumber += 2;
     }
     do
     {
       /* Generate sieve */
-      GenerateSieve(P);
+      GenerateSieve(prime);
 
       /* Walk through sieve */
 
-      for (i = 0; i < (10 * SIEVE_SIZE); i++)
+      for (i = 0; i < MAX_SIEVE_PRIME; i++)
       {
         if (common.ecm.sieve[i] != 0U)
         {
           continue; /* Do not process composites */
         }
-        if ((P + (2 * i)) > boundStep1)
+        if ((prime + (2 * i)) > boundStep1)
         {
           break;
         }
 #ifdef __EMSCRIPTEN__
-        indexPrimes++;
+        intPrime = prime + (2 * i);
 #endif
-        prac(P + (2 * i), common.ecm.X, common.ecm.Z);
+        prac(prime + (2 * i), common.ecm.X, common.ecm.Z);
         if (pass == 0)
         {
           modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.GcdAccumulated);
@@ -623,8 +598,8 @@ static enum eEcmResult ecmStep1(void)
           }
         }
       }
-      P += 20 * SIEVE_SIZE;
-    } while (P < boundStep1);
+      prime += 2 * MAX_SIEVE_PRIME;
+    } while (prime < boundStep1);
     if (pass == 0)
     {
       int result = gcdIsOne(common.ecm.GcdAccumulated);
@@ -653,24 +628,21 @@ static enum eEcmResult ecmStep2(void)
   int j;
   StepECM = 2;
   j = 0;
-  for (int u = 1; u < SIEVE_SIZE; u += 2)
+  for (int sievedNumber = 1; sievedNumber < SIEVE_SIZE; sievedNumber += 2)
   {
-    if (((u % 3) == 0) || ((u % 5) == 0) || ((u % 7) == 0)
-#if MAX_PRIME_SIEVE == 11
-      || ((u % 11) == 0)
-#endif
+    if (((sievedNumber % 3) == 0) || ((sievedNumber % 5) == 0) || ((sievedNumber % 7) == 0)
+      || ((sievedNumber % 11) == 0)
       )
     {
-      common.ecm.sieve2310[u / 2] = 1U;
+      common.ecm.sieve2310[sievedNumber / 2] = 1U;
     }
     else
     {
-      common.ecm.sieveidx[j] = u / 2;
+      common.ecm.sieveidx[j] = sievedNumber / 2;
       common.ecm.sieve2310[common.ecm.sieveidx[j]] = 0U;
       j++;
     }
   }
-  (void)memcpy(&common.ecm.sieve2310[HALF_SIEVE_SIZE], &common.ecm.sieve2310[0], HALF_SIEVE_SIZE);
   for (int pass = 0; pass < 2; pass++)
   {
     int Qaux;
@@ -679,9 +651,9 @@ static enum eEcmResult ecmStep2(void)
     (void)memcpy(common.ecm.Zaux, common.ecm.Z, NumberSizeBytes);  //         from step 1)
     (void)memcpy(common.ecm.GcdAccumulated, MontgomeryMultR1, NumberSizeBytes);
     (void)memcpy(common.ecm.UX, common.ecm.X, NumberSizeBytes);
-    (void)memcpy(common.ecm.UZ, common.ecm.Z, NumberSizeBytes);  // (UX:UZ) -> Q 
+    (void)memcpy(common.ecm.UZ, common.ecm.Z, NumberSizeBytes);    // (UX:UZ) -> Q 
     (void)ModInvBigNbr(common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.X, common.ecm.root[0]); // root[0] <- X/Z (Q)
+    modmult(common.ecm.Aux1, common.ecm.X, common.ecm.root[0]);    // root[0] <- X/Z (Q)
     J = 0;
     AddBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
     modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W1);
@@ -738,9 +710,7 @@ static enum eEcmResult ecmStep2(void)
         (void)memcpy(common.ecm.DZ, common.ecm.Z, NumberSizeBytes);  // (DX:DZ) -> HALF_SIEVE_SIZE*Q
       }
       if (((I % 3) != 0) && ((I % 5) != 0) && ((I % 7) != 0)
-#if MAX_PRIME_SIEVE == 11
         && ((I % 11) != 0)
-#endif
         )
       {
         J++;
@@ -824,6 +794,9 @@ static enum eEcmResult ecmStep2(void)
           {
             continue; // Do not process if both are composite numbers.
           }
+#ifdef __EMSCRIPTEN__
+          longPrime = ((int64_t)indexM * 2 * SIEVE_SIZE) + j + j + 1;
+#endif
           SubtBigNbrModN(common.ecm.Aux1, common.ecm.root[i], common.ecm.M, TestNbr, NumberLength);
           modmult(common.ecm.GcdAccumulated, common.ecm.M, common.ecm.Aux2);
           (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux2, NumberSizeBytes);
@@ -993,7 +966,8 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
     boundStep2 = (int64_t)boundStep1 * 100;
     sqrtBoundStep1 = pstBounds->sqrtBoundStep1;
 #ifdef __EMSCRIPTEN__
-    nbrPrimes = pstBounds->nbrPrimes;
+    intStep1Bound = boundStep1;
+    longStep2Bound = boundStep2;
     ptrText = ptrLowerText;  // Point after number that is being factored.
     copyStr(&ptrText, "<p>");
     formatString(&ptrText, LITERAL_ECM1, pstBounds->digitLevel);

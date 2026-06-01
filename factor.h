@@ -24,14 +24,17 @@
 void getCunn(const char *url, char *factorsFromServer);
 #endif
 
-#define TYP_AURIF    100000000
-#define TYP_TABLE    150000000
-#define TYP_SIQS     200000000
-#define TYP_LEHMAN   250000000
-#define TYP_RABIN    300000000
-#define TYP_DIVISION 350000000
-#define TYP_EC       400000000
-#define TYP_ALGEBR   450000000
+enum
+{
+  TYP_AURIF = 100000000,
+  TYP_TABLE = 150000000,
+  TYP_SIQS = 200000000,
+  TYP_LEHMAN = 250000000,
+  TYP_RABIN = 300000000,
+  TYP_DIVISION = 350000000,
+  TYP_EC = 400000000,
+  TYP_ALGEBR = 450000000,
+};
 
 enum eEcmResult
 {
@@ -82,6 +85,7 @@ void factor(const BigInteger *toFactor, const int *number, int *factors, struct 
 void factorExt(const BigInteger* toFactor, const int* number,
   int* factors, struct sFactors* pstFactors, char* pcKnownFactors);
 void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor);
+enum eEcmResult pMinus1(int step1Bound);
 extern int nbrToFactor[MAX_LEN];
 extern struct sFactors astFactorsMod[MAX_FACTORS];
 extern int factorsMod[20000];
@@ -99,5 +103,7 @@ char* ShowFactoredPart(const BigInteger* pNbr, const struct sFactors* pstFactors
 void ShowLowerText(void);
 int BpswPrimalityTest(const BigInteger* pValue, const struct sFactors* pstFactors);
 void batchEcmCallback(char** pptrOutput, int type);
+int gcdIsOne(const limb* value);
+void GenerateSieve(int initial);
 #endif
 #endif

@@ -119,7 +119,7 @@ function dowork()
   get("solve").disabled = true;
   get("stop").disabled = false;
   res.innerHTML = get("solving").textContent;
-  param = digitGroup + "," + "," + quadrText + String.fromCharCode(0) + linText +
+  param = digitGroup + ",0," + quadrText + String.fromCharCode(0) + linText +
     String.fromCharCode(0) + constText +String.fromCharCode(0) + modText + String.fromCharCode(0);
   callWorker(param);
 }

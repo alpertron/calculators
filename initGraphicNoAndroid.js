@@ -28,6 +28,7 @@
 /* global getPixels */
 /* global HEAPU8 */
 /* global imgData */
+/* global instantiate */
 /* global pixels */
 /* global updateGraphic */
 /* global wasm */

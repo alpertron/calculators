@@ -16,10 +16,10 @@
  You should have received a copy of the GNU General Public License
  along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+    .text
     .arch armv8-a
     .global MontgomeryMult
     .type MontgomeryMult, %function
-    .text
     .align 4
 /*
  On input:
@@ -60,6 +60,7 @@
     .set MAX_LIMBS_MONTGOMERY, 14
     .set STACK_SIZE_RESULT_BUFFER, (MAX_LIMBS_MONTGOMERY+3)/4 * 16
 MontgomeryMult:
+    .cfi_startproc
     /* Get external values and pointers to buffers. */
     adrp x3, :got:MontgomeryMultN
     ldr x3, [x3, #:got_lo12:MontgomeryMultN]
@@ -193,4 +194,5 @@ copy_temp_to_result_loop:
     bne copy_temp_to_result_loop
     add sp, sp, #STACK_SIZE_RESULT_BUFFER    
     ret
+    .cfi_endproc
     .end

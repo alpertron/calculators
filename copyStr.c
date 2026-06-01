@@ -29,6 +29,10 @@
 #include "rootseq.h"
 #endif
 extern bool hexadecimal;
+extern char* ptrOutput;
+#ifdef __EMSCRIPTEN__
+char* ptrInputText;
+#endif
 void copyStr(char** pptrString, const char* stringToCopy)
 {
   char* ptrString = *pptrString;
@@ -68,6 +72,7 @@ static int getRangeNumber(const char** pptrOutput)
 //      l - long integer in decimal format
 //      p - power of variable
 //      q - equation number
+//      r - rational number
 //      s - string
 //      t - time in tenths of seconds
 //      u - unsigned integer in decimal format
@@ -86,6 +91,9 @@ typedef union {
   char c;
   const BigInteger* b;
   const limb* a;
+#ifdef POLYEXPR
+  const BigRational* r;
+#endif
 } ArgValue;
 
 void formatString(char** pptrString, const char* format, ...)
@@ -130,6 +138,10 @@ void formatString(char** pptrString, const char* format, ...)
         else if (type == 'p')
         {
           argv[idx].s = va_arg(args, const char *);
+        }
+        else if (type == 'r')
+        {
+          argv[idx].r = va_arg(args, const BigRational *);
         }
 #endif
         else if (type == 'v')
@@ -266,6 +278,12 @@ void formatString(char** pptrString, const char* format, ...)
       else if (type == 'p')
       {
         showPowerVar(&ptrString, argv[idx].s[1] - '0', argv[idx].s[0]);
+      }
+      else if (type == 'r')
+      {
+        ptrOutput = ptrString;
+        showRationalNoParen(argv[idx].r);
+        ptrString = ptrOutput;
       }
 #endif
       else if (type == '?')
