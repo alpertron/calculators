@@ -197,27 +197,6 @@ function startUp()
   };
   get("formsend").onclick = formSend;
 
-  // Generate accordion.
-  let acc = document.querySelectorAll("h2");
-  let idx;
-
-  for (idx = 0; idx < acc.length; idx++)
-  {
-    acc[idx >> 0].addEventListener("click", function()
-    {
-    // "active" means that panel is being displayed.
-      this.children[0].classList.toggle("active");
-      let panel = this.nextElementSibling;
-      if (panel.style.display === "block")
-      {
-        panel.style.display = "none";
-      }
-      else
-      {
-        panel.style.display = "block";
-      }
-    });
-  }
   let fromEcm = window.sessionStorage.getItem("F");
   let polyTextArea = get("poly");
   if (fromEcm != null)

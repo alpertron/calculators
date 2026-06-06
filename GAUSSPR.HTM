@@ -38,10 +38,10 @@
 nav {background-color:#000080; width:100%; margin:0px; text-align:center}
 nav ul {padding:0; margin:0 auto; list-style:none; display:inline-block} 
 nav li {float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; cursor: pointer; text-align:left}
-nav li[aria-expanded="true"] {background-color:#004000; color:#FFFFFF}
+nav span[aria-expanded="true"] {background-color:#004000; color:#FFFFFF}
 nav li ul {display:none; position:absolute}
-nav li[aria-expanded="true"] ul.alignleft {display:block; height:auto}
-nav li[aria-expanded="true"] ul.alignright {display:block; height:auto; right:0px; background-color:#004000}
+nav span[aria-expanded="true"] + ul.alignleft {display:block; height:auto}
+nav span[aria-expanded="true"] + ul.alignright {display:block; height:auto; right:0px; background-color:#004000}
 nav li ul li {clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
 nav a:link{color:#FFFFFF; text-decoration:none}
 nav a:visited{color:#FFFFFF; text-decoration:none}
@@ -125,34 +125,33 @@ button:disabled {color: #808080; background-color: #606060}
 <body>
 <div id="skip"><a href="#main">Skip to main content</a></div>
 <nav aria-label="Main navigation">
-<a id="left" href="#gausspr">Gaussian primes</a>
 <ul role="menubar">
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electronics
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electronics</span>
 <ul role="menu" class="alignleft popup">
-<li role="menuitem"><a href="INTEL.HTM" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a></li>
+<li role="none"><a href="INTEL.HTM" role="menuitem" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a></li>
 </ul>
 </li>
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Mathematics
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Mathematics</span>
 <ul role="menu" class="alignleft popup">
-<li role="menuitem"><a href="CALTORS.HTM" title="Web applications with JavaScript and WebAssembly implementing calculators">Calculators</a></li>
-<li role="menuitem"><a href="NUMBERT.HTM" title="Articles and programs about number theory">Number Theory</a></li>
-<li role="menuitem"><a href="PROBLEMS.HTM" title="Interesting math problems">Problems</a></li>
+<li role="none"><a href="CALTORS.HTM" role="menuitem" title="Web applications with JavaScript and WebAssembly implementing calculators">Calculators</a></li>
+<li role="none"><a href="NUMBERT.HTM" role="menuitem" title="Articles and programs about number theory">Number Theory</a></li>
+<li role="none"><a href="PROBLEMS.HTM" role="menuitem" title="Interesting math problems">Problems</a></li>
 </ul>
 </li>
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Programs
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Programs</span>
 <ul role="menu" class="alignright popup">
-<li role="menuitem"><a href="ASSEM386.HTM" title="Programs written in 80386 Assembler">Assembler 80386</a></li>
-<li role="menuitem"><a href="JAVAPROG.HTM" title="Web applications with JavaScript and WebAssembly">Web applications</a></li>
-<li role="menuitem"><a href="GAMES.HTM" title="Computer games">Games</a></li>
+<li role="none"><a href="ASSEM386.HTM" role="menuitem" title="Programs written in 80386 Assembler">Assembler 80386</a></li>
+<li role="none"><a href="JAVAPROG.HTM" role="menuitem" title="Web applications with JavaScript and WebAssembly">Web applications</a></li>
+<li role="none"><a href="GAMES.HTM" role="menuitem" title="Computer games">Games</a></li>
 </ul>
 </li>
-<li class="alignright" role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Contact
+<li class="alignright" role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Contact</span>
 <ul role="menu" class="alignright popup">
-<li role="menuitem"><a href="EPERS.HTM" title="Personal information">Personal</a></li>
-<li role="menuitem"><a href="FORM.HTM" title="Form to send comments">Comments</a></li>
-<li role="menuitem"><a href="EGBOOK.HTM" title="Old and new guestbook">Guestbook</a></li>
-<li role="menuitem"><a href="PRIVACY.HTM" title="Privacy Policy">Privacy</a></li>
-<li role="menuitem"><a href="DONATION.HTM" title="Donations to the author of this Web site">Donations</a></li>
+<li role="none"><a href="EPERS.HTM" role="menuitem" title="Personal information">Personal</a></li>
+<li role="none"><a href="FORM.HTM" role="menuitem" title="Form to send comments">Comments</a></li>
+<li role="none"><a href="EGBOOK.HTM" role="menuitem" title="Old and new guestbook">Guestbook</a></li>
+<li role="none"><a href="PRIVACY.HTM" role="menuitem" title="Privacy Policy">Privacy</a></li>
+<li role="none"><a href="DONATION.HTM" role="menuitem" title="Donations to the author of this Web site">Donations</a></li>
 </ul>
 </li>
 </ul>
@@ -221,7 +220,7 @@ For example: 79 + 43<var>i</var> = (1+<var>i</var>) (2-<var>i</var>) (28+5<var>i
 <p>You can also see the position <var>a</var> + <var>b</var><var>i</var> in the complex plane of any point of the graph by moving the cursor to that point.</p>
 <p>Move the center by typing a new complex number in both input boxes (up to 9 digits each) and press the return key.</p>
 <p>There is an unsolved mathematical problem named <em>Gaussian moat</em> regarding the graphical representation of Gaussian primes. It asks whether there is a path from zero to infinity with steps of bounded size. Nobuyuki Tsuchimura shown in 2004 that it is not possible to reach the distance 80015782 from the origin if the steps have length 6 or smaller.</p>
-<p>Written by Dario Alpern. Last updated 30 May 2026.</p>
+<p>Written by Dario Alpern. Last updated 6 June 2026.</p>
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old Ulam spiral visualization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the
 <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>

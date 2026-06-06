@@ -39,10 +39,10 @@
 nav {background-color:#000080; width:100%; margin:0px; text-align:center}
 nav ul {padding:0; margin:0 auto; list-style:none; display:inline-block} 
 nav li {float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; cursor: pointer; text-align:left}
-nav li[aria-expanded="true"] {background-color:#004000; color:#FFFFFF}
+nav span[aria-expanded="true"] {background-color:#004000; color:#FFFFFF}
 nav li ul {display:none; position:absolute}
-nav li[aria-expanded="true"] ul.alignleft {display:block; height:auto}
-nav li[aria-expanded="true"] ul.alignright {display:block; height:auto; right:0px; background-color:#004000}
+nav span[aria-expanded="true"] + ul.alignleft {display:block; height:auto}
+nav span[aria-expanded="true"] + ul.alignright {display:block; height:auto; right:0px; background-color:#004000}
 nav li ul li {clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
 nav a:link{color:#FFFFFF; text-decoration:none}
 nav a:visited{color:#FFFFFF; text-decoration:none}
@@ -153,32 +153,32 @@ svg {fill:white}
 <div id="skip"><a href="#main">Ir al contenido principal</a></div>
 <nav aria-label="Navegación principal">
 <ul role="menubar">
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electrónica
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electrónica</span>
 <ul role="menu" class="alignleft popup">
-<li role="menuitem"><a href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a></li>
+<li role="none"><a href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a></li>
 </ul>
 </li>
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Matemáticas
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Matemáticas</span>
 <ul role="menu" class="alignleft popup">
-<li role="menuitem"><a href="CALDORAS.HTM" title="Aplicaciones web que implementan calculadoras">Calculadoras</a></li>
-<li role="menuitem"><a href="TNUMEROS.HTM" title="Artículos y programas sobre teoría de números">Teoría de números</a></li>
-<li role="menuitem"><a href="PROBLEMAS.HTM" title="Problemas matemáticos interesantes">Problemas</a></li>
+<li role="none"><a href="CALDORAS.HTM" role="menuitem" title="Aplicaciones web que implementan calculadoras">Calculadoras</a></li>
+<li role="none"><a href="TNUMEROS.HTM" role="menuitem" title="Artículos y programas sobre teoría de números">Teoría de números</a></li>
+<li role="none"><a href="PROBLEMAS.HTM" role="menuitem" title="Problemas matemáticos interesantes">Problemas</a></li>
 </ul>
 </li>
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Programas
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Programas</span>
 <ul role="menu" class="alignright popup">
-<li role="menuitem"><a href="ENSAM386.HTM" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a></li>
-<li role="menuitem"><a href="PROGJAVA.HTM" title="Aplicaciones web con JavaScript y WebAssembly">Aplicaciones web</a></li>
-<li role="menuitem"><a href="JUEGOS.HTM" title="Juegos en línea y para descargar">Juegos</a></li>
+<li role="none"><a href="ENSAM386.HTM" role="menuitem" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a></li>
+<li role="none"><a href="PROGJAVA.HTM" role="menuitem" title="Aplicaciones web con JavaScript y WebAssembly">Aplicaciones web</a></li>
+<li role="none"><a href="JUEGOS.HTM" role="menuitem" title="Juegos en línea y para descargar">Juegos</a></li>
 </ul>
 </li>
-<li class="alignright" role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Contacto
+<li role="none"><span role="menuitem" class="alignright" aria-haspopup="true" aria-expanded="false" tabindex="-1">Contacto</span>
 <ul role="menu" class="alignright popup">
-<li role="menuitem"><a href="PERSONAL.HTM" title="Información personal">Personal</a></li>
-<li role="menuitem"><a href="FORMULAR.HTM" title="Formulario para enviar comentarios">Comentarios</a></li>
-<li role="menuitem"><a href="GBOOK.HTM" title="Viejo y nuevo libro de visitas">Libro de invitados</a></li>
-<li role="menuitem"><a href="PRIVACIDAD.HTM" title="Política de privacidad">Privacidad</a></li>
-<li role="menuitem"><a href="DONACIONES.HTM" title="Donaciones al autor de este sitio Web">Donaciones</a></li>
+<li role="none"><a href="PERSONAL.HTM" role="menuitem" title="Información personal">Personal</a></li>
+<li role="none"><a href="FORMULAR.HTM" role="menuitem" title="Formulario para enviar comentarios">Comentarios</a></li>
+<li role="none"><a href="GBOOK.HTM" role="menuitem" title="Viejo y nuevo libro de visitas">Libro de invitados</a></li>
+<li role="none"><a href="PRIVACIDAD.HTM" role="menuitem" title="Política de privacidad">Privacidad</a></li>
+<li role="none"><a href="DONACIONES.HTM" role="menuitem" title="Donaciones al autor de este sitio Web">Donaciones</a></li>
 </ul> 
 </li>
 </ul>
@@ -454,7 +454,7 @@ Para ingresar números en el formato hexadecimal es necesario que tengan los car
 <h2>Código fuente</h2>
 <p>Se puede bajar el código fuente de este programa y el del viejo applet de fracciones continuas desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 30 de mayo de 2026.</p>
+<p>Escrito por Dario Alpern. Actualizado el 6 de junio de 2026.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>

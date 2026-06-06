@@ -911,28 +911,8 @@ function startUp()
       divisorsDirty = false;
     }
   }, 100);
-  // Generate accordion.
-  let acc = document.querySelectorAll("h2");
-  let idx, x, y;
-
-  for (idx = 0; idx < acc.length; idx++)
-  {
-    acc[idx >> 0].addEventListener("click", function()
-    {
-    // "active" means that panel is being displayed.
-      this.children[0].classList.toggle("active");
-      let panel = this.nextElementSibling;
-      if (panel.style.display === "block")
-      {
-        panel.style.display = "none";
-      }
-      else
-      {
-        panel.style.display = "block";
-      }
-    });
-  }
   get("exprcopy").innerHTML = get("exprorig").innerHTML;
+  let x, y;
   let c = get("ellCurve");
   let ctx = c.getContext("2d");
   ctx.fillStyle="#FFFFFF";      // White.

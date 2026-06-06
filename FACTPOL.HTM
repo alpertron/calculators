@@ -39,10 +39,10 @@
 nav {background-color:#000080; width:100%; margin:0px; text-align:center}
 nav ul {padding:0; margin:0 auto; list-style:none; display:inline-block} 
 nav li {float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; cursor: pointer; text-align:left}
-nav li[aria-expanded="true"] {background-color:#004000; color:#FFFFFF}
+nav span[aria-expanded="true"] {background-color:#004000; color:#FFFFFF}
 nav li ul {display:none; position:absolute}
-nav li[aria-expanded="true"] ul.alignleft {display:block; height:auto}
-nav li[aria-expanded="true"] ul.alignright {display:block; height:auto; right:0px; background-color:#004000}
+nav span[aria-expanded="true"] + ul.alignleft {display:block; height:auto}
+nav span[aria-expanded="true"] + ul.alignright {display:block; height:auto; right:0px; background-color:#004000}
 nav li ul li {clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
 nav a:link{color:#FFFFFF; text-decoration:none}
 nav a:visited{color:#FFFFFF; text-decoration:none}
@@ -68,11 +68,11 @@ kbd {font-size:120%}
 .bread {padding:0px;list-style:none; display:inline-block;}
 .bread li {display:inline}
 .bread li+li:before {content:"›"}
-h2 > button {background-color:#eee; color:#444; cursor:pointer; padding:18px; font-weight:bold; font-size: 100%; width:100%; text-align:left; border:none; transition:0.4s}
-h2 > button.active,h2 > button:hover {background-color:#ccc;}
-h2 > button:after {content:"\002B"; color:#777; font-weight:bold; float:right; margin-left:5px;}
-h2 > button.active:after {content:"\2212";}
-.panel {padding: 0 10px; display:none; overflow:hidden;}
+summary::-webkit-details-marker {display: none;}
+summary {border-radius:5px; list-style: none; margin:5px; background-color:#eee; color:#444; cursor:pointer; padding:18px; font-weight:bold; font-size: 150%; text-align:left; border:none; transition:0.4s}
+details[open]>summary {background-color:#ccc}
+summary:after {content:"\002B"; color:#777; font-weight:bold; float:right; margin-left:5px}
+details[open]>summary:after {content:"\2212"}
 body {font-family: Arial, sans-serif; margin:0; padding:0}
 h1, .h2title {text-align:center}
 fieldset {border-radius:10px;display:inline}
@@ -137,9 +137,9 @@ body {color: #ddd; background-color: #121212}
 .applet {background-color:#606060; color: #fff}
 p-p:before{border-left:2px solid #ddd}
 p-p:after{border-right:2px solid #ddd}
-h2 > button {background-color:#333; color:#eee;}
-h2 > button.active,h2 > button:hover {background-color:#555;}
-h2 > button:after {color:#777}
+summary {background-color:#333; color:#eee}
+details[open]>summary, summary:hover {background-color:#555}
+summary:after {color:#777}
 a {color: #a3d4a7}
 a:link,a:active {color: #a3d4a7}
 a:hover {color: #f5cba7}
@@ -160,32 +160,32 @@ e-q,e-q:before,e-q:after,.outerbox {color:yellow}
 <div id="skip"><a href="#main">Ir al contenido principal</a></div>
 <nav aria-label="Navegación principal">
 <ul role="menubar">
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electrónica
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electrónica</span>
 <ul role="menu" class="alignleft popup">
-<li role="menuitem"><a href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a></li>
+<li role="none"><a href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a></li>
 </ul>
 </li>
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Matemáticas
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Matemáticas</span>
 <ul role="menu" class="alignleft popup">
-<li role="menuitem"><a href="CALDORAS.HTM" title="Aplicaciones web que implementan calculadoras">Calculadoras</a></li>
-<li role="menuitem"><a href="TNUMEROS.HTM" title="Artículos y programas sobre teoría de números">Teoría de números</a></li>
-<li role="menuitem"><a href="PROBLEMAS.HTM" title="Problemas matemáticos interesantes">Problemas</a></li>
+<li role="none"><a href="CALDORAS.HTM" role="menuitem" title="Aplicaciones web que implementan calculadoras">Calculadoras</a></li>
+<li role="none"><a href="TNUMEROS.HTM" role="menuitem" title="Artículos y programas sobre teoría de números">Teoría de números</a></li>
+<li role="none"><a href="PROBLEMAS.HTM" role="menuitem" title="Problemas matemáticos interesantes">Problemas</a></li>
 </ul>
 </li>
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Programas
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Programas</span>
 <ul role="menu" class="alignright popup">
-<li role="menuitem"><a href="ENSAM386.HTM" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a></li>
-<li role="menuitem"><a href="PROGJAVA.HTM" title="Aplicaciones web con JavaScript y WebAssembly">Aplicaciones web</a></li>
-<li role="menuitem"><a href="JUEGOS.HTM" title="Juegos en línea y para descargar">Juegos</a></li>
+<li role="none"><a href="ENSAM386.HTM" role="menuitem" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a></li>
+<li role="none"><a href="PROGJAVA.HTM" role="menuitem" title="Aplicaciones web con JavaScript y WebAssembly">Aplicaciones web</a></li>
+<li role="none"><a href="JUEGOS.HTM" role="menuitem" title="Juegos en línea y para descargar">Juegos</a></li>
 </ul>
 </li>
-<li class="alignright" role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Contacto
+<li role="none"><span role="menuitem" class="alignright" aria-haspopup="true" aria-expanded="false" tabindex="-1">Contacto</span>
 <ul role="menu" class="alignright popup">
-<li role="menuitem"><a href="PERSONAL.HTM" title="Información personal">Personal</a></li>
-<li role="menuitem"><a href="FORMULAR.HTM" title="Formulario para enviar comentarios">Comentarios</a></li>
-<li role="menuitem"><a href="GBOOK.HTM" title="Viejo y nuevo libro de visitas">Libro de invitados</a></li>
-<li role="menuitem"><a href="PRIVACIDAD.HTM" title="Política de privacidad">Privacidad</a></li>
-<li role="menuitem"><a href="DONACIONES.HTM" title="Donaciones al autor de este sitio Web">Donaciones</a></li>
+<li role="none"><a href="PERSONAL.HTM" role="menuitem" title="Información personal">Personal</a></li>
+<li role="none"><a href="FORMULAR.HTM" role="menuitem" title="Formulario para enviar comentarios">Comentarios</a></li>
+<li role="none"><a href="GBOOK.HTM" role="menuitem" title="Viejo y nuevo libro de visitas">Libro de invitados</a></li>
+<li role="none"><a href="PRIVACIDAD.HTM" role="menuitem" title="Política de privacidad">Privacidad</a></li>
+<li role="none"><a href="DONACIONES.HTM" role="menuitem" title="Donaciones al autor de este sitio Web">Donaciones</a></li>
 </ul> 
 </li>
 </ul>
@@ -235,8 +235,8 @@ e-q,e-q:before,e-q:after,.outerbox {color:yellow}
 <p>Esta aplicación Web puede evaluar y factorizar expresiones que resultan en cocientes de polinomios módulo un primo o una potencia de número primo.
 También puede evaluar, factorizar y hallar raíces exactas de cocientes de polinomios enteros ingresando el valor cero en la caja de entrada Módulo.</p>
 <p>Puedes ingresar polinomios rápidamente usando la <em>notación punto</em>. Por ejemplo, para entrar 2<var>x</var><sup>4</sup> + 3<var>x</var><sup>2</sup> + 1, puedes escribir: <kbd>2.4 + 3.2 + 1</kbd></p>
-<h2><button type="button">Polinomios enteros</button></h2>
-<div class="panel">
+<details>
+<summary>Polinomios enteros</summary>
 <p>Los polinomios enteros en una variable son expresiones que incluyen una variable llamada <var>x</var>, números enteros y las operaciones de suma, resta y multiplicación.</p>
 <p>Se pueden expresar mediante la forma: <var>f</var>(<var>x</var>) = <var>f</var><sub>0</sub> + <var>f</var><sub>1</sub>&#8290;<var>x</var> + <var>f</var><sub>2</sub>&#8290;<var>x</var><sup>2</sup> + ... + <var>f</var><sub>n</sub>&#8290;<var>x</var><sup>n</sup>.</p>
 <p>El número <var>n</var> es el grado del polinomio. El coeficiente <var>f</var><sub>n</sub> es el coeficiente principal y el coeficiente <var>f</var><sub>0</sub> es el término independiente.
@@ -251,17 +251,17 @@ Se pueden escribir como grado(<var>f</var>), cp(<var>f</var>) y ti(<var>f</var>)
 <p>La factorización de polinomios enteros es el proceso que encuentra uno o más polinomios irreducibles cuyo producto es el polinomio original. Un polinomio irreducible no se puede expresar como un producto de dos o más polinomios enteros.</p>
 <p>Ejemplo: <var>x</var><sup>4</sup> &minus; 1 = (<var>x</var><sup>2</sup> + 1) &#8290; (<var>x</var> + 1) &#8290; (<var>x</var> &minus; 1)</p>
 <p>Se puede demostrar que cualquier polinomio entero se puede factorizar de una sola manera en polinomios irreducibles.</p>
-</div>
-<h2><button type="button">Polinomios módulo un número primo</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Polinomios módulo un número primo</summary>
 <p>La multiplicación de polinomios módulo un número primo se puede realizar de la manera habitual multiplicando los diferentes términos del polinomio
 y luego sumando los coeficientes del mismo grado. Finalmente se reducen los coeficientes módulo ese primo.</p>
 <p>Por ejemplo, el producto de 3x<sup>2</sup> + 5x + 1 y 6x<sup>2</sup> + 4x + 3 módulo 7 es 18x<sup>4</sup> + (30+12)x<sup>3</sup> + (9+20+6)x<sup>2</sup> + (15+4)x + 3 módulo 7 que es igual a 4x<sup>4</sup> + 5x + 3</p>
 <p>Se puede demostrar que cualquier polinomio módulo un número primo se puede factorizar como el primer coeficiente y polinomios mónicos de una sola manera (los polinomios mónicos son aquellos que tienen el primer coeficiente igual a 1.)</p>
 <p>También se puede demostrar que, si no hay factores repetidos, el polinomio se puede factorizar módulo una potencia de ese primo de una sola forma.</p>
-</div>
-<h2><button type="button">Uso del programa</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Uso del programa</summary>
 <p>Utilice la caja superior para ingresar el polinomio y la inferior para ingresar el módulo,
 que debe ser un número entero mayor que 1 que sea un número primo o un primo elevado a alguna potencia.
 Es posible simplemente evaluar el polinomio, o bien evaluarlo y factorizarlo, apretando el botón correspondiente.</p>
@@ -289,9 +289,9 @@ y ver las raíces con el formato tradicional; la opción <em>TeX</em> permite mo
 finalmente la opción PARI/GP se utiliza cuando hay que copiar los datos a otra aplicación. La salida es compatible con la aplicación PARI/GP, para copiar a otras aplicaciones solo se deben realizar cambios menores.</p>
 <p>Cuando la caja <em>Módulo</em> vale cero, la aplicación muestra las raíces del polinomio mediante números racionales y radicaciones. El programa soporta grados de los factores hasta 5.
 Por el teorema de Abel y Ruffini, algunos polinomios de grado 5 no se pueden expresar mediante radicandos.</p>
-</div>
-<h2><button type="button">Expresiones</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Expresiones</summary>
 <p>Se puede utilizar cualquier letra del alfabeto latino para representar la variable. No se admiten múltiples variables. El programa siempre muestra la letra <var>x</var> como variable.</p>
 <p>Se pueden ingresar expresiones que usan los siguientes operadores y paréntesis:</p>
 <ul>
@@ -344,10 +344,10 @@ Por el teorema de Abel y Ruffini, algunos polinomios de grado 5 no se pueden exp
 <li> <strong>RevDigits(n,r)</strong>: halla el valor que se obtiene escribiendo para atrás los dígitos de <var>n</var> en base <var>r</var>. Ejemplo: RevDigits(213, 10) = 312.</li>
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
-</div>
-<h2><button type="button">División de polinomios</button></h2>
-<div class="panel">
-<h3>División de polinomios módulo un número primo</h3>
+</details>
+<details>
+<summary>División de polinomios</summary>
+<h2>División de polinomios módulo un número primo</h2>
 <p>La división de polinomios requiere varias divisiones modulares donde el divisor es el coeficiente principal del polinomio divisor.</p>
 <p>Para calcular la división modular <var>a</var> / <var>b</var> (mod <var>p</var>), primero debemos hallar el inverso multiplicativo modular <var>c</var>.
 Este número tiene la propiedad <var>b</var>&#8290;<var>c</var> &equiv; 1 (mod <var>p</var>) y se puede hallar usando el algoritmo extendido de Euclides como se muestra a continuación:</p>
@@ -380,15 +380,15 @@ De esta manera, dividiremos por un polinomio mónico, esto es, un polinomio cuyo
 <p>Ahora restamos el producto de lo que acabamos de hallar por el polinomio divisor del polinomio resto. Obtenemos:</p>
 <p>(6&#8290;<var>x</var><sup>2</sup> + 9&#8290;<var>x</var> + 7) &minus; 6&#8290;(<var>x</var><sup>2</sup> + 9&#8290;<var>x</var> + 8) &equiv; 10<var>x</var> + 3 (mod 11). Debemos observar que 9 &minus; 6 &times; 9 &equiv; 10 (mod 11) y 7 &minus; 6 &times; 8 &equiv; 3 (mod 11).</p>
 <p>El polinomio cociente es igual a 9&#8290;<var>x</var> + 6 y el polinomio resto es igual a 4&#8290;(10<var>x</var> + 3) &equiv; 7 <var>x</var> + 1 (mod 11).</p>
-<h3>División de polinomios enteros</h3>
+<h2>División de polinomios enteros</h2>
 <p>La división se realiza de la misma manera que en la subsección anterior, con la diferencia que no hay inverso multiplicativo del coeficiente principal del polinomio divisor. Así que, por cada iteración del algoritmo, se necesita una división.
 Si el polinomio divisor no es mónico, a veces no podremos hacer la división. Esto ocurre cuando el coeficiente principal del resto no es múltiplo del coeficiente principal del divisor.</p>
-</div>
-<h2><button type="button">Máximo común divisor de polinomios</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Máximo común divisor de polinomios</summary>
 <p>El máximo común divisor de dos polinomios es el polinomio de mayor grado posible, que divide ambos polinomios.</p>
 <p>Por ejemplo: mcd(<var>x</var><sup>2</sup> + 6&#8290;<var>x</var> + 5, 2&#8290;<var>x</var><sup>2</sup> + 13&#8290;<var>x</var> + 15) = <var>x</var> + 5</p>
-<h3>MCD de polinomios módulo un número primo</h3>
+<h2>MCD de polinomios módulo un número primo</h2>
 <p>El máximo común divisor se puede hallar mediante el algoritmo de Euclides como se muestra a continuación:</p>
 <p><code>
 función mcdm(pol1, pol2, p)<br>
@@ -403,7 +403,7 @@ función mcdm(pol1, pol2, p)<br>
 }<br>
 </code></p>
 
-<h3>MCD de polinomios enteros</h3>
+<h2>MCD de polinomios enteros</h2>
 <p>Se puede utilizar el algoritmo recién mostrado para hallar el mcd de dos polinomios enteros, pero los coeficientes de los polinomios intermedios crecen rápidamente, así que no es útil.</p>
 <p>Existen dos métodos eficientes para hallar el mcd: el algoritmo de subresultantes y el modular. El último, inventado por William Brown, utiliza mcd de polinomios módulo un número primo, así que es mejor para nosotros.</p>
 <p><code>
@@ -465,12 +465,12 @@ función mcdp(pol1, pol2)<br>
 <li>Ambos grados son iguales: Unimos los coeficientes de ambos mcd usando el algoritmo chino del resto. Este algoritmo halla <var>g</var> (mod <var>m</var><var>p</var>) dados <var>g</var><sub>m</sub> (mod <var>m</var>) y <var>g</var><sub>p</sub> (mod <var>p</var>).</li>
 </ul>
 <p>El algoritmo continúa hasta que el polinomio calculado divide los dos polinomios de entrada.</p>
-</div>
-<h2><button type="button">Factorización de polinomios módulo un número primo</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Factorización de polinomios módulo un número primo</summary>
 <p>El algoritmo de factorización se divide en cuatro etapas: factorization de factores repetidos, factorización de grados diferentes, factorización de grados iguales y elevación de los factores.
 Todos los pasos requieren polinomios mónicos, así que antes de comenzar, debemos multiplicar todos los coeficientes por el inverso multiplicativo del coeficiente principal del polinomio.</p>
-<h3>Factorization de factores repetidos</h3>
+<h2>Factorization de factores repetidos</h2>
 <p>Las siguientes etapas no funcionan si hay factores repetidos, así que el primer paso consiste en factorizar el polinomio de manera que no haya factores repetidos.</p>
 <p>La derivada del polinomio <var>f</var>(<var>x</var>) = <var>f</var><sub>0</sub> + <var>f</var><sub>1</sub>&#8290;<var>x</var> + <var>f</var><sub>2</sub>&#8290;<var>x</var><sup>2</sup> + ... + <var>f</var><sub>n</sub>&#8290;<var>x</var><sup>n</sup> es
 <var>f</var>'(<var>x</var>) = <var>f</var><sub>1</sub> + 2&#8290;<var>f</var><sub>2</sub>&#8290;<var>x</var> + ... + <var>n</var>&#8290;<var>f</var><sub>n</sub>&#8290;<var>x</var><sup>n &minus; 1</sup></p>
@@ -504,7 +504,7 @@ función FFR(f)<br>
 }
 </code></p>
 <p>Debemos hacer las siguientes etapas por cada polinomio en la salida de este algoritmo.</p>
-<h3>Factorización de grados diferentes</h3>
+<h2>Factorización de grados diferentes</h2>
 <p>Este es un método que usa el hecho que el producto de todos los polinomios mónicos irreducibles de grados que dividen <var>d</var> (mod <var>p</var>) es igual a <var>x</var><sup>e</sup> &minus; <var>x</var> donde <var>e</var> = <var>p</var><sup><var>d</var></sup>.</p>
 <p><code>
 función FGD(f, p)<br>
@@ -536,7 +536,7 @@ función FGD(f, p)<br>
 }
 </code></p>
 <p>Los pares que forman la salida de esta función son la entrada de la siguiente etapa. El primer elemento del par es un factor de <var>f</var> que es el producto de todos los factores cuyo grado está especificado en el segundo elemento del par.</p>
-<h3>Factorización de grados iguales</h3>
+<h2>Factorización de grados iguales</h2>
 <p>Este es un método probabilístico inventado por David Cantor y Hans Zassenhaus que encuentra todos los factores del mismo grado de la salida del algoritmo anterior:</p>
 <p><code>
 función FGI(f, d, p)<br>
@@ -564,7 +564,7 @@ función FGI(f, d, p)<br>
 &nbsp;&nbsp;Salida lista de factores<br>
 }
 </code></p>
-<h3>Elevación de los factores</h3>
+<h2>Elevación de los factores</h2>
 <p>Una vez que hallamos todos los factores irreducibles del polinomio módulo <var>p</var>, podemos calcular el factor del polinomio módulo <var>p</var><sup>n</sup> si no hay factores repetidos.
 El siguiente algoritmo puede elevar de módulo <var>m</var> a <var>m</var><sup>2</sup>, así que podemos ejecutarlo varias veces hasta obtener el módulo deseado.</p>
 <p>Entrada: f = g*h (mod m), s*g + t*h = 1 (mod m)</p>
@@ -582,9 +582,9 @@ El siguiente algoritmo puede elevar de módulo <var>m</var> a <var>m</var><sup>2
 &nbsp;&nbsp;t' &larr; t &minus; t*e &minus; q*g'
 </code></p>
 <p>Los valores iniciales de <var>s</var> y <var>t</var> se obtienen de <var>g</var> y <var>h</var> mediante el algoritmo extendido de Euclides.</p>
-</div>
-<h2><button type="button">Factorización de polinomios enteros</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Factorización de polinomios enteros</summary>
 <p>Podemos usar la salida de la sección anterior para factorizar polinomios enteros.</p>
 <p>Primero debemos dividir el polinomio por su contenido (el máximo común divisor de todos los coeficientes con el signo del coeficiente principal). El resultado es la parte principal, cuya notación es pp(<var>f</var>).</p>
 <p>Los métodos que se muestran abajo no funcionan si hay factores repetidos. Para separarlos, usaremos el algoritmo de Yun:</p>
@@ -616,9 +616,9 @@ Si <var>a</var> no divide <var>b</var>, podemos descartar esa combinación.</p>
 <p>Para las pocas combinaciones que quedan, calcularemos a &equiv; lc (<var>f</var>) &#8290; <var>f</var><sub>0</sub> &#8290; <var>f</var><sub>1</sub> &#8290; ... &#8290; <var>f</var><sub>s</sub> (mod <var>p</var><sup>e</sup>). Otra vez, los coeficientes de este polinomio deben estar en el rango &minus;<var>p</var><sup>e</sup>/2 a <var>p</var><sup>e</sup>/2.
 Calculemos <var>b</var> = gcdp(<var>a</var>, cp(<var>f</var>) &#8290; <var>f</var>). Si el grado de <var>b</var> es cero, descartaremos la combinación. En caso contrario, el polinomio <var>b</var> es un factor no trivial de <var>f</var>.</p>
 <p>Aunque los pasos son muy rápidos, para algunos polinomios la cantidad de combinaciones es astronómica. Debido a esto el programa usa el algoritmo de Van Hoeij que usa el algoritmo LLL para determinar rápidamente las combinaciones a usar.</p>
-</div>
-<h2><button type="button">Raíces</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Raíces</summary>
 <p>El programa halla las raíces de los polinomios irreducibles obtenidos en la sección anterior.</p>
 <p>Para los polinomios de grado hasta 4, se usan las fórmulas clásicas. No se calculan raíces cúbicas de números complejos. En estos casos (llamados <em>casus irreducibilis</em>), el programa usa funciones trigonométricas.</p>
 <p>Para los polinomios de grado 5, la aplicación usa los resultados del paper de D. S. Dummit <em><a href="https://www.ams.org/journals/mcom/1991-57-195/S0025-5718-1991-1079014-X/S0025-5718-1991-1079014-X.pdf">Solving Solvable Quintic</a></em>, Mathematics of Computation volumen 57, número 195, julio de 1991, pp. 387-401.</p>
@@ -636,16 +636,14 @@ En caso contrario, solo se muestran funciones trigonométricas.</p>
 <li>J.H. Davenport, G.C. Smith, <em><a href="https://www.sciencedirect.com/science/article/pii/S002240499900078X">Fast recognition of alternating and symmetric Galois groups</a></em>, Journal of Pure and Applied Algebra 153 (2000) 17-25.</li>
 <li>K. Conrad, <em><a href="https://kconrad.math.uconn.edu/blurbs/galoistheory/galoisSnAn.pdf">Recognizing Galois groups <var>S</var><sub><var>n</var></sub> and <var>A</var><sub><var>n</var></sub></a></em></li>
 </ul>
-</div>
+</details>
 <div class="noand">
-<h2><button type="button">Código fuente</button></h2>
-</div>
-<div class="panel">
-<div class="noand">
+<details>
+<summary>Código fuente</summary>
 <p>Puede bajar el código fuente del programa actual y del viejo applet de factorización de polinomios <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
+</details>
 </div>
-</div>
-<p>Escrito por Dario Alpern. Actualizado el 30 de mayo de 2026.</p>
+<p>Escrito por Dario Alpern. Actualizado el 6 de junio de 2026.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div id="footer">

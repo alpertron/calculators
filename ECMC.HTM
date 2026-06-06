@@ -40,10 +40,10 @@
 nav {background-color:#000080; width:100%; margin:0px; text-align:center}
 nav ul {padding:0; margin:0 auto; list-style:none; display:inline-block} 
 nav li {float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; cursor: pointer; text-align:left}
-nav li[aria-expanded="true"] {background-color:#004000; color:#FFFFFF}
+nav span[aria-expanded="true"] {background-color:#004000; color:#FFFFFF}
 nav li ul {display:none; position:absolute}
-nav li[aria-expanded="true"] ul.alignleft {display:block; height:auto}
-nav li[aria-expanded="true"] ul.alignright {display:block; height:auto; right:0px; background-color:#004000}
+nav span[aria-expanded="true"] + ul.alignleft {display:block; height:auto}
+nav span[aria-expanded="true"] + ul.alignright {display:block; height:auto; right:0px; background-color:#004000}
 nav li ul li {clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
 nav a:link{color:#FFFFFF; text-decoration:none}
 nav a:visited{color:#FFFFFF; text-decoration:none}
@@ -67,11 +67,11 @@ input[type=button], button {min-height:2.5em; min-width:2.5em; border-radius:5px
 .bread li {display:inline}
 .bread li+li:before {content:"›"}
 .bmodebuttons {text-align:center}
-h2 > button {background-color:#eee; color:#444; cursor:pointer; padding:18px; font-weight:bold; font-size: 100%; width:100%; text-align:left; border:none; transition:0.4s}
-h2 > button.active,h2 > button:hover {background-color:#ccc}
-h2 > button:after {content:"\002B"; color:#777; font-weight:bold; float:right; margin-left:5px}
-h2 > button.active:after {content:"\2212"}
-.panel {padding: 0 10px; display:none; overflow:hidden}
+summary::-webkit-details-marker {display: none;}
+summary {border-radius:5px; list-style: none; margin:5px; background-color:#eee; color:#444; cursor:pointer; padding:18px; font-weight:bold; font-size: 150%; text-align:left; border:none; transition:0.4s}
+details[open]>summary {background-color:#ccc}
+summary:after {content:"\002B"; color:#777; font-weight:bold; float:right; margin-left:5px}
+details[open]>summary:after {content:"\2212"}
 .atright {float:right}
 html {height:100%}
 body {font-family: Arial, sans-serif; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000; min-height:100%}
@@ -705,9 +705,9 @@ opacity: .8;
 @media screen and (prefers-color-scheme: dark) {
 body {color: #ddd; background-color: #121212}
 .applet {background-color:#606060; color: #fff}
-h2 > button {background-color:#333; color:#eee}
-h2 > button.active,h2 > button:hover {background-color:#555}
-h2 > button:after {color:#777}
+summary {background-color:#333; color:#eee}
+details[open]>summary, summary:hover {background-color:#555}
+summary:after {color:#777}
 a {color: #a3d4a7}
 a:link,a:active {color: #a3d4a7}
 a:hover {color: #f5cba7}
@@ -731,32 +731,32 @@ button:disabled {color: #808080; background-color: #606060}
 <div id="skip"><a href="#main">Ir al contenido principal</a></div>
 <nav aria-label="Navegación principal">
 <ul role="menubar">
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electrónica
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electrónica</span>
 <ul role="menu" class="alignleft popup">
-<li role="menuitem"><a href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a></li>
+<li role="none"><a href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a></li>
 </ul>
 </li>
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Matemáticas
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Matemáticas</span>
 <ul role="menu" class="alignleft popup">
-<li role="menuitem"><a href="CALDORAS.HTM" title="Aplicaciones web que implementan calculadoras">Calculadoras</a></li>
-<li role="menuitem"><a href="TNUMEROS.HTM" title="Artículos y programas sobre teoría de números">Teoría de números</a></li>
-<li role="menuitem"><a href="PROBLEMAS.HTM" title="Problemas matemáticos interesantes">Problemas</a></li>
+<li role="none"><a href="CALDORAS.HTM" role="menuitem" title="Aplicaciones web que implementan calculadoras">Calculadoras</a></li>
+<li role="none"><a href="TNUMEROS.HTM" role="menuitem" title="Artículos y programas sobre teoría de números">Teoría de números</a></li>
+<li role="none"><a href="PROBLEMAS.HTM" role="menuitem" title="Problemas matemáticos interesantes">Problemas</a></li>
 </ul>
 </li>
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Programas
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Programas</span>
 <ul role="menu" class="alignright popup">
-<li role="menuitem"><a href="ENSAM386.HTM" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a></li>
-<li role="menuitem"><a href="PROGJAVA.HTM" title="Aplicaciones web con JavaScript y WebAssembly">Aplicaciones web</a></li>
-<li role="menuitem"><a href="JUEGOS.HTM" title="Juegos en línea y para descargar">Juegos</a></li>
+<li role="none"><a href="ENSAM386.HTM" role="menuitem" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a></li>
+<li role="none"><a href="PROGJAVA.HTM" role="menuitem" title="Aplicaciones web con JavaScript y WebAssembly">Aplicaciones web</a></li>
+<li role="none"><a href="JUEGOS.HTM" role="menuitem" title="Juegos en línea y para descargar">Juegos</a></li>
 </ul>
 </li>
-<li class="alignright" role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Contacto
+<li role="none"><span role="menuitem" class="alignright" aria-haspopup="true" aria-expanded="false" tabindex="-1">Contacto</span>
 <ul role="menu" class="alignright popup">
-<li role="menuitem"><a href="PERSONAL.HTM" title="Información personal">Personal</a></li>
-<li role="menuitem"><a href="FORMULAR.HTM" title="Formulario para enviar comentarios">Comentarios</a></li>
-<li role="menuitem"><a href="GBOOK.HTM" title="Viejo y nuevo libro de visitas">Libro de invitados</a></li>
-<li role="menuitem"><a href="PRIVACIDAD.HTM" title="Política de privacidad">Privacidad</a></li>
-<li role="menuitem"><a href="DONACIONES.HTM" title="Donaciones al autor de este sitio Web">Donaciones</a></li>
+<li role="none"><a href="PERSONAL.HTM" role="menuitem" title="Información personal">Personal</a></li>
+<li role="none"><a href="FORMULAR.HTM" role="menuitem" title="Formulario para enviar comentarios">Comentarios</a></li>
+<li role="none"><a href="GBOOK.HTM" role="menuitem" title="Viejo y nuevo libro de visitas">Libro de invitados</a></li>
+<li role="none"><a href="PRIVACIDAD.HTM" role="menuitem" title="Política de privacidad">Privacidad</a></li>
+<li role="none"><a href="DONACIONES.HTM" role="menuitem" title="Donaciones al autor de este sitio Web">Donaciones</a></li>
 </ul> 
 </li>
 </ul>
@@ -844,8 +844,9 @@ button:disabled {color: #808080; background-color: #606060}
 </div>
 <p>Existe una <a href="/videos/videosEcmc.htm">lista de videos</a> sobre el funcionamiento de esta calculadora.</p>
 <p>También puede consultar los <a href="RECECM.HTM" title="Récords de factorización ECM">récords de factorización</a> obtenidos con esta aplicación.</p>
-<h2><button type="button">Expresiones</button></h2>
-<div class="panel" id="exprorig">
+<details>
+<summary>Expresiones</summary>
+<div id="exprorig">
 <p>Usted puede ingresar expresiones que utilicen los siguientes operadores y paréntesis:</p>
 <ul>
 <li> <strong>+</strong> para suma.</li>
@@ -933,8 +934,9 @@ Ejemplo: NumDigits(13,2)=4.</li>
 <p>Puede usar el prefijo <em>0x</em> para ingresar números hexadecimales.  
 Por ejemplo, 0x38 es igual a 56.</p>
 </div>
-<h2><button type="button">Factorización usando el método de curvas elípticas (ECM)</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Factorización usando el método de curvas elípticas (ECM)</summary>
 <p>La notación <var>k</var> &equiv; <var>m</var> (mod <var>n</var>) significa que el resto de la división de <var>k</var> entre <var>n</var> es igual al resto de la división de <var>m</var> entre <var>n</var>. Al número <var>n</var> se lo denomina módulo.</p>
 <p>Este método calcula puntos en curvas elípticas, las cuales se representan mediante fórmulas como <var>y</var>&sup2; &equiv; <var>x</var>&sup3; + <var>a</var><var>x</var> + <var>b</var> (mod <var>n</var>), donde <var>n</var> es el número que se desea factorizar.</p>
 <p>En la siguiente imagen, usted puede ver los puntos (<var>x</var>, <var>y</var>) que cumplen <var>y</var>&sup2; &equiv; <var>x</var>&sup3; + 4<var>x</var> + 7 (mod <var>29</var>). Dado que los cálculos usan aritmética modular (en este caso tomando el resto de la división por 29), solo existen los pares de enteros (<var>x</var>, <var>y</var>) que satisfacen la ecuación. Por ello, la curva se muestra como un conjunto de puntos discretos en lugar de una línea continua, como ocurriría si trabajáramos con números reales.</p> <div class="lf"></div> <canvas id="ellCurve" width="313" height="313"></canvas>
@@ -968,16 +970,16 @@ Por ejemplo, 0x38 es igual a 56.</p>
 <tr><td>70</td><td>2.900.000.000</td><td>340.000</td></tr>
 </table></div>
 <p>El programa prueba aproximadamente la cantidad de curvas indicada en la tabla, dependiendo del valor B1 seleccionado (hasta un máximo de 110.000.000), hasta que se encuentran todos los factores.</p>
-</div>
-<h2><button type="button">Factorización de un número en varias computadoras</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Factorización de un número en varias computadoras</summary>
 <p>El algoritmo de factorización ECM se puede ejecutar de manera paralela sin dificultad.  
 Para hacerlo, inicie el proceso de factorización en la primera computadora desde la curva 1; en la segunda computadora comience desde la curva 10.000; en la tercera computadora desde la curva 20.000; y así sucesivamente.</p>
 <p>Para modificar el número de curva, presione el botón <strong>Más</strong>, ingrese el valor en la caja correspondiente que aparece en la nueva ventana y luego pulse <strong>Nueva curva</strong>.</p>
 <p>Cuando alguna de las computadoras encuentre un factor, vuelva a presionar el botón <strong>Más</strong>, ingrese el factor hallado y finalmente haga clic en <strong>Factor</strong> para continuar la descomposición en su dispositivo.</p>
-</div>
-<h2><button type="button">Factorización utilizando el método de criba cuadrática (SIQS)</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Factorización utilizando el método de criba cuadrática (SIQS)</summary>
 <p>La notación <var>k</var> &equiv; <var>m</var> (mod <var>n</var>) significa que el resto de la división de <var>k</var> entre <var>n</var> es igual al resto de la división de <var>m</var> entre <var>n</var>. Al número <var>n</var> se lo denomina módulo.</p>
 <p>Sea <var>N</var> el número a factorizar. Este número no debe ser una potencia perfecta (como <var>a</var>², <var>b</var>³, etc.). Si lo es, el algoritmo no puede producir relaciones válidas. Si de alguna manera encontramos dos enteros <var>X</var> y <var>Y</var> tales que <var>X</var>&sup2; &equiv; <var>Y</var>&sup2; (mod <var>N</var>) y <var>X</var>&ne;<var>Y</var> (mod <var>N</var>), entonces mcd(<var>X</var>+<var>Y</var>, <var>N</var>) revelará un factor propio de <var>N</var>.</p>
 <p>Para hallar estos valores <var>X</var> y <var>Y</var>, el método busca relaciones de la forma <var>t</var>&sup2; &equiv; <var>u</var> (mod <var>N</var>), donde <var>u</var> es el producto de números primos pequeños. El conjunto de estos primos se denomina base de factores. Estas relaciones se encuentran mediante cribas, cuyo funcionamiento está fuera del alcance de esta introducción.</p>
@@ -1005,9 +1007,10 @@ Para hacerlo, inicie el proceso de factorización en la primera computadora desd
 <caption>Umbral para cambiar a SIQS</caption>
 <tr><th scope="row">Dígitos</th><td>31-55</td><td>56-60</td><td>61-65</td><td>66-70</td><td>71-75</td><td>76-80</td><td>81-85</td><td>86-90</td><td>91-95</td></tr>
 <tr><th scope="row">Curva</th><td>10</td><td>15</td><td>22</td><td>26</td><td>60</td><td>130</td><td>200</td><td>270</td><td>350</td></tr>
-</table></div>
-<h2><button type="button">Configuración</button></h2>
-<div class="panel">
+</table>
+</details>
+<details>
+<summary>Configuración</summary>
 <p>Usted puede modificar la configuración de esta aplicación presionando el botón <strong>Config</strong> cuando el programa no se encuentra realizando una factorización.  
 Al hacerlo, se abrirá una nueva ventana donde podrá seleccionar los siguientes ajustes:</p>
 <ul>
@@ -1035,9 +1038,9 @@ Para reducir el tamaño de la base de datos, sólo se incluyen factores primos d
 Estos factores provienen de la <a href="http://myfactors.mooo.com/">lista de Jonathan Crombie</a>, que contiene 2.674.850 factores de números de Cunningham.</li>
 </ul>
 <p>La configuración se almacena en su dispositivo, de modo que, si vuelve a abrir la calculadora, los ajustes permanecerán intactos.</p>
-</div>
-<h2><button type="button">Factorización en lotes</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Factorización en lotes</summary>
 <p>Escriba una expresión por línea y luego presione el botón <strong>Sólo evaluar</strong> o <strong>Factorizar</strong>.</p>
 <p>Las líneas en blanco o aquellas que comienzan con el carácter numeral <code>#</code> (comentarios) se copiarán tal cual en la salida.</p>
 <p><strong>Expresiones para ciclos:</strong>  
@@ -1107,19 +1110,17 @@ c&lt;=27674;
 x*10^33330/2^110736;
 c==27674
 </code></p>
-</div>
+</details>
 <div class="noand">
-<h2><button type="button">Código fuente</button></h2>
-</div>
-<div class="panel">
-<div class="noand">
+<details>
+<summary>Código fuente</summary>
 <p>Usted puede descargar el código fuente de esta aplicación y del antiguo applet de factorización desde  
-<a href="https://github.com/alpertron/calculators">GitHub</a>.  
+<a href="https://github.com/alpertron/calculators">GitHub</a>.
 El código está escrito en lenguaje C, por lo que es necesario utilizar  
 <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar el código JavaScript correspondiente.</p>
+</details>
 </div>
-</div>
-<p>Escrito por Dario Alpern. Actualizado el 30 de mayo de 2026.</p>
+<p>Escrito por Dario Alpern. Actualizado el 6 de junio de 2026.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -1157,7 +1158,7 @@ hacer una donación mediante PayPal</a>.</p>
 </main>
 <div id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
 <div class="modal-content">
-<div class="modal-header"><span id="close-more" aria-label="close" class="atright">×</span><p id="moreopt">Más opciones</p></div>
+<div class="modal-header"><button type="button" id="close-more" aria-label="close" class="atright">×</button><p id="moreopt">Más opciones</p></div>
 <div class="modal-body">
 <div class="applet">
 <p><label for="curve">Nuevo número de curva o factor:</label></p><input type="number" id="curve" value="" class="input" min="0" step="1">
@@ -1167,7 +1168,7 @@ hacer una donación mediante PayPal</a>.</p>
 </div></div></div>
 <div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
 <div class="modal-content">
-<div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuración</p></div>
+<div class="modal-header"><button type="button" id="close-config" aria-label="close" class="atright">×</button><p id="conf">Configuración</p></div>
 <div class="modal-body">
 <div class="applet">
 <fieldset>

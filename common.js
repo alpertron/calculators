@@ -41,64 +41,69 @@ function topMenuClick(event)
   {
     event.target.setAttribute("aria-expanded", "false");
   }
-  event.target.firstElementChild.firstElementChild.firstElementChild.focus();
+  // The target is <span>. The next sibling is <ul>.
+  event.target.nextElementSibling.firstElementChild.firstElementChild.focus();
   event.preventDefault();
   return false;
 }
 
 function topMenuKeyDown(event)
 {
-  let nextNode;
+  let currentMenu = event.target;
+  let currentLi = currentMenu.parentNode;
+  let subMenu = currentMenu.nextElementSibling;
   if (event.key === "Enter")
   {
-    event.target.click(event);
+    currentMenu.click(event);
     return;
   }
   if (event.key === "ArrowRight")
   {
-    nextNode = event.target.nextElementSibling;
-    if (nextNode === null)
-    {
-      nextNode = event.target.parentNode.firstElementChild;
+    let nextLi = currentLi.nextElementSibling;
+    if (nextLi === null)
+    {   // Current element is the last one.
+      nextLi = currentLi.parentNode.firstElementChild;
     }
-    nextNode.focus();
+    nextLi.firstElementChild.focus();
     event.preventDefault();
     return;
   }
   if (event.key === "ArrowLeft")
   {
-    nextNode = event.target.previousElementSibling;
-    if (nextNode === null)
-    {
-      nextNode = event.target.parentNode.lastElementChild;
+    let prevLi = currentLi.previousElementSibling;
+    if (prevLi === null)
+    {   // Current element is the first one.
+      prevLi = currentLi.parentNode.lastElementChild;
     }
-    nextNode.focus();
+    prevLi.firstElementChild.focus();
     event.preventDefault();
     return;
   }
   if (event.key === "ArrowUp")
   {
-    event.target.setAttribute("aria-expanded", "true");
-    event.target.firstElementChild.lastElementChild.firstElementChild.focus();
+    currentMenu.setAttribute("aria-expanded", "true");
+    subMenu.lastElementChild.firstElementChild.focus();
     event.preventDefault();
     return;
   }
   if (event.key === "ArrowDown")
   { 
-    event.target.setAttribute("aria-expanded", "true");
-    event.target.firstElementChild.firstElementChild.firstElementChild.focus();
+    currentMenu.setAttribute("aria-expanded", "true");
+    subMenu.firstElementChild.firstElementChild.focus();
     event.preventDefault();
   }
 }
 
 function topMenuMouseEnter(event)
-{
-  event.target.setAttribute("aria-expanded", "true");
+{   
+  // The target is <li>, but the attribute is in the <span> tag below it.
+  event.target.firstElementChild.setAttribute("aria-expanded", "true");
 }
 
 function topMenuMouseLeave(event)
 {
-  event.target.setAttribute("aria-expanded", "false");
+  // The target is <li>, but the attribute is in the <span> tag below it.
+  event.target.firstElementChild.setAttribute("aria-expanded", "false");
 }
 
 function subMenuClick(event)
@@ -112,23 +117,23 @@ function subMenuClick(event)
 
 function subMenuKeyDown(event)
 {
-  let next;
-  let parent = event.target.parentNode.parentNode.parentNode;
+  let currentLi = event.target.parentNode.parentNode.parentNode;
+  let currentMenu = currentLi.firstElementChild;
   if (event.key === "Tab")
   {
-    parent.setAttribute("aria-expanded", "false");
+    currentMenu.setAttribute("aria-expanded", "false");
     return;
   }
   if (event.key === "Escape")
   {
-    parent.setAttribute("aria-expanded", "false");
-    parent.focus();
+    currentMenu.setAttribute("aria-expanded", "false");
+    currentMenu.focus();
     event.preventDefault();          
     return;
   }
   if (event.key === "Enter")
   {
-    parent.setAttribute("aria-expanded", "false");
+    currentMenu.setAttribute("aria-expanded", "false");
     window.location = event.target.getAttribute("href");
     event.stopImmediatePropagation();
     event.preventDefault();
@@ -136,50 +141,53 @@ function subMenuKeyDown(event)
   }
   if (event.key === "ArrowRight")
   {
-    parent.setAttribute("aria-expanded", "false");
-    next = parent.nextElementSibling;
-    if (next === null)
+    currentMenu.setAttribute("aria-expanded", "false");
+    let nextLi = currentLi.nextElementSibling;
+    if (nextLi === null)
     {
-      next = parent.parentNode.firstElementChild;
+      nextLi = currentLi.parentNode.firstElementChild;
     }
-    next.setAttribute("aria-expanded", "true");
-    next.firstElementChild.firstElementChild.firstElementChild.focus();
+    currentMenu = nextLi.firstElementChild;
+    currentMenu.setAttribute("aria-expanded", "true");
+    currentMenu.nextElementSibling.firstElementChild.firstElementChild.focus();
     event.stopImmediatePropagation();
     event.preventDefault();
     return;
   }
   if (event.key === "ArrowLeft")
   {
-    parent.setAttribute("aria-expanded", "false");
-    next = parent.previousElementSibling;
-    if (next === null)
+    currentMenu.setAttribute("aria-expanded", "false");
+    let prevLi = currentLi.previousElementSibling;
+    if (prevLi === null)
     {
-      next = parent.parentNode.lastElementChild;
+      prevLi = currentLi.parentNode.lastElementChild;
     }
-    next.setAttribute("aria-expanded", "true");
-    next.firstElementChild.firstElementChild.firstElementChild.focus();
+    currentMenu = prevLi.firstElementChild;
+    currentMenu.setAttribute("aria-expanded", "true");
+    currentMenu.nextElementSibling.firstElementChild.firstElementChild.focus();
     event.stopImmediatePropagation();
     event.preventDefault();
     return;
   }
   if (event.key === "ArrowUp" || event.key === "ArrowDown")
   {
+    let nextMenuItem;
     if (event.key === "ArrowUp")
     {
-      next = event.target.parentNode.previousElementSibling;
+      nextMenuItem = event.target.parentNode.previousElementSibling;
     }
     else
     {
-      next = event.target.parentNode.nextElementSibling;
+      nextMenuItem = event.target.parentNode.nextElementSibling;
     }
-    if (next === null)
+    if (nextMenuItem === null)
     {
-      parent.setAttribute("aria-expanded", "false");
-      parent.focus();
+      currentMenu.setAttribute("aria-expanded", "false");
+      currentMenu.focus();
     }
     else
     {
-      next.firstElementChild.focus();
+      nextMenuItem.firstElementChild.focus();
     }
     event.stopImmediatePropagation();
     event.preventDefault();
@@ -191,11 +199,12 @@ function initMenubarEvents()
   let menuItems = document.querySelectorAll("[role=\"menubar\"] > li");
   Array.prototype.forEach.call(menuItems, function(el, i)
   {
-    el.addEventListener("click", topMenuClick);
-    el.addEventListener("keydown", topMenuKeyDown);
+    // Capture click and keydown events in the <span> element.
+    el.firstElementChild.addEventListener("click", topMenuClick);
+    el.firstElementChild.addEventListener("keydown", topMenuKeyDown);
     el.addEventListener("mouseenter", topMenuMouseEnter);
     el.addEventListener("mouseleave", topMenuMouseLeave);
-    
+    // Get all <a> elements in the list <li>.
     let submenuItems = el.querySelectorAll("a");
     Array.prototype.forEach.call(submenuItems, function(el, i)
     {

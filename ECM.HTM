@@ -40,10 +40,10 @@
 nav {background-color:#000080; width:100%; margin:0px; text-align:center}
 nav ul {padding:0; margin:0 auto; list-style:none; display:inline-block} 
 nav li {float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; cursor: pointer; text-align:left}
-nav li[aria-expanded="true"] {background-color:#004000; color:#FFFFFF}
+nav span[aria-expanded="true"] {background-color:#004000; color:#FFFFFF}
 nav li ul {display:none; position:absolute}
-nav li[aria-expanded="true"] ul.alignleft {display:block; height:auto}
-nav li[aria-expanded="true"] ul.alignright {display:block; height:auto; right:0px; background-color:#004000}
+nav span[aria-expanded="true"] + ul.alignleft {display:block; height:auto}
+nav span[aria-expanded="true"] + ul.alignright {display:block; height:auto; right:0px; background-color:#004000}
 nav li ul li {clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
 nav a:link{color:#FFFFFF; text-decoration:none}
 nav a:visited{color:#FFFFFF; text-decoration:none}
@@ -68,11 +68,11 @@ input[type=button], button {min-height:2.5em; min-width:2.5em; border-radius:5px
 .bread li+li:before {content:"›"}
 .newline {clear:both}
 .bmodebuttons {text-align:center}
-h2 > button {background-color:#eee; color:#444; cursor:pointer; padding:18px; font-weight:bold; font-size: 100%; width:100%; text-align:left; border:none; transition:0.4s}
-h2 > button.active,h2 > button:hover {background-color:#ccc}
-h2 > button:after {content:"\002B"; color:#777; font-weight:bold; float:right; margin-left:5px}
-h2 > button.active:after {content:"\2212"}
-.panel {padding: 0 10px; display:none; overflow:hidden}
+summary::-webkit-details-marker {display: none;}
+summary {border-radius:5px; list-style: none; margin:5px; background-color:#eee; color:#444; cursor:pointer; padding:18px; font-weight:bold; font-size: 150%; text-align:left; border:none; transition:0.4s}
+details[open]>summary {background-color:#ccc}
+summary:after {content:"\002B"; color:#777; font-weight:bold; float:right; margin-left:5px}
+details[open]>summary:after {content:"\2212"}
 .atright {float:right}
 html {height:100%}
 body {font-family: Arial, sans-serif; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000; min-height:100%}
@@ -709,9 +709,9 @@ opacity: .8;
 @media screen and (prefers-color-scheme: dark) {
 body {color: #ddd; background-color: #121212}
 .applet {background-color:#606060; color: #fff}
-h2 > button {background-color:#333; color:#eee}
-h2 > button.active,h2 > button:hover {background-color:#555}
-h2 > button:after {color:#777}
+summary {background-color:#333; color:#eee}
+details[open]>summary, summary:hover {background-color:#555}
+summary:after {color:#777}
 a {color: #a3d4a7}
 a:link,a:active {color: #a3d4a7}
 a:hover {color: #f5cba7}
@@ -735,32 +735,32 @@ button:disabled {color: #808080; background-color: #606060}
 <div id="skip"><a href="#main">Skip to main content</a></div>
 <nav aria-label="Main navigation">
 <ul role="menubar">
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electronics
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electronics</span>
 <ul role="menu" class="alignleft popup">
-<li role="menuitem"><a href="INTEL.HTM" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a></li>
+<li role="none"><a href="INTEL.HTM" role="menuitem" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a></li>
 </ul>
 </li>
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Mathematics
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Mathematics</span>
 <ul role="menu" class="alignleft popup">
-<li role="menuitem"><a href="CALTORS.HTM" title="Web applications with JavaScript and WebAssembly implementing calculators">Calculators</a></li>
-<li role="menuitem"><a href="NUMBERT.HTM" title="Articles and programs about number theory">Number Theory</a></li>
-<li role="menuitem"><a href="PROBLEMS.HTM" title="Interesting math problems">Problems</a></li>
+<li role="none"><a href="CALTORS.HTM" role="menuitem" title="Web applications with JavaScript and WebAssembly implementing calculators">Calculators</a></li>
+<li role="none"><a href="NUMBERT.HTM" role="menuitem" title="Articles and programs about number theory">Number Theory</a></li>
+<li role="none"><a href="PROBLEMS.HTM" role="menuitem" title="Interesting math problems">Problems</a></li>
 </ul>
 </li>
-<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Programs
+<li role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Programs</span>
 <ul role="menu" class="alignright popup">
-<li role="menuitem"><a href="ASSEM386.HTM" title="Programs written in 80386 Assembler">Assembler 80386</a></li>
-<li role="menuitem"><a href="JAVAPROG.HTM" title="Web applications with JavaScript and WebAssembly">Web applications</a></li>
-<li role="menuitem"><a href="GAMES.HTM" title="Computer games">Games</a></li>
+<li role="none"><a href="ASSEM386.HTM" role="menuitem" title="Programs written in 80386 Assembler">Assembler 80386</a></li>
+<li role="none"><a href="JAVAPROG.HTM" role="menuitem" title="Web applications with JavaScript and WebAssembly">Web applications</a></li>
+<li role="none"><a href="GAMES.HTM" role="menuitem" title="Computer games">Games</a></li>
 </ul>
 </li>
-<li class="alignright" role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Contact
+<li class="alignright" role="none"><span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Contact</span>
 <ul role="menu" class="alignright popup">
-<li role="menuitem"><a href="EPERS.HTM" title="Personal information">Personal</a></li>
-<li role="menuitem"><a href="FORM.HTM" title="Form to send comments">Comments</a></li>
-<li role="menuitem"><a href="EGBOOK.HTM" title="Old and new guestbook">Guestbook</a></li>
-<li role="menuitem"><a href="PRIVACY.HTM" title="Privacy Policy">Privacy</a></li>
-<li role="menuitem"><a href="DONATION.HTM" title="Donations to the author of this Web site">Donations</a></li>
+<li role="none"><a href="EPERS.HTM" role="menuitem" title="Personal information">Personal</a></li>
+<li role="none"><a href="FORM.HTM" role="menuitem" title="Form to send comments">Comments</a></li>
+<li role="none"><a href="EGBOOK.HTM" role="menuitem" title="Old and new guestbook">Guestbook</a></li>
+<li role="none"><a href="PRIVACY.HTM" role="menuitem" title="Privacy Policy">Privacy</a></li>
+<li role="none"><a href="DONATION.HTM" role="menuitem" title="Donations to the author of this Web site">Donations</a></li>
 </ul>
 </li>
 </ul>
@@ -839,8 +839,9 @@ button:disabled {color: #808080; background-color: #606060}
 </div>
 <p>There is a <a href="/videos/videosEcm.htm">list of videos</a> related to this calculator available.</p>
 <p>See <a href="ECMREC.HTM" title="ECM Factorization records">factorization records</a> for this application.</p>
-<h2><button type="button">Expressions</button></h2>
-<div class="panel" id="exprorig">
+<details>
+<summary>Expressions</summary>
+<div id="exprorig">
 <p>You can enter expressions that use the following operators, functions, and parentheses:</p>
 <ul>
 <li> + for addition</li>
@@ -895,8 +896,9 @@ button:disabled {color: #808080; background-color: #606060}
 </table>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 </div>
-<h2><button type="button">Factoring using the Elliptic Curve Method (ECM)</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Factoring using the Elliptic Curve Method (ECM)</summary>
 <p>The notation <var>k</var> &equiv; <var>m</var> (mod <var>n</var>) means that the remainder of the division of <var>k</var> by <var>n</var> equals the remainder of the division of <var>m</var> by <var>n</var>. The number <var>n</var> is called modulus.</p>
 <p>This method computes points in elliptic curves, which are represented by formulas such as <var>y</var>&sup2; &equiv; <var>x</var>&sup3; + <var>a</var><var>x</var> + <var>b</var> (mod <var>n</var>) where <var>n</var> is the number to factor.</p>
 <p>In the following image, you can see the points (<var>x</var>, <var>y</var>) for which <var>y</var>&sup2; &equiv; <var>x</var>&sup3; + 4<var>x</var> + 7 (mod <var>29</var>) holds.
@@ -933,15 +935,15 @@ Since O + O = O, if we multiply any point by a multiple of the group order, we o
 <tr><td>70</td><td>2,900,000,000</td><td>340,000</td></tr>
 </table></div>
 <p>The program tests approximately the number of curves shown in the table, depending on the selected B1 value (up to a maximum B1 of 110,000,000), until all factors are found.</p>
-</div>
-<h2><button type="button">Factoring a number in several machines</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Factoring a number in several machines</summary>
 <p>The ECM factoring algorithm can be easily parallelized in several machines. In order to do it, run the factorization in the first computer from curve number 1, run it in the second computer from curve number 10000, in the third computer from curve number 20000, and so on.
 In order to change the curve number when a factorization is in progress, press the button named <strong>More</strong>, type this number on the input box located on the new window and press the <strong>New Curve</strong> button.</p>
 <p>When one of the machines discovers a new factor, you should enter this factor in the other computers by typing it in the bottom-right input box and pressing Enter (or clicking the <strong>Factor</strong> button).</p>
-</div>
-<h2><button type="button">Factoring using the Self Initializing Quadratic Sieve (SIQS)</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Factoring using the Self Initializing Quadratic Sieve (SIQS)</summary>
 <p>The notation <var>k</var> &equiv; <var>m</var> (mod <var>n</var>) means that the remainder of the division of <var>k</var> by <var>n</var> equals the remainder of the division of <var>m</var> by <var>n</var>. The number <var>n</var> is called modulus.</p>
 <p>Let <var>N</var> be the number to be factored. This number must not be a perfect power (such as <var>a</var>², <var>b</var>³, etc.). If it is, the algorithm fails to produce valid relations. If somehow we find two integers <var>X</var> and <var>Y</var> such that <var>X</var>&sup2; &equiv; <var>Y</var>&sup2; (mod <var>N</var>) and <var>X</var>&ne;<var>Y</var> (mod <var>N</var>), then gcd(<var>X</var>+<var>Y</var>, <var>N</var>) will reveal a proper factor of <var>N</var>.</p>
 <p>In order to find these values <var>X</var> and <var>Y</var>, the method finds relations which have the form <var>t</var>&sup2; &equiv; <var>u</var> (mod <var>N</var>) where <var>u</var> is the product of small prime numbers. The set of these primes is the factor base. These relations will be found using sieving, which is outside the scope of this introduction.</p>
@@ -971,9 +973,9 @@ Since this method needs a large amount of your computer's memory to store relati
 <tr><th scope="row">Digits</th><td>31-55</td><td>56-60</td><td>61-65</td><td>66-70</td><td>71-75</td><td>76-80</td><td>81-85</td><td>86-90</td><td>91-95</td></tr>
 <tr><th scope="row">Curve</th><td>10</td><td>15</td><td>22</td><td>26</td><td>60</td><td>130</td><td>200</td><td>270</td><td>350</td></tr>
 </table>
-</div>
-<h2><button type="button">Configuration</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Configuration</summary>
 <p>You can change settings for this application by pressing the Config button when a factorization is not in progress. A new window will pop up where you can select different settings:</p>
 <ul>
 <li><strong>Digits per group</strong>: In order to improve readability, big numbers are separated by spaces forming groups of a fixed number of digits. With this input box, you can determine the number of digits in a group.</li> 
@@ -987,9 +989,9 @@ To enter numbers in hexadecimal format, you will need to precede them by the str
 In order to reduce the database, only factors with at least 14 digits are included, so the application will find the small factors. These factors come from <a href="http://myfactors.mooo.com/">Jonathan Crombie list</a> and it includes 2674850 factors of Cunningham numbers.</li>
 </ul>
 <p>The configuration is saved in your device, so when you start again the calculator, all settings remain the same.</p>
-</div>
-<h2><button type="button">Batch factorization</button></h2>
-<div class="panel">
+</details>
+<details>
+<summary>Batch factorization</summary>
 <p>Write an expression per line, then press the appropriate button. The output will be placed in the lower pane.</p>
 <p>Blank lines or comment lines (which start with a numeral '#' character) will be replicated on the lower pane.</p>
 <p>Expression loop: with the following syntax you can factor or determine primality of several numbers typing only one line.
@@ -1024,16 +1026,14 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p>In this script written by Samuel Eraut: <var>b</var> = lowest 33333 digits of <var>x</var>, <var>t</var> = next higher 33333 digits, <var>a</var> = all higher digits of <var>x</var>. Variable names <var>a</var>, <var>b</var> and <var>t</var> conform to the current example shown on Gauss-Legendre algorithm on Wikipedia.</p>
 <p>Example 5: Get 33331 digits of &pi; using Bailey–Borwein–Plouffe (BBP) formula (script written by Samuel Eraut).</p>
 <p><code>x=0;x=x+(2^(110742-c*4)/(8*(c-1)+1)-2^(110741-c*4)/(8*(c-1)+4)-2^(110740-c*4)/(8*(c-1)+5)-2^(110740-c*4)/(8*(c-1)+6));c&lt;=27674;x*10^33330/2^110736;c==27674</code></p>
-</div>
+</details>
 <div class="noand">
-<h2><button type="button">Source code</button></h2>
-</div>
-<div class="panel">
-<div class="noand">
+<details>
+<summary>Source code</summary>
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
+</details>
 </div>
-</div>
-<p>Written by Dario Alpern. Last updated 30 May 2026.</p>
+<p>Written by Dario Alpern. Last updated 6 June 2026.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -1058,7 +1058,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 </main>
 <div id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
 <div class="modal-content">
-<div class="modal-header"><span id="close-more" aria-label="close" class="atright">×</span><p id="moreopt">More options</p></div>
+<div class="modal-header"><button type="button" id="close-more" aria-label="close" class="atright">×</button><p id="moreopt">More options</p></div>
 <div class="modal-body">
 <div class="applet">
 <p><label for="curve">New curve number or factor:</label></p><input type="number" id="curve" value="" class="input" min="0" step="1">
@@ -1068,7 +1068,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 </div></div></div>
 <div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
 <div class="modal-content">
-<div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuration</p></div>
+<div class="modal-header"><button id="close-config" aria-label="close" class="atright">×</button><p id="conf">Configuration</p></div>
 <div class="modal-body">
 <div class="applet">
 <fieldset>
