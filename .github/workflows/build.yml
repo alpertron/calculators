@@ -26,11 +26,10 @@ jobs:
       # -----------------------------
       # INSTALL GCOVR (for calling gcov)
       # -----------------------------
-      - name: Install gcovr
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcovr
-
+          sudo apt-get install -y gcovr lcov gcc-multilib g++-multilib libc6-dev-i386
       # -----------------------------
       # DOWNLOAD BUILD WRAPPER
       # -----------------------------
