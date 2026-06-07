@@ -13,7 +13,7 @@ jobs:
     env:
       SONAR_HOST_URL: "https://sonarcloud.io"
       BUILD_WRAPPER_OUT_DIR: bw-out
-      SONAR_SCANNER_VERSION: 5.0.1.3006
+      SONAR_SCANNER_VERSION: 7.1.0.4889
 
     steps:
 
@@ -83,5 +83,5 @@ jobs:
             -Dsonar.sources=. \
             -Dsonar.exclusions="**/*.md, **/docs/**, OldApplets/**, **/*.java, **/build-wrapper-dump.json" \
             -Dsonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}" \
-            -Dsonar.cfamily.gcov.reportsPaths=coverage.xml \
+            -Dsonar.coverageReportPaths=coverage.xml \
             -Dsonar.cfamily.cache.enabled=false
