@@ -52,10 +52,10 @@ jobs:
       # -----------------------------
       # GENERATE GCOV COVERAGE (raw .gcov files)
       # -----------------------------
-      - name: Generate GCOV coverage
+      - name: Generate coverage
         run: |
-          gcovr -r . --gcov-executable gcov
-
+          chmod +x coverage
+          ./coverage
       # -----------------------------
       # INSTALL SONAR SCANNER
       # -----------------------------
