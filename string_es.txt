@@ -220,7 +220,7 @@ LITERAL_FACTOR_MODULAR_POLY "Lista de factores"
 
 output
 LITERAL_SHOW_EQ_NBRS "($1d) y ($2d)"
-LITERAL_COPYRIGHT "Hecho por Darío Alpern. Actualizado el 30 de mayo de 2026."
+LITERAL_COPYRIGHT "Hecho por Darío Alpern. Actualizado el 29 de junio de 2026."
 
 pminus1
 LITERAL_PMINUS1_1 "p&minus;1 usando límites B1=$2d y B2=$3l"

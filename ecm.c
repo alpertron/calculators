@@ -18,6 +18,7 @@
 //
 #include <string.h>
 #include <stdint.h>
+#include <assert.h>
 #include "string/strings.h"
 #include "bignbr.h"
 #include "expression.h"
@@ -26,6 +27,12 @@
 #include "skiptest.h"
 #include "copyStr.h"
 #include "ecmInternal.h"
+
+#define SIEVE_COMPOSITE        0
+#define SIEVE_PROBABLE_PRIME   1
+
+#define NOT_COPRIME_2310   SIEVE_COMPOSITE
+#define COPRIME_2310       SIEVE_PROBABLE_PRIME
 
 #ifdef __EMSCRIPTEN__
 extern int intPrime;
@@ -68,9 +75,6 @@ const struct sBounds stEcmBounds[] =
 static int limits[] = { 10, 10, 10, 10, 10, 15, 22, 26, 60, 130, 200, 270, 350 };
 
 
-/******************************************************/
-/* Start of code adapted from Paul Zimmermann's ECM4C */
-/******************************************************/
 #define ADD 6  /* number of multiplications in an addition */
 #define DUP 5  /* number of multiplications in a duplicate */
 
@@ -210,15 +214,9 @@ static void prac(int multiplier, limb* x, limb *z)
   {
     if (d < e)
     {
-      r = d;
-      d = e;
-      e = r;
-      t = xA;
-      xA = xB;
-      xB = t;
-      t = zA;
-      zA = zB;
-      zB = t;
+      r = d; d = e; e = r;
+      t = xA; xA = xB; xB = t;
+      t = zA; zA = zB; zB = t;
     }
     /* do the first line of Table 4 whose condition qualifies */
     if (((4 * d) <= (5 * e)) && (((d + e) % 3) == 0))
@@ -229,12 +227,8 @@ static void prac(int multiplier, limb* x, limb *z)
       add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T = f(A,B,C) */
       add3(xT2, zT2, xT, zT, xA, zA, xB, zB); /* T2 = f(T,A,B) */
       add3(xB, zB, xB, zB, xT, zT, xA, zA); /* B = f(B,T,A) */
-      t = xA;
-      xA = xT2;
-      xT2 = t;
-      t = zA;
-      zA = zT2;
-      zT2 = t; /* swap A and T2 */
+      t = xA; xA = xT2; xT2 = t;
+      t = zA; zA = zT2; zT2 = t; /* swap A and T2 */
     }
     else if (((4 * d) <= (5 * e)) && (((d - e) % 6) == 0))
     { /* condition 2 */
@@ -246,14 +240,8 @@ static void prac(int multiplier, limb* x, limb *z)
     { /* condition 3 */
       d -= e;
       add3(xT, zT, xB, zB, xA, zA, xC, zC); /* T = f(B,A,C) */
-      t = xB;
-      xB = xT;
-      xT = xC;
-      xC = t;
-      t = zB;
-      zB = zT;
-      zT = zC;
-      zC = t; /* circular permutation (B,T,C) */
+      t = xB; xB = xT; xT = xC; xC = t;
+      t = zB; zB = zT; zT = zC; zC = t; /* circular permutation (B,T,C) */
     }
     else if (((d + e) % 2) == 0)
     { /* condition 4 */
@@ -274,14 +262,8 @@ static void prac(int multiplier, limb* x, limb *z)
       add3(xT2, zT2, xA, zA, xB, zB, xC, zC); /* T2 = f(A,B,C) */
       add3(xA, zA, xT, zT, xA, zA, xA, zA); /* A = f(T1,A,A) */
       add3(xT, zT, xT, zT, xT2, zT2, xC, zC); /* T1 = f(T1,T2,C) */
-      t = xC;
-      xC = xB;
-      xB = xT;
-      xT = t;
-      t = zC;
-      zC = zB;
-      zB = zT;
-      zT = t; /* circular permutation (C,B,T) */
+      t = xC; xC = xB; xB = xT; xT = t;
+      t = zC; zC = zB; zB = zT; zT = t; /* circular permutation (C,B,T) */
     }
     else if (((d + e) % 3) == 0)
     { /* condition 7 */
@@ -296,12 +278,8 @@ static void prac(int multiplier, limb* x, limb *z)
       d = (d - e) / 3;
       add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T1 = f(A,B,C) */
       add3(xC, zC, xC, zC, xA, zA, xB, zB); /* C = f(A,C,B) */
-      t = xB;
-      xB = xT;
-      xT = t;
-      t = zB;
-      zB = zT;
-      zT = t; /* swap B and T */
+      t = xB; xB = xT; xT = t;
+      t = zB; zB = zT; zT = t; /* swap B and T */
       duplicate(xT, zT, xA, zA);
       add3(xA, zA, xA, zA, xT, zT, xA, zA); /* A = 3*A */
     }
@@ -319,23 +297,25 @@ static void prac(int multiplier, limb* x, limb *z)
   add3(x, z, xA, zA, xB, zB, xC, zC);
 }
 
+// Compute the point (sum_x:sum_z) <- (Q_x:Q_z) + (R_x:R_z)
+// where (diff_x:diff_z) equals (Q_x:Q_z) - (R_x:R_z)
 void add3(limb* sum_x, limb* sum_z, const limb* Q_x, const limb* Q_z,
   const limb* R_x, const limb* R_z, const limb* diff_x, const limb* diff_z)
 {
-  limb* t = common.ecm.fieldTX;
-  limb* u = common.ecm.fieldTZ;
-  limb* v = common.ecm.fieldUX;
-  limb* w = common.ecm.fieldUZ;
-  SubtBigNbrModN(Q_x, Q_z, v, TestNbr, NumberLength); // v = x2-z2
-  AddBigNbrModN(R_x, R_z, w, TestNbr, NumberLength);      // w = x1+z1
-  modmult(v, w, u);       // u = (x2-z2)*(x1+z1)
-  AddBigNbrModN(Q_x, Q_z, w, TestNbr, NumberLength);      // w = x2+z2
-  SubtBigNbrModN(R_x, R_z, t, TestNbr, NumberLength); // t = x1-z1
-  modmult(t, w, v);       // v = (x2+z2)*(x1-z1)
-  AddBigNbrModN(u, v, t, TestNbr, NumberLength);        // t = 2*(x1*x2-z1*z2)
-  modmult(t, t, w);       // w = 4*(x1*x2-z1*z2)^2
-  SubtBigNbrModN(u, v, t, TestNbr, NumberLength);   // t = 2*(x2*z1-x1*z2)
-  modmult(t, t, v);       // v = 4*(x2*z1-x1*z2)^2
+  limb* t = common.ecm.Aux5;
+  limb* u = common.ecm.Aux6;
+  limb* v = common.ecm.Aux7;
+  limb* w = common.ecm.Aux8;
+  SubtBigNbrModN(Q_x, Q_z, v, TestNbr, NumberLength);  // v = x2-z2
+  AddBigNbrModN(R_x, R_z, w, TestNbr, NumberLength);   // w = x1+z1
+  modmult(v, w, u);                                    // u = (x2-z2)*(x1+z1)
+  AddBigNbrModN(Q_x, Q_z, w, TestNbr, NumberLength);   // w = x2+z2
+  SubtBigNbrModN(R_x, R_z, t, TestNbr, NumberLength);  // t = x1-z1
+  modmult(t, w, v);                                    // v = (x2+z2)*(x1-z1)
+  AddBigNbrModN(u, v, t, TestNbr, NumberLength);       // t = 2*(x1*x2-z1*z2)
+  modmult(t, t, w);                                    // w = 4*(x1*x2-z1*z2)^2
+  SubtBigNbrModN(u, v, t, TestNbr, NumberLength);      // t = 2*(x2*z1-x1*z2)
+  modmult(t, t, v);                                    // v = 4*(x2*z1-x1*z2)^2
   if (!memcmp(diff_x, sum_x, NumberSizeBytes))
   {
     (void)memcpy(u, diff_x, NumberSizeBytes);
@@ -346,8 +326,8 @@ void add3(limb* sum_x, limb* sum_z, const limb* Q_x, const limb* Q_z,
   }
   else
   {
-    modmult(w, diff_z, sum_x); // sum_x = 4*z*(x1*x2-z1*z2)^2
-    modmult(diff_x, v, sum_z); // sum_z = 4*x*(x2*z1-x1*z2)^2
+    modmult(w, diff_z, sum_x);                    // sum_x = 4*z*(x1*x2-z1*z2)^2
+    modmult(diff_x, v, sum_z);                    // sum_z = 4*x*(x2*z1-x1*z2)^2
   }
 }
 
@@ -360,21 +340,19 @@ Modifies: x2, z2, u, v, w
 */
 void duplicate(limb* dupl_x, limb* dupl_z, const limb* P_x, const limb* P_z)
 {
-  limb* u = common.ecm.fieldUZ;
-  limb* v = common.ecm.fieldTX;
-  limb* w = common.ecm.fieldTZ;
-  AddBigNbrModN(P_x, P_z, w, TestNbr, NumberLength);      // w = x1+z1
-  modmult(w, w, u);       // u = (x1+z1)^2
-  SubtBigNbrModN(P_x, P_z, w, TestNbr, NumberLength); // w = x1-z1
-  modmult(w, w, v);       // v = (x1-z1)^2
-  modmult(u, v, dupl_x);      // x2 = u*v = (x1^2 - z1^2)^2
-  SubtBigNbrModN(u, v, w, TestNbr, NumberLength);   // w = u-v = 4*x1*z1
+  limb* u = common.ecm.Aux5;
+  limb* v = common.ecm.Aux6;
+  limb* w = common.ecm.Aux7;
+  AddBigNbrModN(P_x, P_z, w, TestNbr, NumberLength);   // w = x1+z1
+  modmult(w, w, u);                                    // u = (x1+z1)^2
+  SubtBigNbrModN(P_x, P_z, w, TestNbr, NumberLength);  // w = x1-z1
+  modmult(w, w, v);                                    // v = (x1-z1)^2
+  modmult(u, v, dupl_x);                               // x2 = u*v = (x1^2 - z1^2)^2
+  SubtBigNbrModN(u, v, w, TestNbr, NumberLength);      // w = u-v = 4*x1*z1
   modmult(common.ecm.fieldAA, w, u);
-  AddBigNbrModN(u, v, u, TestNbr, NumberLength);        // u = (v+b*w)
-  modmult(w, u, dupl_z);      // z2 = (w*u)
+  AddBigNbrModN(u, v, u, TestNbr, NumberLength);       // u = (v+b*w)
+  modmult(w, u, dupl_z);                               // z2 = (w*u)
 }
-
-/* End of code adapted from Paul Zimmermann's ECM4C */
 
 int gcdIsOne(const limb* value)
 {
@@ -399,48 +377,49 @@ int gcdIsOne(const limb* value)
   return 2;      // GCD is greater than one.
 }
 
+// This routine requires the array isCoprime2310 to be initialized with 1 for numbers
+// that are coprime with 2310 and 0 otherwise.
 void GenerateSieve(int initial)
 {
-  int index;
+  int indexPrime;
   int i;
-  int Q;
-  int initModQ;
-  for (index = 0; index < MAX_SIEVE_PRIME; index += SIEVE_SIZE)
+  int prime;
+  for (int startBlockOffset = 0; startBlockOffset < MAX_SIEVE_PRIME; startBlockOffset += SIEVE_SIZE)
   {
-    (void)memcpy(&common.ecm.sieve[index], common.ecm.sieve2310, SIEVE_SIZE);
+    (void)memcpy(&common.ecm.sieve[startBlockOffset], common.ecm.isCoprime2310, SIEVE_SIZE);
   }
-  index = 5;
-  Q = 13; /* Point to prime 13 */
+  indexPrime = /*5*/4;
+  prime = /*13*/11;
   do
   {
-    if (initial > (Q * Q))
+    if (initial > (prime * prime))
     {
-      initModQ = initial % Q;
-      if ((initModQ & 1) != 0)
-      {    // initModQ is odd
-        i = (Q - initModQ) / 2;
+      int initModPrime = initial % prime;
+      if ((initModPrime & 1) != 0)
+      {    // initModPrime is odd
+        i = (prime - initModPrime) / 2;
       }
-      else if (initModQ == 0)
+      else if (initModPrime == 0)
       {
         i = 0;
       }
       else
-      {    // initModQ is even
-        i = Q - (initModQ / 2);
+      {    // initModPrime is even
+        i = prime - (initModPrime / 2);
       }
-      for (; i < MAX_SIEVE_PRIME; i += Q)
+      for (; i < MAX_SIEVE_PRIME; i += prime)
       {
-        common.ecm.sieve[i] = 1; /* Composite */
+        common.ecm.sieve[i] = SIEVE_COMPOSITE; /* Composite */
       }
     }
     else
     {
-      i = (Q * Q) - initial;
+      i = (prime * prime) - initial;
       if (i < (2 * MAX_SIEVE_PRIME))
       {
-        for (i = i / 2; i < MAX_SIEVE_PRIME; i += Q)
+        for (i = i / 2; i < MAX_SIEVE_PRIME; i += prime)
         {
-          common.ecm.sieve[i] = 1; /* Composite */
+          common.ecm.sieve[i] = SIEVE_COMPOSITE; /* Composite */
         }
       }
       else
@@ -448,9 +427,9 @@ void GenerateSieve(int initial)
         break;
       }
     }
-    index++;
-    Q = SmallPrime[index];
-  } while (Q < MAX_SIEVE_PRIME);
+    indexPrime++;
+    prime = SmallPrime[indexPrime];
+  } while (prime < MAX_SIEVE_PRIME);
 }
 
 /*******************************/
@@ -458,134 +437,33 @@ void GenerateSieve(int initial)
 /*******************************/
 static enum eEcmResult ecmStep1(void)
 {
-  int powerPrime;
   int prime;
-  int i;
+  int sieveIndex;
   int sievedNumber;
   int retcode;
   int bufSize = (NumberLength + 1) * (int)sizeof(limb);
   (void)memcpy(common.ecm.Xaux, common.ecm.X, bufSize);
   (void)memcpy(common.ecm.Zaux, common.ecm.Z, bufSize);
   (void)memcpy(common.ecm.GcdAccumulated, MontgomeryMultR1, bufSize);
+  StepECM = 1;
   for (int pass = 0; pass < 2; pass++)
   {
-    /* For powers of 2 */
-    StepECM = 1;
-    for (powerPrime = 1; powerPrime <= boundStep1; powerPrime *= 2)
+    /* For powers of 2 and 3 */
+    for (prime = 2; prime <= 3; prime++)
     {
-      duplicate(common.ecm.X, common.ecm.Z, common.ecm.X, common.ecm.Z);
-      if (pass == 0)
+      for (int powerPrime = prime; powerPrime <= boundStep1; powerPrime *= prime)
       {
-        modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.GcdAccumulated);
-      }
-      else
-      {
-        retcode = gcdIsOne(common.ecm.Z);
-        if (retcode == 0)
-        {
-          return FACTOR_NOT_FOUND_GCD;
+        if (prime == 2)
+        {    // Multiply point by 2.
+          duplicate(common.ecm.X, common.ecm.Z, common.ecm.X, common.ecm.Z);
         }
-        if (retcode > 1)
-        {
-          return FACTOR_FOUND;
+        else if (prime == 3)
+        {    // Multiply point by 3.
+          duplicate(common.ecm.W1, common.ecm.W2, common.ecm.X, common.ecm.Z);
+          add3(common.ecm.X, common.ecm.Z, common.ecm.X, common.ecm.Z,
+            common.ecm.W1, common.ecm.W2, common.ecm.X, common.ecm.Z);
         }
-      }
-    }
-    /* For powers of 3 */
-    for (powerPrime = 3; powerPrime <= boundStep1; powerPrime *= 3)
-    {
-      duplicate(common.ecm.W1, common.ecm.W2, common.ecm.X, common.ecm.Z);
-      add3(common.ecm.X, common.ecm.Z, common.ecm.X, common.ecm.Z, common.ecm.W1, common.ecm.W2, common.ecm.X, common.ecm.Z);
-      if (pass == 0)
-      {
-        modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.GcdAccumulated);
-      }
-      else
-      {
-        retcode = gcdIsOne(common.ecm.Z);
-        if (retcode == 0)
-        {
-          return FACTOR_NOT_FOUND_GCD;
-        }
-        if (retcode > 1)
-        {
-          return FACTOR_FOUND;
-        }
-      }
-    }
-
-    /* for powers of odd primes */
-
-    indexM = 1;
-    do
-    {
-      prime = SmallPrime[indexM];
-#ifdef __EMSCRIPTEN__
-      intPrime = prime;
-#endif
-      for (int64_t largePrimePower = prime; largePrimePower <= boundStep1;
-        largePrimePower *= prime)
-      {
-        prac(prime, common.ecm.X, common.ecm.Z);
-      }
-      indexM++;
-      if (pass == 0)
-      {
-        modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.GcdAccumulated);
-      }
-      else
-      {
-        retcode = gcdIsOne(common.ecm.Z);
-        if (retcode == 0)
-        {
-          return FACTOR_NOT_FOUND_GCD;
-        }
-        if (retcode > 1)
-        {
-          return FACTOR_FOUND;
-        }
-      }
-    } while (SmallPrime[indexM - 1] <= sqrtBoundStep1);
-    prime += 2;
-
-    /* Initialize sieve2310[n]: 1 if gcd(P+2n,2310) > 1, 0 otherwise */
-    sievedNumber = prime;
-    for (i = 0; i < SIEVE_SIZE; i++)
-    {
-      common.ecm.sieve2310[i] =
-        ((((sievedNumber % 3) == 0)
-          || ((sievedNumber % 5) == 0)
-          || ((sievedNumber % 7) == 0)
-          || ((sievedNumber % 11) == 0)
-          ) ? (unsigned char)1 : (unsigned char)0);
-      sievedNumber += 2;
-    }
-    do
-    {
-      /* Generate sieve */
-      GenerateSieve(prime);
-
-      /* Walk through sieve */
-
-      for (i = 0; i < MAX_SIEVE_PRIME; i++)
-      {
-        if (common.ecm.sieve[i] != 0U)
-        {
-          continue; /* Do not process composites */
-        }
-        if ((prime + (2 * i)) > boundStep1)
-        {
-          break;
-        }
-#ifdef __EMSCRIPTEN__
-        intPrime = prime + (2 * i);
-#endif
-        prac(prime + (2 * i), common.ecm.X, common.ecm.Z);
-        if (pass == 0)
-        {
-          modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.GcdAccumulated);
-        }
-        else
+        if (pass == 1)
         {
           retcode = gcdIsOne(common.ecm.Z);
           if (retcode == 0)
@@ -598,11 +476,90 @@ static enum eEcmResult ecmStep1(void)
           }
         }
       }
-      prime += 2 * MAX_SIEVE_PRIME;
-    } while (prime < boundStep1);
+    }
+    /* for powers of odd primes */
+
+    indexM = 1;
+    do
+    {
+      prime = SmallPrime[indexM];
+#ifdef __EMSCRIPTEN__
+      intPrime = prime;
+#endif
+      for (int64_t largePrimePower = prime; largePrimePower <= boundStep1;
+        largePrimePower *= prime)
+      {
+        prac(prime, common.ecm.X, common.ecm.Z);  // Multiply (X:Z) by prime.
+      }
+      indexM++;
+      if (pass == 1)
+      {
+        retcode = gcdIsOne(common.ecm.Z);
+        if (retcode == 0)
+        {
+          return FACTOR_NOT_FOUND_GCD;
+        }
+        if (retcode > 1)
+        {
+          return FACTOR_FOUND;
+        }
+      }
+    } while (SmallPrime[indexM - 1] <= sqrtBoundStep1);
+    int startSieve = prime + 2;
+
+    /* Initialize isCoprime2310[n]: 1 if gcd(P+2n,2310) == 1, 0 otherwise */
+    sievedNumber = startSieve;
+    for (sieveIndex = 0; sieveIndex < SIEVE_SIZE; sieveIndex++)
+    {
+      common.ecm.isCoprime2310[sieveIndex] =
+        ((((sievedNumber % 3) == 0)
+          || ((sievedNumber % 5) == 0)
+          || ((sievedNumber % 7) == 0)
+          /* || ((sievedNumber % 11) == 0)*/
+          ) ? (unsigned char)NOT_COPRIME_2310 : (unsigned char)COPRIME_2310);
+      sievedNumber += 2;
+    }    
+    do
+    {
+      int currentPrime = startSieve;
+      /* Generate sieve */
+      GenerateSieve(startSieve);
+
+      /* Walk through sieve */
+      for (sieveIndex = 0; sieveIndex < MAX_SIEVE_PRIME; sieveIndex++)
+      {
+        if (common.ecm.sieve[sieveIndex] == SIEVE_COMPOSITE)
+        {
+          currentPrime += 2;
+          continue; /* Do not process composites */
+        }
+        if (currentPrime > boundStep1)
+        {
+          break;
+        }
+#ifdef __EMSCRIPTEN__
+        intPrime = currentPrime;
+#endif
+        prac(currentPrime, common.ecm.X, common.ecm.Z);  // Multiply (X:Z) by prime.
+        if (pass == 1)
+        {
+          retcode = gcdIsOne(common.ecm.Z);
+          if (retcode == 0)
+          {
+            return FACTOR_NOT_FOUND_GCD;
+          }
+          if (retcode > 1)
+          {
+            return FACTOR_FOUND;
+          }
+        }
+        currentPrime += 2;
+      }
+      startSieve = currentPrime;
+    } while (startSieve < boundStep1);
     if (pass == 0)
     {
-      int result = gcdIsOne(common.ecm.GcdAccumulated);
+      int result = gcdIsOne(common.ecm.Z);
       if (result == 1)
       {
         break;         // GCD is 1 so factor is not found.
@@ -625,179 +582,102 @@ static enum eEcmResult ecmStep1(void)
 /******************************************************/
 static enum eEcmResult ecmStep2(void)
 {
-  int j;
+  int coprimeIndex = 0;
+  int index = 0;
   StepECM = 2;
-  j = 0;
   for (int sievedNumber = 1; sievedNumber < SIEVE_SIZE; sievedNumber += 2)
   {
     if (((sievedNumber % 3) == 0) || ((sievedNumber % 5) == 0) || ((sievedNumber % 7) == 0)
-      || ((sievedNumber % 11) == 0)
-      )
+      /* || ((sievedNumber % 11) == 0)*/)
     {
-      common.ecm.sieve2310[sievedNumber / 2] = 1U;
+      common.ecm.isCoprime2310[index] = NOT_COPRIME_2310;
     }
     else
     {
-      common.ecm.sieveidx[j] = sievedNumber / 2;
-      common.ecm.sieve2310[common.ecm.sieveidx[j]] = 0U;
-      j++;
+      common.ecm.sieveidx[coprimeIndex] = index;
+      common.ecm.isCoprime2310[index] = COPRIME_2310;
+      coprimeIndex++;
     }
+    index++;
   }
+  // At this moment half of the isCoprime2310 array is filled.
+  // Fill the other half with the same values because gcd(a, 2310) = gcd(a + 2310, 2310).
+  memcpy(&common.ecm.isCoprime2310[HALF_SIEVE_SIZE], common.ecm.isCoprime2310, HALF_SIEVE_SIZE);
   for (int pass = 0; pass < 2; pass++)
   {
-    int Qaux;
-    int J;
+    int firstIndexM;
+    int rootIndex = 1;
     (void)memcpy(common.ecm.Xaux, common.ecm.X, NumberSizeBytes);  // (X:Z) -> Q (output
     (void)memcpy(common.ecm.Zaux, common.ecm.Z, NumberSizeBytes);  //         from step 1)
     (void)memcpy(common.ecm.GcdAccumulated, MontgomeryMultR1, NumberSizeBytes);
     (void)memcpy(common.ecm.UX, common.ecm.X, NumberSizeBytes);
-    (void)memcpy(common.ecm.UZ, common.ecm.Z, NumberSizeBytes);    // (UX:UZ) -> Q 
+    (void)memcpy(common.ecm.UZ, common.ecm.Z, NumberSizeBytes);    // (UX:UZ) <- Q 
     (void)ModInvBigNbr(common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
     modmult(common.ecm.Aux1, common.ecm.X, common.ecm.root[0]);    // root[0] <- X/Z (Q)
-    J = 0;
-    AddBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W1);
-    SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W2);
-    modmult(common.ecm.W1, common.ecm.W2, common.ecm.TX);
-    SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.AA, common.ecm.Aux2);
-    AddBigNbrModN(common.ecm.Aux2, common.ecm.W2, common.ecm.Aux3, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux3, common.ecm.TZ); // (TX:TZ) -> 2Q
-    SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
-    AddBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W1);
-    AddBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
-    SubtBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W2);
-    AddBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
-    modmult(common.ecm.Aux2, common.ecm.UZ, common.ecm.X);
-    SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
-    modmult(common.ecm.Aux2, common.ecm.UX, common.ecm.Z); // (X:Z) -> 3Q
-    for (int I = 5; I < SIEVE_SIZE; I += 2)
+    duplicate(common.ecm.TX, common.ecm.TZ, common.ecm.X, common.ecm.Z);  // (TX:TZ) <- 2Q
+    // Compute 3Q, 5Q, 7Q, 11Q, ... up to (SIEVE_SIZE-1)*Q.
+    // Store kQ where k is coprime with 2310 in root[].
+    for (int sieveIndex = 3; sieveIndex < SIEVE_SIZE; sieveIndex += 2)
     {
-      (void)memcpy(common.ecm.WX, common.ecm.X, NumberSizeBytes);
-      (void)memcpy(common.ecm.WZ, common.ecm.Z, NumberSizeBytes);
-      SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
-      AddBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
-      modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W1);
-      AddBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
-      SubtBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
-      modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W2);
-      AddBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
-      modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
-      modmult(common.ecm.Aux2, common.ecm.UZ, common.ecm.X);
-      SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
-      modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
-      modmult(common.ecm.Aux2, common.ecm.UX, common.ecm.Z); // (X:Z) -> 5Q, 7Q, ...
-      if (pass == 0)
-      {
-        modmult(common.ecm.GcdAccumulated, common.ecm.Aux1, common.ecm.Aux2);
-        (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux2, NumberSizeBytes);
-      }
-      else
-      {
-        if (gcdIsOne(common.ecm.Aux1) > 1)
-        {
-          return FACTOR_FOUND;
-        }
-      }
-      if (I == HALF_SIEVE_SIZE)
-      {
+      // At this moment (X:Z) = (k-2)Q, (UX:UZ) = (k-4)Q and (TX:TZ) = 2Q.
+      // The invariant is (X:Z) = (UX:UZ) + (TX:TZ) = (k-2)Q.
+      add3(common.ecm.WX, common.ecm.WZ, common.ecm.X, common.ecm.Z,
+        common.ecm.TX, common.ecm.TZ, common.ecm.UX, common.ecm.UZ); // (WX:WZ) <- kQ
+      (void)memcpy(common.ecm.UX, common.ecm.X, NumberSizeBytes);    // (UX:UZ) <- (k-2)Q
+      (void)memcpy(common.ecm.UZ, common.ecm.Z, NumberSizeBytes);
+      (void)memcpy(common.ecm.X, common.ecm.WX, NumberSizeBytes);    // (X:Z) <- kQ
+      (void)memcpy(common.ecm.Z, common.ecm.WZ, NumberSizeBytes);
+      if (sieveIndex == HALF_SIEVE_SIZE)
+      {      // HALF_SIEVE_SIZE is odd.
         (void)memcpy(common.ecm.DX, common.ecm.X, NumberSizeBytes);
-        (void)memcpy(common.ecm.DZ, common.ecm.Z, NumberSizeBytes);  // (DX:DZ) -> HALF_SIEVE_SIZE*Q
+        (void)memcpy(common.ecm.DZ, common.ecm.Z, NumberSizeBytes);  // (DX:DZ) <- (SIEVE_SIZE/2)*Q
       }
-      if (((I % 3) != 0) && ((I % 5) != 0) && ((I % 7) != 0)
-        && ((I % 11) != 0)
-        )
-      {
-        J++;
+      if (common.ecm.isCoprime2310[(sieveIndex-1)/2] == COPRIME_2310)
+      {    // sieveIndex is coprime with 2310. Store X/Z in root[].
         (void)ModInvBigNbr(common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
-        modmult(common.ecm.Aux1, common.ecm.X, common.ecm.root[J]); // root[J] <- X/Z
+        modmult(common.ecm.Aux1, common.ecm.X, common.ecm.root[rootIndex]); // root[J] <- X/Z
+        rootIndex++;
       }
-      (void)memcpy(common.ecm.UX, common.ecm.WX, NumberSizeBytes);  // (UX:UZ) <-
-      (void)memcpy(common.ecm.UZ, common.ecm.WZ, NumberSizeBytes);  // Previous (X:Z)
-    } /* end for I */
-    AddBigNbrModN(common.ecm.DX, common.ecm.DZ, common.ecm.Aux1, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W1);
-    SubtBigNbrModN(common.ecm.DX, common.ecm.DZ, common.ecm.Aux1, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W2);
-    modmult(common.ecm.W1, common.ecm.W2, common.ecm.X);
-    SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.AA, common.ecm.Aux2);
-    AddBigNbrModN(common.ecm.Aux2, common.ecm.W2, common.ecm.Aux3, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux3, common.ecm.Z);
-    (void)memcpy(common.ecm.UX, common.ecm.X, NumberSizeBytes);
-    (void)memcpy(common.ecm.UZ, common.ecm.Z, NumberSizeBytes);    // (UX:UZ) -> SIEVE_SIZE*Q
-    AddBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W1);
-    SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W2);
-    modmult(common.ecm.W1, common.ecm.W2, common.ecm.TX);
-    SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.AA, common.ecm.Aux2);
-    AddBigNbrModN(common.ecm.Aux2, common.ecm.W2, common.ecm.Aux3, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux3, common.ecm.TZ); // (TX:TZ) -> 2*SIEVE_SIZE*Q
-    SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
-    AddBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W1);
-    AddBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
-    SubtBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W2);
-    AddBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
-    modmult(common.ecm.Aux2, common.ecm.UZ, common.ecm.X);
-    SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
-    modmult(common.ecm.Aux2, common.ecm.UX, common.ecm.Z); // (X:Z) -> 3*SIEVE_SIZE*Q
-    Qaux = boundStep1 / (2 * SIEVE_SIZE);
+    } /* end for sieveIndex */
+    assert(rootIndex == GROUP_SIZE);
+    duplicate(common.ecm.UX, common.ecm.UZ, common.ecm.DX, common.ecm.DZ);  // (UX:UZ) <- SIEVE_SIZE*Q
+    duplicate(common.ecm.TX, common.ecm.TZ, common.ecm.UX, common.ecm.UZ);  // (TX:TZ) <- 2*SIEVE_SIZE*Q
+    (void)memcpy(common.ecm.X, common.ecm.UX, NumberSizeBytes);             // (X:Z) <- SIEVE_SIZE*Q
+    (void)memcpy(common.ecm.Z, common.ecm.UZ, NumberSizeBytes);
+    firstIndexM = boundStep1 / (2 * SIEVE_SIZE);
     maxIndexM = (int)(boundStep2 / (2 * SIEVE_SIZE));
     for (indexM = 0; indexM <= maxIndexM; indexM++)
     {
-      if (indexM >= Qaux)
+      if (indexM >= firstIndexM)
       { // If inside step 2 range... 
-        if (indexM == 0)
+        bool rc = ModInvBigNbr(common.ecm.Z, common.ecm.Aux3, TestNbr, NumberLength);
+        if (rc == false)
         {
-          bool rc = ModInvBigNbr(common.ecm.UZ, common.ecm.Aux3, TestNbr, NumberLength);
-          if (rc == false)
-          {
-            (void)memcpy(common.ecm.GD, common.ecm.UZ, NumberSizeBytes);
-            return FACTOR_FOUND;
-          }
-          modmult(common.ecm.UX, common.ecm.Aux3, common.ecm.Aux1); // Aux1 <- X/Z (SIEVE_SIZE*Q)
+          (void)memcpy(common.ecm.GD, common.ecm.Z, NumberSizeBytes);
+          return FACTOR_FOUND;
         }
-        else
-        {
-          bool rc = ModInvBigNbr(common.ecm.Z, common.ecm.Aux3, TestNbr, NumberLength);
-          if (rc == false)
-          {
-            (void)memcpy(common.ecm.GD, common.ecm.Z, NumberSizeBytes);
-            return FACTOR_FOUND;
-          }
-          // Compute Aux as X/Z for 3, 5, SIEVE_SIZE * Q)
-          modmult(common.ecm.X, common.ecm.Aux3, common.ecm.Aux1);
-        }
+        // Compute Aux as X/Z for m*SIEVE_SIZE*Q.
+        modmult(common.ecm.X, common.ecm.Aux3, common.ecm.Aux1);
 
           /* Generate sieve */
-        if (((indexM % 10) == 0) || (indexM == Qaux))
-        {
-          GenerateSieve(indexM / 10 * (20 * SIEVE_SIZE) + 1);
+        if (((indexM % 10) == 0) || (indexM == firstIndexM))
+        {  // Generate sieve for next 10 blocks of SIEVE_SIZE numbers or the first time the step 2 executes.
+          GenerateSieve((indexM / 10) * (20 * SIEVE_SIZE) + 1);
         }
         /* Walk through sieve */
-        J = HALF_SIEVE_SIZE + (indexM % 10) * SIEVE_SIZE;
-        for (int i = 0; i < GROUP_SIZE; i++)
+        int startSieveBlock = HALF_SIEVE_SIZE + (indexM % 10) * SIEVE_SIZE;
+        for (int groupIndex = 0; groupIndex < GROUP_SIZE; groupIndex++)
         {
-          j = common.ecm.sieveidx[i]; // 0 < J < HALF_SIEVE_SIZE
-          if ((common.ecm.sieve[J + j] != 0U) && (common.ecm.sieve[J - 1 - j] != 0U))
+          int delta = common.ecm.sieveidx[groupIndex]; // 0 < delta < SIEVE_SIZE
+          if ((common.ecm.sieve[startSieveBlock + delta] == SIEVE_COMPOSITE) &&
+            (common.ecm.sieve[startSieveBlock - 1 - delta] == SIEVE_COMPOSITE))
           {
             continue; // Do not process if both are composite numbers.
           }
 #ifdef __EMSCRIPTEN__
-          longPrime = ((int64_t)indexM * 2 * SIEVE_SIZE) + j + j + 1;
+          longPrime = ((int64_t)indexM * 2 * SIEVE_SIZE) + delta + delta + 1;
 #endif
-          SubtBigNbrModN(common.ecm.Aux1, common.ecm.root[i], common.ecm.M, TestNbr, NumberLength);
+          SubtBigNbrModN(common.ecm.Aux1, common.ecm.root[groupIndex], common.ecm.M, TestNbr, NumberLength);
           modmult(common.ecm.GcdAccumulated, common.ecm.M, common.ecm.Aux2);
           (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux2, NumberSizeBytes);
         }
@@ -813,26 +693,15 @@ static enum eEcmResult ecmStep2(void)
           }
         }
       }   // End for.
-      if (indexM != 0)
-      { // Update (X:Z)
-        (void)memcpy(common.ecm.WX, common.ecm.X, NumberSizeBytes);
-        (void)memcpy(common.ecm.WZ, common.ecm.Z, NumberSizeBytes);
-        SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
-        AddBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
-        modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W1);
-        AddBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
-        SubtBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
-        modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W2);
-        AddBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
-        modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
-        modmult(common.ecm.Aux2, common.ecm.UZ, common.ecm.X);
-        SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
-        modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
-        modmult(common.ecm.Aux2, common.ecm.UX, common.ecm.Z);
-        (void)memcpy(common.ecm.UX, common.ecm.WX, NumberSizeBytes);
-        (void)memcpy(common.ecm.UZ, common.ecm.WZ, NumberSizeBytes);
-      }
-    } // end for Q
+      // At this moment (X:Z) = (2m+1)*SIEVE_SIZE*Q, (UX:UZ) = (2m-1)*SIEVE_SIZE*Q and (TX:TZ) = 2*SIEVE_SIZE*Q.
+      // The invariant is (X:Z) = (UX:UZ) + (TX:TZ) = (2m+1)*SIEVE_SIZE*Q.
+      add3(common.ecm.WX, common.ecm.WZ, common.ecm.X, common.ecm.Z,
+           common.ecm.TX, common.ecm.TZ, common.ecm.UX, common.ecm.UZ); // (WX:WZ) <- (2m+3)*SIEVE_SIZE*Q
+      (void)memcpy(common.ecm.UX, common.ecm.X, NumberSizeBytes);       // (UX:UZ) <- (2m+1)*SIEVE_SIZE*Q
+      (void)memcpy(common.ecm.UZ, common.ecm.Z, NumberSizeBytes);
+      (void)memcpy(common.ecm.X, common.ecm.WX, NumberSizeBytes);       // (X:Z) <- (2m+3)*SIEVE_SIZE*Q
+      (void)memcpy(common.ecm.Z, common.ecm.WZ, NumberSizeBytes);
+    } // end for indexM
     if (pass == 0)
     {
       int rc;
@@ -922,10 +791,8 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
     {
       EC++;
 #ifdef __EMSCRIPTEN__
-      text[0] = '7';
-      ptrText = &text[1];
-      int2dec(&ptrText, EC);
-      *ptrText = 0;                 // Add string terminator.
+      ptrText = text;
+      formatString(&ptrText, "7$1d", EC);
       databack(text);
 #endif
       nbrDigits = NumberLength * 9;          // Get number of digits.
@@ -971,13 +838,8 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
     ptrText = ptrLowerText;  // Point after number that is being factored.
     copyStr(&ptrText, "<p>");
     formatString(&ptrText, LITERAL_ECM1, pstBounds->digitLevel);
-    copyStr(&ptrText, " <meter min=\"0\" max=\"");
-    int2dec(&ptrText, pstBounds->nbrCurves);
-    copyStr(&ptrText, "\" value=\"");
-    int2dec(&ptrText, curveNbr);
-    copyStr(&ptrText, "\">");
-    int2dec(&ptrText, curveNbr * 100 / pstBounds->nbrCurves);
-    copyStr(&ptrText, "%</meter></p><p>");
+    formatString(&ptrText, " <meter min=\"0\" max=\"$1d\" value=\"$2d\">$3d%</meter></p><p>",
+          pstBounds->nbrCurves, curveNbr, curveNbr * 100 / pstBounds->nbrCurves);
     formatString(&ptrText, LITERAL_ECM2, EC, boundStep1, boundStep2);
     copyStr(&ptrText, "</p>");
     databack(lowerText);

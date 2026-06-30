@@ -1115,13 +1115,6 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
 #endif
   int NumberLengthBytes;
   static BigInteger potentialFactor;
-  common.ecm.fieldTX = common.ecm.TX;
-  common.ecm.fieldTZ = common.ecm.TZ;
-  common.ecm.fieldUX = common.ecm.UX;
-  common.ecm.fieldUZ = common.ecm.UZ;
-  //  int Prob
-  //  BigInteger NN
-
   common.ecm.fieldAA = common.ecm.AA;
   NumberLength = numToFactor->nbrLimbs;
   NumberLengthBytes = NumberLength * (int)sizeof(limb);

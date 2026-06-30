@@ -336,7 +336,7 @@ void formatString(char** pptrString, const char* format, ...)
     }
   }
 
-  *ptrString = '\0';
+  *ptrString = '\0';  // Add string terminator.
   *pptrString = ptrString;
 }
 

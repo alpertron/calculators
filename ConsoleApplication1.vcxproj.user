@@ -8,9 +8,9 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>0 "x^2+3x+7" 1 0</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>(10**142-1)/99/290249</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArgumentsHistory>0 "7x^2+3x+5" 1 0|1 -1 -1 11|"x=2;x=x XOR 2;c&lt;=5;x"|0 "x^2+3x+7" 1|0 "x^2+3x+7" 1 0|</LocalDebuggerCommandArgumentsHistory>
+    <LocalDebuggerCommandArgumentsHistory>"x=2;x=x XOR 2;c&lt;=5;x"|0 "x^2+3x+7" 1|0 "x^2+3x+7" 1 0|(10**142-1)/9|(10**142-1)/99/290249|</LocalDebuggerCommandArgumentsHistory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerCommandArguments>0 "x**720-1" 0 0</LocalDebuggerCommandArguments>
