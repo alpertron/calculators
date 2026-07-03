@@ -1115,13 +1115,11 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
 #endif
   int NumberLengthBytes;
   static BigInteger potentialFactor;
-  common.ecm.fieldAA = common.ecm.AA;
   NumberLength = numToFactor->nbrLimbs;
   NumberLengthBytes = NumberLength * (int)sizeof(limb);
   (void)memcpy(TestNbr, numToFactor->limbs, NumberLengthBytes);
   GetYieldFrequency();
   GetMontgomeryParms(NumberLength);
-  (void)memset(common.ecm.M, 0, NumberLengthBytes);
   (void)memset(common.ecm.DX, 0, NumberLengthBytes);
   (void)memset(common.ecm.DZ, 0, NumberLengthBytes);
   (void)memset(common.ecm.W3, 0, NumberLengthBytes);
@@ -1756,8 +1754,8 @@ static bool getNextInteger(char **ppcFactors, int *result, char delimiter)
 
 // Return: 0 = No factors found.
 //         1 = Factors found.
-// Use: Xaux for square root of -1.
-//      Zaux for square root of 1.
+// Use: Xbak for square root of -1.
+//      Zbak for square root of 1.
 static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
 {
   int randomBase = 0;
@@ -1812,12 +1810,12 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
         if (!sqrtOneFound)
         {          // Save it to perform GCD later.
           lenBytes = nbrLimbs * (int)sizeof(limb);
-          (void)memcpy(common.ecm.Zaux, common.ecm.Aux2, lenBytes);
+          (void)memcpy(common.ecm.Zbak, common.ecm.Aux2, lenBytes);
           sqrtOneFound = true;
         }
         else
         {          // Try to find non-trivial factor by doing GCD.
-          SubtBigNbrMod(common.ecm.Aux2, common.ecm.Zaux, common.ecm.Aux4);
+          SubtBigNbrMod(common.ecm.Aux2, common.ecm.Zbak, common.ecm.Aux4);
           UncompressLimbsBigInteger(common.ecm.Aux4, &Temp2);
           BigIntGcd(pValue, &Temp2, &Temp4);
           lenBytes = NumberLength * (int)sizeof(limb);
@@ -1849,12 +1847,12 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
         if (!sqrtMinusOneFound)
         {          // Save it to perform GCD later.
           lenBytes = nbrLimbs * (int)sizeof(limb);
-          (void)memcpy(common.ecm.Xaux, common.ecm.Aux2, lenBytes);
+          (void)memcpy(common.ecm.Xbak, common.ecm.Aux2, lenBytes);
           sqrtOneFound = true;
         }
         else
         {          // Try to find non-trivial factor by doing GCD.
-          SubtBigNbrMod(common.ecm.Aux3, common.ecm.Xaux, common.ecm.Aux4);
+          SubtBigNbrMod(common.ecm.Aux3, common.ecm.Xbak, common.ecm.Aux4);
           UncompressLimbsBigInteger(common.ecm.Aux4, &Temp2);
           BigIntGcd(pValue, &Temp2, &Temp4);
           lenBytes = NumberLength * (int)sizeof(limb);

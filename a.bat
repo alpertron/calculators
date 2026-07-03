@@ -5,10 +5,10 @@ set optimization=--compilation_level ADVANCED_OPTIMIZATIONS
 set compilerName=%userprofile%\emsdk\emsdk\upstream\emscripten\node_modules\google-closure-compiler-java\compiler.jar
 set compilerOptions=%optimization% --language_out ECMASCRIPT_2015 --isolation_mode IIFE --externs=custom-externs.js --js androidextern.js --js commonNoAndroid.js
 set compilerOptionsAnd=%optimization% --language_out ECMASCRIPT_2015 --isolation_mode IIFE --externs=custom-externs.js --js androidextern.js --js commonAndroid.js
-set compileFlags=-flto -r -Os -Wall -finline-functions -DNDEBUG
+set compileFlags=-flto -Os -Wall -finline-functions -DNDEBUG
 set commonLinkFlags=-flto -Os --no-entry -s ASSERTIONS=0 -s NO_FILESYSTEM=1 --js-library lib.js --pre-js pre.js
-set jsCommon=%commonLinkFlags% -s WASM=0 -s DYNAMIC_EXECUTION=0 -s SINGLE_FILE=1 -s TEXTDECODER=0 -s INCOMING_MODULE_JS_API=['preRun','noInitialRun'] -s WASM_ASYNC_COMPILATION=0 -s ENVIRONMENT='worker' --closure 1 obj.o
-set wasmCommon=%commonLinkFlags% -s WASM=1 -D_USING64BITS_ obj.o
+set jsCommon=%commonLinkFlags% -s WASM=0 -s DYNAMIC_EXECUTION=0 -s SINGLE_FILE=1 -s TEXTDECODER=0 -s INCOMING_MODULE_JS_API=['preRun','noInitialRun'] -s WASM_ASYNC_COMPILATION=0 -s ENVIRONMENT='worker' --closure 1
+set wasmCommon=%commonLinkFlags% -s WASM=1 -D_USING64BITS_
 del *.wasm
 del *00*js
 
@@ -48,74 +48,54 @@ goto :generate_glue_code
 @if errorlevel 1 exit /b 1
 :compile
 perl internationalize.pl string_%2.txt string\strings.h
-cmd /c emcc %compileFlags% %fsquaresFiles% fsquares.c tsquares.c -o obj.o
+cmd /c emcc %compileFlags% %fsquaresFiles% fsquares.c tsquares.c %jsCommon% %fsquaresOptions% -o toweb\fsquaresW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %jsCommon% %fsquaresOptions% -o toweb\fsquaresW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %wasmCommon% %fsquaresOptions% -o fsquares_%2.wasm
+cmd /c emcc %compileFlags% %fsquaresFiles% fsquares.c tsquares.c %wasmCommon% %fsquaresOptions% -o fsquares_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% %fsquaresFiles% fcubes.c -o obj.o
+cmd /c emcc %compileFlags% %fsquaresFiles% fcubes.c %jsCommon% %fsquaresOptions% -o toweb\fcubesW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %jsCommon% %fsquaresOptions% -o toweb\fcubesW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %wasmCommon% %fsquaresOptions% -o fcubes_%2.wasm
+cmd /c emcc %compileFlags% %fsquaresFiles% fcubes.c %wasmCommon% %fsquaresOptions% -o fcubes_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% %fsquaresFiles% tsqcubes.c tsquares.c -o obj.o
+cmd /c emcc %compileFlags% %fsquaresFiles% tsqcubes.c tsquares.c %jsCommon% %fsquaresOptions% -o toweb\tsqcubesW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %jsCommon% %fsquaresOptions% -o toweb\tsqcubesW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %wasmCommon% %fsquaresOptions% -o tsqcubes_%2.wasm
+cmd /c emcc %compileFlags% %fsquaresFiles% tsqcubes.c tsquares.c %wasmCommon% %fsquaresOptions% -o tsqcubes_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% %fsquaresFiles% contfrac.c -o obj.o
+cmd /c emcc %compileFlags% %fsquaresFiles% contfrac.c %jsCommon% %fsquaresOptions% -o toweb\contfracW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %jsCommon% %fsquaresOptions% -o toweb\contfracW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %wasmCommon% %fsquaresOptions% -o contfrac_%2.wasm
+cmd /c emcc %compileFlags% %fsquaresFiles% contfrac.c %wasmCommon% %fsquaresOptions% -o contfrac_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% -DPOLYEXPR=1 %polfactFiles% -o obj.o
+cmd /c emcc %compileFlags% -DPOLYEXPR=1 %polfactFiles% %jsCommon% %polfactOptions% -o toweb\polfactW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %jsCommon% %polfactOptions% -o toweb\polfactW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %wasmCommon% %polfactOptions% -o polfact_%2.wasm
+cmd /c emcc %compileFlags% -DPOLYEXPR=1 %polfactFiles% %wasmCommon% %polfactOptions% -o polfact_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% %dilogFiles% -o obj.o
+cmd /c emcc %compileFlags% %dilogFiles% %jsCommon% %dilogOptions% -o toweb\dilogW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %jsCommon% %dilogOptions% -o toweb\dilogW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %wasmCommon% %dilogOptions% -o dilog_%2.wasm
+cmd /c emcc %compileFlags% %dilogFiles% %wasmCommon% %dilogOptions% -o dilog_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% %quadmodFiles% -o obj.o
+cmd /c emcc %compileFlags% %quadmodFiles% %jsCommon% %quadmodOptions% -o toweb\quadmodW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %jsCommon% %quadmodOptions% -o toweb\quadmodW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %wasmCommon% %quadmodOptions% -o quadmod_%2.wasm
+cmd /c emcc %compileFlags% %quadmodFiles% %wasmCommon% %quadmodOptions% -o quadmod_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 %quadFiles% -o obj.o
+cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 %quadFiles% %jsCommon% %quadOptions% -o toweb\quadW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %jsCommon% %quadOptions% -o toweb\quadW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %wasmCommon% %quadOptions% -o quad_%2.wasm
+cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 %quadFiles% %wasmCommon% %quadOptions% -o quad_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% %gaussianFiles% -o obj.o
+cmd /c emcc %compileFlags% %gaussianFiles% %jsCommon% %gaussianOptions% -o toweb\gaussianW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %jsCommon% %gaussianOptions% -o toweb\gaussianW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %wasmCommon% %gaussianOptions% -o gaussian_%2.wasm
+cmd /c emcc %compileFlags% %gaussianFiles% %wasmCommon% %gaussianOptions% -o gaussian_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DUSING_BLOCKLY=1 -DENABLE_VERBOSE=1 %ecmFiles% -o obj.o
+cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DUSING_BLOCKLY=1 -DENABLE_VERBOSE=1 %ecmFiles% %jsCommon% %ecmOptions% -o toweb\ecmW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %jsCommon% %ecmOptions% -o toweb\ecmW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %wasmCommon% %ecmOptions% -o ecm_%2.wasm
+cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DUSING_BLOCKLY=1 -DENABLE_VERBOSE=1 %ecmFiles% %wasmCommon% %ecmOptions% -o ecm_%2.wasm
 @if errorlevel 1 exit /b 1
 
 del obj.o

@@ -104,6 +104,5 @@ void ShowLowerText(void);
 int BpswPrimalityTest(const BigInteger* pValue, const struct sFactors* pstFactors);
 void batchEcmCallback(char** pptrOutput, int type);
 int gcdIsOne(const limb* value);
-void GenerateSieve(int initial);
 #endif
 #endif

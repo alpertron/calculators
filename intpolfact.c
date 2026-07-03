@@ -1067,7 +1067,7 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
 // If polynomial B divides A we have for all j:
 // |Bj| <= binomial(n-1, j)*SUM(i, |Ai|^2))^(1/2) + binomial(n-1, j-1) * Q
 // where m is the degree of A and n is the degree of B.
-// Q is the minimum of |A0| and |Am|.
+// Q is the minimum of |W1| and |Am|.
 // Maximum degree to be considered is n = ceil(m/2).
 // We need to find max(Bj).
 static void ComputeCoeffBounds(void)
@@ -1109,13 +1109,13 @@ static void ComputeCoeffBounds(void)
   operand2.sign = SIGN_POSITIVE;
   BigIntSubt(&operand3, &operand2, &operand4);
   if (operand4.sign == SIGN_POSITIVE)
-  {      // At this moment, |Am| >= |A0|
+  {      // At this moment, |Am| >= |W1|
     CopyBigInt(&operand3, &operand2);
   }
 
   // Loop that finds the maximum value of bound for |Bj|.
   intToBigInteger(&operand2, 1);  // binomial(n-1, 0)
-  // Set bound to |A0|
+  // Set bound to |W1|
   UncompressBigIntegerB(&common.poly.polyNonRepeatedFactors[1], &bound);
   bound.sign = SIGN_POSITIVE;
   for (degree1 = 1; degree1 <= maxDegreeFactor; degree1++)

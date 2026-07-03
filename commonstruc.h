@@ -106,23 +106,20 @@ struct stSiqs
   char threshold;
 };
 
-#define SIEVE_SIZE (2*3*5*7/**11*/)
-#define GROUP_SIZE ((2-1)*(3-1)*(5-1)*(7-1)/**(11-1)*/)
-#define HALF_SIEVE_SIZE (SIEVE_SIZE/2)
+#define SHORT_SIEVE_SIZE (2*3*5*7)
+#define SHORT_GROUP_SIZE ((2-1)*(3-1)*(5-1)*(7-1))
+#define SIEVE_SIZE (2*3*5*7*11)
+#define GROUP_SIZE ((2-1)*(3-1)*(5-1)*(7-1)*(11-1))
 #define MAX_SIEVE_PRIME (10*SIEVE_SIZE)
 
 struct stEcm
 {
-  limb A0[MAX_LEN];
-  limb A02[MAX_LEN];
-  limb A03[MAX_LEN];
   limb AA[MAX_LEN];
-  limb DX[MAX_LEN];
-  limb DZ[MAX_LEN];
   limb GD[MAX_LEN];
-  limb M[MAX_LEN];
   limb TX[MAX_LEN];
   limb TZ[MAX_LEN];
+  limb DX[MAX_LEN];
+  limb DZ[MAX_LEN];
   limb UX[MAX_LEN];
   limb UZ[MAX_LEN];
   limb W1[MAX_LEN];
@@ -141,15 +138,13 @@ struct stEcm
   limb Aux6[MAX_LEN];
   limb Aux7[MAX_LEN];
   limb Aux8[MAX_LEN];
-  limb Xaux[MAX_LEN];
-  limb Zaux[MAX_LEN];
-//  limb Buffer[30000000];
-  limb root[GROUP_SIZE][MAX_LEN];
+  limb Xbak[MAX_LEN];
+  limb Zbak[MAX_LEN];
+  limb root[SHORT_GROUP_SIZE * MAX_LEN];
   int sieveidx[GROUP_SIZE];
   limb GcdAccumulated[MAX_LEN];
-  limb *fieldAA;
   unsigned char sieve[MAX_SIEVE_PRIME];
-  unsigned char isCoprime2310[SIEVE_SIZE];
+  unsigned char isCoprime210_2310[SIEVE_SIZE];
   unsigned char ProcessExpon[(332199 + 7) / 8];
   unsigned char primes[((2 * 332199) + 3 + 7) / 8];
   BigInteger Temp1;
