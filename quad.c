@@ -90,7 +90,6 @@ static BigInteger ValVBak;
 static BigInteger ValGcdHomog;
 static BigInteger Tmp1;
 static BigInteger Tmp2;
-static int SolNbr;
 static int showRecursiveSolution;
 static BigInteger Xind;
 static BigInteger Yind;
@@ -594,7 +593,6 @@ static void showFactors(const BigInteger *value)
 
 static void showValue(BigInteger* value)
 {
-  SolNbr++;
   // If 2*value is greater than modulus, subtract modulus.
   multint(&Tmp1, value, 2);
   BigIntSubt(&modulus, &Tmp1, &Tmp1);
@@ -3902,7 +3900,6 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
     showText("<h2>");
     ShowEq(&ValA, &ValB, &ValC, &ValD, &ValE, &ValF, "x", "y");
     showText(" = 0</h2>");
-    SolNbr = 0;
     ptrBeginSol = ptrOutput;
     SolveQuadEquation();
     if (ptrBeginSol == ptrOutput)

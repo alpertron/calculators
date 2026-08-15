@@ -31,7 +31,11 @@
 int yieldFreq;
 int maxIndexM;
 int indexM;
+#ifdef FACTORIZATION_APP
 static int oldNbrFactors;
+#endif
+limb factorFound[MAX_LEN];
+static char* text;
 #ifdef __EMSCRIPTEN__
 char* ptrLowerText;
 char upperText[MAX_LEN*16];
@@ -383,7 +387,7 @@ static void InsertAurifFactors(struct sFactors *pstFactors, const BigInteger *Bi
 #ifdef __EMSCRIPTEN__
 void copyString(const char *textFromServer)
 {
-  (void)strcpy(common.saveFactors.text, textFromServer);
+  (void)strcpy(text, textFromServer);
 }
 #endif
 
@@ -400,7 +404,7 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
   static BigInteger Nbr1;
   static BigInteger Nbr2;
 
-  common.saveFactors.text[0] = 0;    // Indicate no new factor found in advance.
+  text[0] = 0;    // Indicate no new factor found in advance.
   Expon2 = Expon;
   if (cunningham && (BigOriginal->nbrLimbs > 4))
   {   // Enter here on numbers of more than 40 digits if the user selected
@@ -419,10 +423,10 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
     *ptrUrl = ((increment > 0)? 'p': 'm');
     ptrUrl++;
     *ptrUrl = 0;
-    getCunn(url, common.saveFactors.text);
+    getCunn(url, text);
 #endif
   }
-  ptrFactorsAscii = common.saveFactors.text;
+  ptrFactorsAscii = text;
   while (*ptrFactorsAscii > ' ')
   { // Loop through factors found in server.
     int nbrDigits;
@@ -615,7 +619,6 @@ static bool isPerfectPower(int rem, int currentPrime, const BigInteger *pRem2)
   return BigIntEqual(&Temp3, pRem2);
 }
 
-int kk;
 static void initProcessExponVector(const BigInteger* numToFactor, int numPrimes,
   int maxExpon)
 {
@@ -1120,11 +1123,6 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
   (void)memcpy(TestNbr, numToFactor->limbs, NumberLengthBytes);
   GetYieldFrequency();
   GetMontgomeryParms(NumberLength);
-  (void)memset(common.ecm.DX, 0, NumberLengthBytes);
-  (void)memset(common.ecm.DZ, 0, NumberLengthBytes);
-  (void)memset(common.ecm.W3, 0, NumberLengthBytes);
-  (void)memset(common.ecm.W4, 0, NumberLengthBytes);
-  (void)memset(common.ecm.GD, 0, NumberLengthBytes);
 #ifdef __EMSCRIPTEN__
   ptrLowerText = ShowFactoredPart(numToFactor, pstFactors);
 #endif
@@ -1138,9 +1136,9 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
     if (potentialFactor.nbrLimbs > 1)
     {                // Factor found.
       int lenBytes;
-      (void)memcpy(common.ecm.GD, potentialFactor.limbs, NumberLengthBytes);
+      (void)memcpy(factorFound, potentialFactor.limbs, NumberLengthBytes);
       lenBytes = (NumberLength - potentialFactor.nbrLimbs) * (int)sizeof(limb);
-      (void)memset(&common.ecm.GD[potentialFactor.nbrLimbs], 0, lenBytes);
+      (void)memset(&factorFound[potentialFactor.nbrLimbs], 0, lenBytes);
       foundByLehman = true;
       break;
     }
@@ -1149,9 +1147,9 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
       !BigIntEqual(&potentialFactor, numToFactor))
     {                // Factor found.
       int lenBytes;
-      (void)memcpy(common.ecm.GD, potentialFactor.limbs, NumberLengthBytes);
+      (void)memcpy(factorFound, potentialFactor.limbs, NumberLengthBytes);
       lenBytes = (NumberLength - potentialFactor.nbrLimbs) * (int)sizeof(limb);
-      (void)memset(&common.ecm.GD[potentialFactor.nbrLimbs], 0, lenBytes);
+      (void)memset(&factorFound[potentialFactor.nbrLimbs], 0, lenBytes);
       foundByLehman = true;
       break;
     }
@@ -1168,13 +1166,13 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
       if (expon > 1)
       {
         int lenBytes;
-        (void)memcpy(common.ecm.GD, potentialFactor.limbs, NumberLengthBytes);
+        (void)memcpy(factorFound, potentialFactor.limbs, NumberLengthBytes);
         lenBytes = (NumberLength - potentialFactor.nbrLimbs) * (int)sizeof(limb);
-        (void)memset(&common.ecm.GD[potentialFactor.nbrLimbs], 0, lenBytes);
+        (void)memset(&factorFound[potentialFactor.nbrLimbs], 0, lenBytes);
         foundByLehman = false;
         break;
       }
-      FactoringSIQS(TestNbr, common.ecm.GD);
+      FactoringSIQS(TestNbr, factorFound);
 #ifdef __EMSCRIPTEN__
       SIQSModMult += lModularMult - oldModularMult;
       timeSIQS += (int)(tenths() - originalTenths);
@@ -1187,8 +1185,8 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
     {
       break;
     }
-  } while ((memcmp(common.ecm.GD, TestNbr, NumberLengthBytes) == 0) ||
-           isOne(common.ecm.GD, NumberLength));
+  } while ((memcmp(factorFound, TestNbr, NumberLengthBytes) == 0) ||
+           isOne(factorFound, NumberLength));
   StepECM = 0; /* do not show pass number on screen */
 }
 
@@ -1672,7 +1670,7 @@ static void SaveFactors(const struct sFactors *pstFactors)
 #ifdef FACTORIZATION_APP
   const struct sFactors *pstCurFactor = pstFactors + 1;
   BigInteger bigint;
-  char *ptrText = common.saveFactors.text;
+  char *ptrText = text;
   if (ptrInputText == NULL)
   {   // If coming from quadratic Diophantine equation, do not save anything.
     return;
@@ -1711,7 +1709,7 @@ static void SaveFactors(const struct sFactors *pstFactors)
     pstCurFactor++;
   }
   *ptrText = 0;
-  databack(common.saveFactors.text);
+  databack(text);
 #endif
 }
 
@@ -1769,7 +1767,6 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
   SIQSModMult = 0;
 #endif
   bool factorsFound = false;
-  int nbrLimbsQ;
   int ctr;
   int nbrLimbs = pValue->nbrLimbs;
   bool sqrtOneFound = false;
@@ -1780,9 +1777,8 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
   (pValueLimbs + nbrLimbs)->x = 0;
   lenBytes = (nbrLimbs + 1) * (int)sizeof(limb);
   (void)memcpy(valueQ, pValueLimbs, lenBytes);
-  nbrLimbsQ = nbrLimbs;
   valueQ[0]--;                     // q = p - 1 (p is odd, so there is no carry).
-  lenBytes = (nbrLimbsQ + 1) * (int)sizeof(valueQ[0]);
+  lenBytes = (nbrLimbs + 1) * (int)sizeof(valueQ[0]);
   (void)memcpy(common.ecm.Aux1, valueQ, lenBytes);
   Aux1Len = nbrLimbs;
   DivideBigNbrByMaxPowerOf2(&ctr, common.ecm.Aux1, &Aux1Len);
@@ -2076,6 +2072,30 @@ static enum eTrialFactorRetCode performTrialDivision(struct sFactors* pstFactors
   return CONTINUE_FACTORIZATION;
 }
 
+static void initFactorFields(void)
+{  // Make all fields consecutive in buffer so they are cache-friendly.
+  common.ecm.AA = common.ecm.buffer;
+  common.ecm.UX = common.ecm.AA + NumberLength + 1;
+  common.ecm.UZ = common.ecm.UX + NumberLength + 1;
+  common.ecm.W1 = common.ecm.UZ + NumberLength + 1;
+  common.ecm.W2 = common.ecm.W1 + NumberLength + 1;
+  common.ecm.W3 = common.ecm.W2 + NumberLength + 1;
+  common.ecm.W4 = common.ecm.W3 + NumberLength + 1;
+  common.ecm.X = common.ecm.W4 + NumberLength + 1;
+  common.ecm.Z = common.ecm.X + NumberLength + 1;
+  common.ecm.Aux1 = common.ecm.Z + NumberLength + 1;
+  common.ecm.Aux2 = common.ecm.Aux1 + NumberLength + 1;
+  common.ecm.Aux3 = common.ecm.Aux2 + NumberLength + 1;
+  common.ecm.Aux4 = common.ecm.Aux3 + NumberLength + 1;
+  common.ecm.Aux5 = common.ecm.Aux4 + NumberLength + 1;
+  common.ecm.Aux6 = common.ecm.Aux5 + NumberLength + 1;
+  common.ecm.Aux7 = common.ecm.Aux6 + NumberLength + 1;
+  common.ecm.Aux8 = common.ecm.Aux7 + NumberLength + 1;
+  common.ecm.Xbak = common.ecm.Aux8 + NumberLength + 1;
+  common.ecm.Zbak = common.ecm.Xbak + NumberLength + 1;
+  common.ecm.root = common.ecm.Zbak + NumberLength + 1;
+}
+
 void factor(const BigInteger* toFactor, const int* number, int* factors, struct sFactors* pstFactors)
 {
   factorExt(toFactor, number, factors, pstFactors, NULL);
@@ -2093,6 +2113,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
   int result;
   int factorNbr;
 
+  text = (char *)&common.ecm.buffer[20 * MAX_LEN]; // Reuse ECM second step root location.
   CopyBigInt(&tofactor, toFactor);
   initializeSmallPrimes(smallPrimes);
   if (toFactor->nbrLimbs == 1)
@@ -2100,7 +2121,9 @@ void factorExt(const BigInteger *toFactor, const int *number,
     factorSmallInt(toFactor->limbs[0].x, factors, pstFactors);
     return;
   }
+#ifdef FACTORIZATION_APP
   oldNbrFactors = 0;
+#endif
   NextEC = -1;
   EC = 1;
   NumberLength = toFactor->nbrLimbs;
@@ -2230,7 +2253,9 @@ void factorExt(const BigInteger *toFactor, const int *number,
           NextEC = (NextEC * 10) + (*ptrKnownFactors & 0x0F);
           ptrKnownFactors++;
         }
+#ifdef FACTORIZATION_APP
         oldNbrFactors = pstFactors->multiplicity;
+#endif
         break;
       }
     }
@@ -2273,9 +2298,10 @@ void factorExt(const BigInteger *toFactor, const int *number,
 #endif
       CopyBigInt(&power, &prime);
       int expon = PowerCheck(&power, &prime);
+      NumberLength = prime.nbrLimbs;
+      initFactorFields();
       if (expon > 1)
       {
-        NumberLength = prime.nbrLimbs;
         BigInteger2IntArray(pstCurFactor->ptrFactor, &prime);
         pstCurFactor->multiplicity *= expon;
         SortFactors(pstFactors);
@@ -2354,12 +2380,12 @@ void factorExt(const BigInteger *toFactor, const int *number,
     // Check whether GD is not one. In this case we found a proper factor.
     for (ctr = 1; ctr < NumberLength; ctr++)
     {
-      if (common.ecm.GD[ctr].x != 0)
+      if (factorFound[ctr].x != 0)
       {
         break;
       }
     }
-    if ((ctr != NumberLength) || (common.ecm.GD[0].x != 1))
+    if ((ctr != NumberLength) || (factorFound[0].x != 1))
     {
       int numLimbs;
       int lenBytes;
@@ -2367,14 +2393,14 @@ void factorExt(const BigInteger *toFactor, const int *number,
       numLimbs = NumberLength;
       while (numLimbs > 1)
       {
-        if (common.ecm.GD[numLimbs-1].x != 0)
+        if (factorFound[numLimbs-1].x != 0)
         {
           break;
         }
         numLimbs--;
       }
       lenBytes = numLimbs * (int)sizeof(limb);
-      (void)memcpy(Temp1.limbs, common.ecm.GD, lenBytes);
+      (void)memcpy(Temp1.limbs, factorFound, lenBytes);
       Temp1.nbrLimbs = numLimbs;
       if (foundByLehman)
       {
@@ -2398,7 +2424,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
 
 EXTERNALIZE char *getFactorsAsciiPtr(void)
 {
-  return common.saveFactors.text;
+  return text;
 }
 
 static void intArrayToBigInteger(const int *ptrValues, BigInteger *bigint)

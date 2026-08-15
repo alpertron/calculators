@@ -45,7 +45,6 @@ static limb aux5[MAX_LEN];
 static limb aux6[MAX_LEN];
 static limb resultModOdd[MAX_LEN];
 static limb resultModPower2[MAX_LEN];
-static int NumberLength2;
 int NumberLength;
 int NumberLengthR1;
 #ifdef __EMSCRIPTEN__
@@ -67,6 +66,7 @@ static BigInteger tmpFact2;
 // Multiply big number in Montgomery notation by integer.
 void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb* pTestNbr, int nbrLen)
 {
+  assert(nbrLen > 0);
 #ifdef _USING64BITS_
   int64_t carry;
 #else
@@ -78,6 +78,7 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
 #endif
   int i;
   int TrialQuotient;
+  limb mostSignificantLimb;
   limb* ptrFactorBig;
   const limb* ptrTestNbr;
   double dTestNbr;
@@ -87,7 +88,6 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
     smallmodmult(factorBig->x, factorInt, result, pTestNbr->x);
     return;
   }
-  (factorBig + nbrLen)->x = 0;
   dTestNbr = getMantissa(pTestNbr + nbrLen, nbrLen);
   dFactorBig = getMantissa(factorBig + nbrLen, nbrLen);
   TrialQuotient = (int)(unsigned int)floor((dFactorBig * (double)factorInt / dTestNbr) + 0.5);
@@ -100,7 +100,7 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
   ptrTestNbr = pTestNbr;
 #ifdef _USING64BITS_
   carry = 0;
-  for (i = 0; i <= nbrLen; i++)
+  for (i = 0; i < nbrLen; i++)
   {
     carry += ((int64_t)ptrFactorBig->x * factorInt) -
       ((int64_t)TrialQuotient * ptrTestNbr->x);
@@ -109,12 +109,13 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
     ptrFactorBig++;
     ptrTestNbr++;
   }
+  mostSignificantLimb.x = (int)carry;
 #else
   dFactorInt = (double)factorInt;
   dTrialQuotient = (double)TrialQuotient;
   low = 0;
   dAccumulator = 0;
-  for (i = 0; i <= nbrLen; i++)
+  for (i = 0; i < nbrLen; i++)
   {
     dAccumulator += ((double)ptrFactorBig->x * dFactorInt) -
       (dTrialQuotient * (double)ptrTestNbr->x);
@@ -136,13 +137,14 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
     ptrFactorBig++;
     ptrTestNbr++;
   }
+  mostSignificantLimb.x = low;
 #endif
-  while (((unsigned int)(result + nbrLen)->x & MAX_VALUE_LIMB) != 0U)
+  while (((unsigned int)mostSignificantLimb.x & MAX_VALUE_LIMB) != 0U)
   {
     ptrFactorBig = result;
     ptrTestNbr = pTestNbr;
     unsigned int cy = 0;
-    for (i = 0; i <= nbrLen; i++)
+    for (i = 0; i < nbrLen; i++)
     {
       cy += (unsigned int)ptrTestNbr->x + (unsigned int)ptrFactorBig->x;
       ptrFactorBig->x = UintToInt(cy & MAX_VALUE_LIMB);
@@ -150,7 +152,9 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
       ptrFactorBig++;
       ptrTestNbr++;
     }
+    mostSignificantLimb.x += (int)cy;
   }
+  (result + nbrLen)->x = 0;
 }
 
 void modmultInt(limb* factorBig, int factorInt, limb* result)
@@ -1132,7 +1136,6 @@ void GetMontgomeryParms(int len)
   TestNbrCached = NBR_NOT_CACHED;
   TestNbr[len].x = 0;
   NumberLength = len;
-  NumberLength2 = len + len;
   powerOf2Exponent = 0;    // Indicate not power of 2 in advance.
   NumberLengthR1 = 1;
   if ((NumberLength == 1) && ((TestNbr[0].x & 1) != 0))

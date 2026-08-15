@@ -114,42 +114,37 @@ struct stSiqs
 
 struct stEcm
 {
-  limb AA[MAX_LEN];
-  limb GD[MAX_LEN];
-  limb TX[MAX_LEN];
-  limb TZ[MAX_LEN];
-  limb DX[MAX_LEN];
-  limb DZ[MAX_LEN];
-  limb UX[MAX_LEN];
-  limb UZ[MAX_LEN];
-  limb W1[MAX_LEN];
-  limb W2[MAX_LEN];
-  limb W3[MAX_LEN];
-  limb W4[MAX_LEN];
-  limb WX[MAX_LEN];
-  limb WZ[MAX_LEN];
-  limb X[MAX_LEN];
-  limb Z[MAX_LEN];
-  limb Aux1[MAX_LEN];
-  limb Aux2[MAX_LEN];
-  limb Aux3[MAX_LEN];
-  limb Aux4[MAX_LEN];
-  limb Aux5[MAX_LEN];
-  limb Aux6[MAX_LEN];
-  limb Aux7[MAX_LEN];
-  limb Aux8[MAX_LEN];
-  limb Xbak[MAX_LEN];
-  limb Zbak[MAX_LEN];
-  limb root[SHORT_GROUP_SIZE * MAX_LEN];
+  limb *AA;
+  limb *UX;
+  limb *UZ;
+  limb *W1;
+  limb *W2;
+  limb* W3;
+  limb *W4;
+  limb *X;
+  limb *Z;
+  limb *Aux1;
+  limb *Aux2;
+  limb *Aux3;
+  limb *Aux4;
+  limb *Aux5;
+  limb *Aux6;
+  limb *Aux7;
+  limb *Aux8;
+  limb *Xbak;
+  limb *Zbak;
+  limb *root;
   int sieveidx[GROUP_SIZE];
   limb GcdAccumulated[MAX_LEN];
   unsigned char sieve[MAX_SIEVE_PRIME];
   unsigned char isCoprime210_2310[SIEVE_SIZE];
   unsigned char ProcessExpon[(332199 + 7) / 8];
   unsigned char primes[((2 * 332199) + 3 + 7) / 8];
+  limb buffer[(20+SHORT_GROUP_SIZE) * MAX_LEN];
   BigInteger Temp1;
   BigInteger Temp2;
   BigInteger Temp3;
+  char buffer2[1000000];
 };
 
 struct stBigComplex
@@ -239,11 +234,6 @@ struct stQuad
   BigInteger Increment[400];
 };
 
-struct stSaveFactors
-{
-  char text[MAX_LEN * 36];
-};
-
 // Sum of squares and divisors are used at the same time.
 struct stK
 {
@@ -257,7 +247,6 @@ union uCommon
   struct stEcm ecm;
   struct stTrialDivision trialDiv;
   struct stQuad quad;
-  struct stSaveFactors saveFactors;
   struct stK k;
   struct stPoly poly;
 };

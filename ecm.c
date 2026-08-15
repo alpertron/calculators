@@ -53,6 +53,7 @@ static int NumberSizeBytes;
 static int groupSize;
 static int sieveSize;
 static int halfSieveSize;
+extern limb factorFound[MAX_LEN];
 
 struct sBounds
 {
@@ -373,7 +374,7 @@ int gcdIsOne(const limb* value)
     return 0;
   }
   BigIntGcd(&common.ecm.Temp1, &common.ecm.Temp2, &common.ecm.Temp3);
-  CompressLimbsBigInteger(common.ecm.GD, &common.ecm.Temp3);
+  CompressLimbsBigInteger(factorFound, &common.ecm.Temp3);
   if ((common.ecm.Temp3.nbrLimbs == 1) && (common.ecm.Temp3.limbs[0].x < 2))
   {
     return common.ecm.Temp3.limbs[0].x;    // GCD is less than 2.
@@ -590,7 +591,7 @@ static enum eEcmResult ecmStep2(void)
   int index = 0;
   int indexFirstPrime;
   StepECM = 2;
-  if (GROUP_SIZE * NumberLength > sizeof(common.ecm.root) / sizeof(common.ecm.root[0]))
+  if (GROUP_SIZE * NumberLength > SHORT_GROUP_SIZE * MAX_LEN)
   {  // Numbers are big. Use short group.
     groupSize = SHORT_GROUP_SIZE;
     sieveSize = SHORT_SIEVE_SIZE;
@@ -634,19 +635,19 @@ static enum eEcmResult ecmStep2(void)
     (void)ModInvBigNbr(common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
     modmult(common.ecm.Aux1, common.ecm.X, ptrRoot);               // root[0] <- X/Z (Q)
     ptrRoot += NumberLength;
-    duplicate(common.ecm.TX, common.ecm.TZ, common.ecm.X, common.ecm.Z);  // (TX:TZ) <- 2Q
+    duplicate(common.ecm.Aux3, common.ecm.Aux4, common.ecm.X, common.ecm.Z);  // (Aux3:Aux4) <- 2Q
     // Compute 3Q, 5Q, 7Q, 11Q, ... up to (sieveSize-1)*Q.
     // Store kQ where k is coprime with 2310 in root[].
     for (int sieveIndex = 3; sieveIndex < sieveSize; sieveIndex += 2)
     {
-      // At this moment (X:Z) = (k-2)Q, (UX:UZ) = (k-4)Q and (TX:TZ) = 2Q.
-      // The invariant is (X:Z) = (UX:UZ) + (TX:TZ) = (k-2)Q.
-      add3(common.ecm.WX, common.ecm.WZ, common.ecm.X, common.ecm.Z,
-        common.ecm.TX, common.ecm.TZ, common.ecm.UX, common.ecm.UZ); // (WX:WZ) <- kQ
-      (void)memcpy(common.ecm.UX, common.ecm.X, NumberSizeBytes);    // (UX:UZ) <- (k-2)Q
+      // At this moment (X:Z) = (k-2)Q, (UX:UZ) = (k-4)Q and (Aux3:Aux4) = 2Q.
+      // The invariant is (X:Z) = (UX:UZ) + (Aux3:Aux4) = (k-2)Q.
+      add3(common.ecm.Aux1, common.ecm.Aux2, common.ecm.X, common.ecm.Z,
+        common.ecm.Aux3, common.ecm.Aux4, common.ecm.UX, common.ecm.UZ); // (Aux1:Aux2) <- kQ
+      (void)memcpy(common.ecm.UX, common.ecm.X, NumberSizeBytes);        // (UX:UZ) <- (k-2)Q
       (void)memcpy(common.ecm.UZ, common.ecm.Z, NumberSizeBytes);
-      (void)memcpy(common.ecm.X, common.ecm.WX, NumberSizeBytes);    // (X:Z) <- kQ
-      (void)memcpy(common.ecm.Z, common.ecm.WZ, NumberSizeBytes);
+      (void)memcpy(common.ecm.X, common.ecm.Aux1, NumberSizeBytes);      // (X:Z) <- kQ
+      (void)memcpy(common.ecm.Z, common.ecm.Aux2, NumberSizeBytes);
       if (sieveIndex == halfSieveSize)
       {      // halfSieveSize is odd.
         (void)memcpy(common.ecm.W3, common.ecm.X, NumberSizeBytes);
@@ -659,9 +660,9 @@ static enum eEcmResult ecmStep2(void)
         ptrRoot += NumberLength;
       }
     } /* end for sieveIndex */
-    assert(ptrRoot - &common.ecm.root[0] == groupSize * NumberLength);
+    assert(ptrRoot - common.ecm.root == groupSize * NumberLength);
     duplicate(common.ecm.UX, common.ecm.UZ, common.ecm.W3, common.ecm.W4);  // (UX:UZ) <- sieveSize*Q
-    duplicate(common.ecm.TX, common.ecm.TZ, common.ecm.UX, common.ecm.UZ);  // (TX:TZ) <- 2*sieveSize*Q
+    duplicate(common.ecm.Aux3, common.ecm.Aux4, common.ecm.UX, common.ecm.UZ);// (Aux3:Aux4) <- 2*sieveSize*Q
     (void)memcpy(common.ecm.X, common.ecm.UX, NumberSizeBytes);             // (X:Z) <- sieveSize*Q
     (void)memcpy(common.ecm.Z, common.ecm.UZ, NumberSizeBytes);
     firstIndexM = boundStep1 / (2 * sieveSize);
@@ -673,14 +674,14 @@ static enum eEcmResult ecmStep2(void)
     {
       if (indexM >= firstIndexM)
       { // If inside step 2 range... 
-        bool rc = ModInvBigNbr(common.ecm.Z, common.ecm.Aux3, TestNbr, NumberLength);
+        bool rc = ModInvBigNbr(common.ecm.Z, common.ecm.Aux2, TestNbr, NumberLength);
         if (rc == false)
         {
-          (void)memcpy(common.ecm.GD, common.ecm.Z, NumberSizeBytes);
+          (void)memcpy(factorFound, common.ecm.Z, NumberSizeBytes);
           return FACTOR_FOUND;
         }
         // Compute Aux as X/Z for m*sieveSize*Q.
-        modmult(common.ecm.X, common.ecm.Aux3, common.ecm.Aux1);
+        modmult(common.ecm.X, common.ecm.Aux2, common.ecm.Aux1);
 
           /* Generate sieve */
         if (((indexM % 10) == 0) || (indexM == firstIndexM))
@@ -713,14 +714,14 @@ static enum eEcmResult ecmStep2(void)
           }
         }
       }   // End if inside step 2 range.
-      // At this moment (X:Z) = (2m+1)*sieveSize*Q, (UX:UZ) = (2m-1)*sieveSize*Q and (TX:TZ) = 2*sieveSize*Q.
-      // The invariant is (X:Z) = (UX:UZ) + (TX:TZ) = (2m+1)*sieveSize*Q.
-      add3(common.ecm.WX, common.ecm.WZ, common.ecm.X, common.ecm.Z,
-           common.ecm.TX, common.ecm.TZ, common.ecm.UX, common.ecm.UZ); // (WX:WZ) <- (2m+3)*sieveSize*Q
+      // At this moment (X:Z) = (2m+1)*sieveSize*Q, (UX:UZ) = (2m-1)*sieveSize*Q and (Aux3:Aux4) = 2*sieveSize*Q.
+      // The invariant is (X:Z) = (UX:UZ) + (Aux3:Aux4) = (2m+1)*sieveSize*Q.
+      add3(common.ecm.Aux1, common.ecm.Aux2, common.ecm.X, common.ecm.Z,
+           common.ecm.Aux3, common.ecm.Aux4, common.ecm.UX, common.ecm.UZ); // (Aux1:Aux2) <- (2m+3)*sieveSize*Q
       (void)memcpy(common.ecm.UX, common.ecm.X, NumberSizeBytes);       // (UX:UZ) <- (2m+1)*sieveSize*Q
       (void)memcpy(common.ecm.UZ, common.ecm.Z, NumberSizeBytes);
-      (void)memcpy(common.ecm.X, common.ecm.WX, NumberSizeBytes);       // (X:Z) <- (2m+3)*sieveSize*Q
-      (void)memcpy(common.ecm.Z, common.ecm.WZ, NumberSizeBytes);
+      (void)memcpy(common.ecm.X, common.ecm.Aux1, NumberSizeBytes);     // (X:Z) <- (2m+3)*sieveSize*Q
+      (void)memcpy(common.ecm.Z, common.ecm.Aux2, NumberSizeBytes);
 #ifdef __EMSCRIPTEN__
       longPrime += 2 * sieveSize;
 #endif
@@ -744,7 +745,7 @@ static enum eEcmResult ecmStep2(void)
         continue;
       }
       // Compute GD as GCD(GcdAccumulated, TestNbr)
-      if (memcmp(common.ecm.GD, TestNbr, NumberSizeBytes) != 0)
+      if (memcmp(factorFound, TestNbr, NumberSizeBytes) != 0)
       {           // GCD is not 1 or TestNbr
         return FACTOR_FOUND;
       }
@@ -803,8 +804,8 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
       if (EC >= TYP_SIQS)
       {
         int bufSize = (NumberLength - 1) * (int)sizeof(limb);
-        common.ecm.GD[0].x = 1;   // Set GD to 1.
-        (void)memset(&common.ecm.GD[1], 0, bufSize);
+        factorFound[0].x = 1;   // Set GD to 1.
+        (void)memset(&factorFound[1], 0, bufSize);
         *pEC = EC;
         *pNextEC = NextEC;
         return FACTOR_FOUND;
@@ -824,7 +825,7 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
         EC += TYP_SIQS;
         *pEC = EC;
         *pNextEC = NextEC;
-        (void)memcpy(common.ecm.GD, TestNbr, NumberSizeBytes);
+        (void)memcpy(factorFound, TestNbr, NumberSizeBytes);
         return CHANGE_TO_SIQS;
       }
       if ((nbrDigits > 30) && (nbrDigits <= 90))  // If between 30 and 90 digits...         
@@ -835,7 +836,7 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
           EC += TYP_SIQS;
           *pEC = EC;
           *pNextEC = NextEC;
-          (void)memcpy(common.ecm.GD, TestNbr, NumberSizeBytes);
+          (void)memcpy(factorFound, TestNbr, NumberSizeBytes);
           return CHANGE_TO_SIQS;
         }
       }
@@ -887,9 +888,9 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
 
     //  if W1*(W1 ^ 2 - 1)*(9 * W1 ^ 2 - 1) mod N=0 then select another curve.
     modmult(common.ecm.W1, common.ecm.W1, common.ecm.W2);          // W2 <- W1^2
-    modmult(common.ecm.W2, common.ecm.W1, common.ecm.W3);         // W3 <- W1^3
+    modmult(common.ecm.W2, common.ecm.W1, common.ecm.W3);          // W3 <- W1^3
     SubtBigNbrModN(common.ecm.W3, common.ecm.W1, common.ecm.Aux1, TestNbr, NumberLength);  // Aux1 <- W1^3 - W1
-    modmultInt(common.ecm.W2, 9, common.ecm.Aux2);      // Aux2 <- 9*W1^2
+    modmultInt(common.ecm.W2, 9, common.ecm.Aux2);                 // Aux2 <- 9*W1^2
     SubtBigNbrModN(common.ecm.Aux2, MontgomeryMultR1, common.ecm.Aux2, TestNbr, NumberLength); // Aux2 <- 9*W1^2-1
     modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.Aux3);
   } while (BigNbrIsZero(common.ecm.Aux3));

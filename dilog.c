@@ -74,7 +74,6 @@ static limb primRootPwr[MAX_LEN];
 static limb TestNbrOther[MAX_LEN];
 static limb MontgomeryMultR1Other[MAX_LEN];
 static int NumberLengthOther;
-static double dN;
 static char textExp[1000];
 struct sFactors astFactorsGO[1000];
 int factorsGO[10000];
@@ -311,7 +310,6 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   int leastSignificantLimb, int mostSignificantLimb)
 {
   char* ptr;
-  int nbrLimbs;
   int NumberSizeBytes;
   int indexExp;
   int lenBytes;
@@ -341,16 +339,6 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(NumberLength);
   NumberSizeBytes = NumberLength * (int)sizeof(limb);
-  nbrLimbs = subGroupOrder.nbrLimbs;
-  dN = (double)subGroupOrder.limbs[nbrLimbs - 1].x;
-  if (nbrLimbs > 1)
-  {
-    dN += (double)subGroupOrder.limbs[nbrLimbs - 2].x / LIMB_RANGE;
-    if (nbrLimbs > 2)
-    {
-      dN += (double)subGroupOrder.limbs[nbrLimbs - 3].x / LIMB_RANGE / LIMB_RANGE;
-    }
-  }
   CopyBigInt(&baseExp, &groupOrder);
   (void)BigIntPowerIntExp(&subGroupOrder, subGroupMultiplicity, &powSubGroupOrder2);
   (void)BigIntDivide(&groupOrder, &powSubGroupOrder2, &tmpBase);

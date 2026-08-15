@@ -7,38 +7,38 @@ set compilerOptions=%optimization% --language_out ECMASCRIPT_2015 --isolation_mo
 set compilerOptionsAnd=%optimization% --language_out ECMASCRIPT_2015 --isolation_mode IIFE --externs=custom-externs.js --js androidextern.js --js commonAndroid.js
 set compileFlags=-flto -Os -Wall -finline-functions -DNDEBUG
 set commonLinkFlags=-flto -Os --no-entry -s ASSERTIONS=0 -s NO_FILESYSTEM=1 --js-library lib.js --pre-js pre.js
-set jsCommon=%commonLinkFlags% -s WASM=0 -s DYNAMIC_EXECUTION=0 -s SINGLE_FILE=1 -s TEXTDECODER=0 -s INCOMING_MODULE_JS_API=['preRun','noInitialRun'] -s WASM_ASYNC_COMPILATION=0 -s ENVIRONMENT='worker' --closure 1
-set wasmCommon=%commonLinkFlags% -s WASM=1 -D_USING64BITS_
+set jsCommon=%commonLinkFlags% -s WASM=0 -s DYNAMIC_EXECUTION=0 -s SINGLE_FILE=1 -s TEXTDECODER=2 -s INCOMING_MODULE_JS_API=['preRun','noInitialRun'] -s WASM_ASYNC_COMPILATION=0 -s ENVIRONMENT='worker' --closure 1
+set wasmCommon=%commonLinkFlags% -s WASM=1 -D_USING64BITS_ -msimd128
 del *.wasm
 del *00*js
 
 rem ===================== FILES TO USE DURING COMPILATION =====================
-set fsquaresFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c fftUtil.c
-set fsquaresOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=34275328
+set fsquaresFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c fftUtil.c
+set fsquaresOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']"
 set fsquaresJS=--js interface.js --js config.js --js common.js --js buttons.js --js feedback.js --js wizard.js
 
-set polfactFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c linkedbignbr.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c rootseq.c lineareq.c quadraticeq.c cubiceq.c quartics.c quintics.c quinticsData.c bigrational.c output.c polynomial.c polyexpr.c multpoly.c divpoly.c fftpoly.c intpolfact.c modpolfact.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c fftUtil.c
-set polfactOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301334528
+set polfactFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c linkedbignbr.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c rootseq.c lineareq.c quadraticeq.c cubiceq.c quartics.c quintics.c quinticsData.c bigrational.c output.c polynomial.c polyexpr.c multpoly.c divpoly.c fftpoly.c intpolfact.c modpolfact.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c fftUtil.c
+set polfactOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -DPOLYEXPR=1
 set polfactJS=--js polyfact.js --js common.js --js feedback.js
 
-set dilogFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c dilog.c bignbr.c showtime.c inputstr.c fft.c fftUtil.c
-set dilogOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888
+set dilogFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c dilog.c bignbr.c showtime.c inputstr.c fft.c fftUtil.c
+set dilogOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']"
 set dilogJS=--js dislog.js --js config.js --js common.js --js buttons.js --js feedback.js
 
-set quadmodFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quadmod.c quadmodLL.c bignbr.c showtime.c inputstr.c fft.c fftUtil.c
-set quadmodOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888
+set quadmodFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quadmod.c quadmodLL.c bignbr.c showtime.c inputstr.c fft.c fftUtil.c
+set quadmodOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']"
 set quadmodJS=--js quadrmod.js --js config.js --js common.js --js buttons.js --js feedback.js
 
-set gaussianFiles=GaussExpr.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c gaussian.c output.c bignbr.c showtime.c inputstr.c gcdrings.c fft.c fftUtil.c
-set gaussianOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888
+set gaussianFiles=GaussExpr.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c gaussian.c output.c bignbr.c showtime.c inputstr.c gcdrings.c fft.c fftUtil.c
+set gaussianOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']"
 set gaussianJS=--js gauss.js --js config.js --js common.js --js buttons.js --js feedback.js
 
-set ecmFiles=batch.c fft.c fftUtil.c expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c gcdrings.c bignbr.c showtime.c inputstr.c fromBlockly.c linkedbignbr.c
-set ecmOptions=-s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr','_getFactorsAsciiPtr']" -s TOTAL_MEMORY=282460160
+set ecmFiles=batch.c fft.c fftUtil.c expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c gcdrings.c bignbr.c showtime.c inputstr.c fromBlockly.c linkedbignbr.c
+set ecmOptions=-s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr','_getFactorsAsciiPtr']"
 set ecmJS=--js blocklyextern.js --js buttons.js --js ecmfront.js --js config.js --js common.js --js feedback.js --js wizard.js 
 
-set quadFiles=batch.c fft.c fftUtil.c expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quad.c quadmodLL.c output.c bignbr.c showtime.c inputstr.c
-set quadOptions=-s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=263192576
+set quadFiles=batch.c fft.c fftUtil.c expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quad.c quadmodLL.c output.c bignbr.c showtime.c inputstr.c
+set quadOptions=-s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']"
 set quadJS=--js quadr.js --js config.js --js common.js --js buttons.js --js feedback.js
 
 rem ================================= COMPILE =================================
@@ -47,57 +47,59 @@ rem ================================= COMPILE =================================
 goto :generate_glue_code
 @if errorlevel 1 exit /b 1
 :compile
+perl ClassicalMult_wasm.pl > ClassicalMult_wasm.S
 perl internationalize.pl string_%2.txt string\strings.h
-cmd /c emcc %compileFlags% %fsquaresFiles% fsquares.c tsquares.c %jsCommon% %fsquaresOptions% -o toweb\fsquaresW%1%2.js
+cmd /c emcc %compileFlags% %fsquaresFiles% fsquares.c ClassicalMult.c tsquares.c %jsCommon% %fsquaresOptions% -o toweb\fsquaresW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %fsquaresFiles% fsquares.c tsquares.c %wasmCommon% %fsquaresOptions% -o fsquares_%2.wasm
-@if errorlevel 1 exit /b 1
-
-cmd /c emcc %compileFlags% %fsquaresFiles% fcubes.c %jsCommon% %fsquaresOptions% -o toweb\fcubesW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %fsquaresFiles% fcubes.c %wasmCommon% %fsquaresOptions% -o fcubes_%2.wasm
+cmd /c emcc %compileFlags% %fsquaresFiles% fsquares.c ClassicalMult_wasm.S tsquares.c %wasmCommon% %fsquaresOptions% -o fsquares_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% %fsquaresFiles% tsqcubes.c tsquares.c %jsCommon% %fsquaresOptions% -o toweb\tsqcubesW%1%2.js
+cmd /c emcc %compileFlags% %fsquaresFiles% fcubes.c ClassicalMult.c %jsCommon% %fsquaresOptions% -o toweb\fcubesW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %fsquaresFiles% tsqcubes.c tsquares.c %wasmCommon% %fsquaresOptions% -o tsqcubes_%2.wasm
-@if errorlevel 1 exit /b 1
-
-cmd /c emcc %compileFlags% %fsquaresFiles% contfrac.c %jsCommon% %fsquaresOptions% -o toweb\contfracW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %fsquaresFiles% contfrac.c %wasmCommon% %fsquaresOptions% -o contfrac_%2.wasm
+cmd /c emcc %compileFlags% %fsquaresFiles% fcubes.c ClassicalMult_wasm.S %wasmCommon% %fsquaresOptions% -o fcubes_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% -DPOLYEXPR=1 %polfactFiles% %jsCommon% %polfactOptions% -o toweb\polfactW%1%2.js
+cmd /c emcc %compileFlags% %fsquaresFiles% tsqcubes.c ClassicalMult.c tsquares.c %jsCommon% %fsquaresOptions% -o toweb\tsqcubesW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% -DPOLYEXPR=1 %polfactFiles% %wasmCommon% %polfactOptions% -o polfact_%2.wasm
-@if errorlevel 1 exit /b 1
-
-cmd /c emcc %compileFlags% %dilogFiles% %jsCommon% %dilogOptions% -o toweb\dilogW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %dilogFiles% %wasmCommon% %dilogOptions% -o dilog_%2.wasm
+cmd /c emcc %compileFlags% %fsquaresFiles% tsqcubes.c ClassicalMult_wasm.S tsquares.c %wasmCommon% %fsquaresOptions% -o tsqcubes_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% %quadmodFiles% %jsCommon% %quadmodOptions% -o toweb\quadmodW%1%2.js
+cmd /c emcc %compileFlags% %fsquaresFiles% contfrac.c ClassicalMult.c %jsCommon% %fsquaresOptions% -o toweb\contfracW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %quadmodFiles% %wasmCommon% %quadmodOptions% -o quadmod_%2.wasm
-@if errorlevel 1 exit /b 1
-
-cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 %quadFiles% %jsCommon% %quadOptions% -o toweb\quadW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 %quadFiles% %wasmCommon% %quadOptions% -o quad_%2.wasm
+cmd /c emcc %compileFlags% %fsquaresFiles% contfrac.c ClassicalMult_wasm.S %wasmCommon% %fsquaresOptions% -o contfrac_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% %gaussianFiles% %jsCommon% %gaussianOptions% -o toweb\gaussianW%1%2.js
+cmd /c emcc %compileFlags% %polfactFiles% ClassicalMult.c %jsCommon% %polfactOptions% -o toweb\polfactW%1%2.js
 @if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %gaussianFiles% %wasmCommon% %gaussianOptions% -o gaussian_%2.wasm
-@if errorlevel 1 exit /b 1
-
-cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DUSING_BLOCKLY=1 -DENABLE_VERBOSE=1 %ecmFiles% %jsCommon% %ecmOptions% -o toweb\ecmW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DUSING_BLOCKLY=1 -DENABLE_VERBOSE=1 %ecmFiles% %wasmCommon% %ecmOptions% -o ecm_%2.wasm
+cmd /c emcc %compileFlags% %polfactFiles% ClassicalMult_wasm.S %wasmCommon% %polfactOptions% -o polfact_%2.wasm
 @if errorlevel 1 exit /b 1
 
+cmd /c emcc %compileFlags% %dilogFiles% ClassicalMult.c %jsCommon% %dilogOptions% -o toweb\dilogW%1%2.js
+@if errorlevel 1 exit /b 1
+cmd /c emcc %compileFlags% %dilogFiles% ClassicalMult_wasm.S %wasmCommon% %dilogOptions% -o dilog_%2.wasm
+@if errorlevel 1 exit /b 1
+
+cmd /c emcc %compileFlags% %quadmodFiles% ClassicalMult.c %jsCommon% %quadmodOptions% -o toweb\quadmodW%1%2.js
+@if errorlevel 1 exit /b 1
+cmd /c emcc %compileFlags% %quadmodFiles% ClassicalMult_wasm.S %wasmCommon% %quadmodOptions% -o quadmod_%2.wasm
+@if errorlevel 1 exit /b 1
+
+cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 %quadFiles% ClassicalMult.c %jsCommon% %quadOptions% -o toweb\quadW%1%2.js
+@if errorlevel 1 exit /b 1
+cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 %quadFiles% ClassicalMult_wasm.S %wasmCommon% %quadOptions% -o quad_%2.wasm
+@if errorlevel 1 exit /b 1
+
+cmd /c emcc %compileFlags% %gaussianFiles% ClassicalMult.c %jsCommon% %gaussianOptions% -o toweb\gaussianW%1%2.js
+@if errorlevel 1 exit /b 1
+cmd /c emcc %compileFlags% %gaussianFiles% ClassicalMult_wasm.S %wasmCommon% %gaussianOptions% -o gaussian_%2.wasm
+@if errorlevel 1 exit /b 1
+
+cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DUSING_BLOCKLY=1 -DENABLE_VERBOSE=1 %ecmFiles% ClassicalMult.c %jsCommon% %ecmOptions% -o toweb\ecmW%1%2.js
+@if errorlevel 1 exit /b 1
+cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DUSING_BLOCKLY=1 -DENABLE_VERBOSE=1 %ecmFiles% ClassicalMult_wasm.S %wasmCommon% %ecmOptions% -o ecm_%2.wasm
+@if errorlevel 1 exit /b 1
+
+del ClassicalMult_wasm.S
 del obj.o
 @goto :EOF
 

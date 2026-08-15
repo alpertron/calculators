@@ -41,8 +41,9 @@ function enableButtons(enable)
 
 function fromWorker(e)
 {
-  // First character of e is "1" for intermediate text
-  // and it is "2" for end of calculation.
+  // First character of e is:
+  // "1" for intermediate text,
+  // "2" for end of calculation,
   let firstChar = e.substring(0, 1);
   if ((android === 0) && ((firstChar === "M") || (firstChar === "N")))
   {    // User entered a number. Load calculator to process it.
