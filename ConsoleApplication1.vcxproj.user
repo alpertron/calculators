@@ -8,16 +8,16 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>0 "x^720-1" 0 2</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>2**3200-1</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArgumentsHistory>(10**142-1)/99/290249|10**700+2|10**59+213|0 "x^720-1" 0|0 "x^720-1" 0 2|</LocalDebuggerCommandArgumentsHistory>
+    <LocalDebuggerCommandArgumentsHistory>5**(5*23)-1|10**38-|10**38-1040759|5000012000^18+3^18|2**3200-1|</LocalDebuggerCommandArgumentsHistory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>0 "x^720-1" 0 2</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>5**(5*23)-1</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)\x64\release</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommandArgumentsHistory>2^20000|0 "x**720-1" 0 0|10**700+2|10**59+213|0 "x^720-1" 0 2|</LocalDebuggerCommandArgumentsHistory>
+    <LocalDebuggerCommandArgumentsHistory>0 "x**720-1" 0 0|10**700+2|10**59+213|0 "x^720-1" 0 2|5**(5*23)-1|</LocalDebuggerCommandArgumentsHistory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerCommandArguments>"GCD(60+50i, 19+22i)" 0</LocalDebuggerCommandArguments>

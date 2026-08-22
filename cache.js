@@ -18,6 +18,8 @@
 */
 /* global getCalcURLs */
 /* global initMenubarEvents */
+/* global supportsWasmSimd */
+ 
 let url = window.location.pathname;
 
 async function updateCache(cache)
@@ -27,7 +29,7 @@ async function updateCache(cache)
     const tempCache = await caches.open("cacheTEMP");
     // Do not retrieve alternate JavaScript code if
     // WebAssembly is enabled in browser. Always include current HTML.
-    await tempCache.addAll([url].concat((typeof(WebAssembly) === "undefined")?
+    await tempCache.addAll([url].concat((supportsWasmSimd())?
                getCalcURLs():getCalcURLs().slice(1)));
     // For each file in temporary cache, copy it to cache passed as parameter.
     const matchesArr = await tempCache.matchAll();
@@ -83,7 +85,7 @@ async function fillCache()
       {
         let tempCache = await caches.open("cacheTEMP");
         // Do not fetch HTML because it is already fetched.
-        await tempCache.addAll((typeof(WebAssembly) === "undefined")?
+        await tempCache.addAll((supportsWasmSimd())?
                   getCalcURLs():getCalcURLs().slice(1));
         // Copy cached resources to main cache and delete this one.
         let matchesArr = await tempCache.matchAll();

@@ -25,12 +25,14 @@
 /* global generateFuncButtons */
 /* global get */
 /* global getConfig */
+/* global getFirstLine */
 /* global getStorage */
 /* global getCalculatorCode */
 /* global hide */
 /* global registerServiceWorker */
 /* global setStorage */
 /* global show */
+/* global usingWebAssembly */
 const debugEcm = false;
 let app;
 let digits;
@@ -121,9 +123,7 @@ function dowork(n)
   let helphelp = get("helphelp");
   hide("help");
   show("helphelp");
-  const version = (typeof(WebAssembly) === "undefined"? "nowebassy": "webassy");
-  helphelp.innerHTML = "<p>" + get("firstLine").innerHTML + " " +
-                       get(version).innerHTML + "</p>";
+  helphelp.innerHTML = getFirstLine();
   show("result");
   if (valueText === "")
   {

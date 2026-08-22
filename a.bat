@@ -3,7 +3,7 @@ del /q toweb\*.*
 @if "%2" == "end" goto compress
 set optimization=--compilation_level ADVANCED_OPTIMIZATIONS
 set compilerName=%userprofile%\emsdk\emsdk\upstream\emscripten\node_modules\google-closure-compiler-java\compiler.jar
-set compilerOptions=%optimization% --language_out ECMASCRIPT_2015 --isolation_mode IIFE --externs=custom-externs.js --js androidextern.js --js commonNoAndroid.js
+set compilerOptions=%optimization% --language_out ECMASCRIPT_2015 --isolation_mode IIFE --externs=custom-externs.js --js androidextern.js --js commonNoAndroid.js --js supportsWasmSimd.js
 set compilerOptionsAnd=%optimization% --language_out ECMASCRIPT_2015 --isolation_mode IIFE --externs=custom-externs.js --js androidextern.js --js commonAndroid.js
 set compileFlags=-flto -Os -Wall -finline-functions -DNDEBUG
 set commonLinkFlags=-flto -Os --no-entry -s ASSERTIONS=0 -s NO_FILESYSTEM=1 --js-library lib.js --pre-js pre.js
@@ -108,27 +108,27 @@ rem ========================= GENERATION OF GLUE CODE ========================
 java -jar %compilerName% %compilerOptions% --js intfwebw.js --js commonwebw.js --js_output_file intWW.js
 @if errorlevel 1 exit /b 1
 
-java -jar %compilerName% -D app=0 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file WebGlue.js
+java -jar %compilerName% -D app=0 %compilerOptions% --js cache.js --js calccode.js --js firstLineNoAndroid.js %fsquaresJS% --js worker.js --js_output_file WebGlue.js
 @if errorlevel 1 exit /b 1
-java -jar %compilerName% -D app=0 %compilerOptionsAnd% %fsquaresJS% --js workerAndroid.js --js_output_file AndroidGlue.js
+java -jar %compilerName% -D app=0 %compilerOptionsAnd% --js firstLineAndroid.js %fsquaresJS% --js workerAndroid.js --js_output_file AndroidGlue.js
 @if errorlevel 1 exit /b 1
 @call :generate_glue_code_subr FSQUARES.HTM fsquares.html SUMCUAD.HTM sumcuad.html fsquares %1
 
-java -jar %compilerName% -D app=2 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file WebGlue.js
+java -jar %compilerName% -D app=2 %compilerOptions% --js cache.js --js calccode.js --js firstLineNoAndroid.js %fsquaresJS% --js worker.js --js_output_file WebGlue.js
 @if errorlevel 1 exit /b 1
-java -jar %compilerName% -D app=2 %compilerOptionsAnd% %fsquaresJS% --js workerAndroid.js --js_output_file AndroidGlue.js
+java -jar %compilerName% -D app=2 %compilerOptionsAnd% --js firstLineAndroid.js %fsquaresJS% --js workerAndroid.js --js_output_file AndroidGlue.js
 @if errorlevel 1 exit /b 1
 @call :generate_glue_code_subr FCUBES.HTM fcubes.html SUMCUBOS.HTM sumcubos.html fcubes %1
 
-java -jar %compilerName% -D app=4 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file WebGlue.js
+java -jar %compilerName% -D app=4 %compilerOptions% --js cache.js --js calccode.js --js firstLineNoAndroid.js %fsquaresJS% --js worker.js --js_output_file WebGlue.js
 @if errorlevel 1 exit /b 1
-java -jar %compilerName% -D app=4 %compilerOptionsAnd% %fsquaresJS% --js workerAndroid.js --js_output_file AndroidGlue.js
+java -jar %compilerName% -D app=4 %compilerOptionsAnd% --js firstLineAndroid.js %fsquaresJS% --js workerAndroid.js --js_output_file AndroidGlue.js
 @if errorlevel 1 exit /b 1
 @call :generate_glue_code_subr CONTFRAC.HTM contfrac.html FRACCONT.HTM fraccont.html contfrac %1
 
-java -jar %compilerName% -D app=6 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file WebGlue.js
+java -jar %compilerName% -D app=6 %compilerOptions% --js cache.js --js calccode.js --js firstLineNoAndroid.js %fsquaresJS% --js worker.js --js_output_file WebGlue.js
 @if errorlevel 1 exit /b 1
-java -jar %compilerName% -D app=6 %compilerOptionsAnd% %fsquaresJS% --js workerAndroid.js --js_output_file AndroidGlue.js
+java -jar %compilerName% -D app=6 %compilerOptionsAnd% --js firstLineAndroid.js %fsquaresJS% --js workerAndroid.js --js_output_file AndroidGlue.js
 @if errorlevel 1 exit /b 1
 @call :generate_glue_code_subr TSQCUBES.HTM tsqcubes.html TCUADCUB.HTM tcuadcub.html tsqcubes %1
 
@@ -153,15 +153,15 @@ java -jar %compilerName% %compilerOptionsAnd% %quadmodJS% --js workerAndroid.js 
 @if errorlevel 1 exit /b 1
 @call :generate_glue_code_subr QUADMOD.HTM quadmod.html CUADMOD.HTM cuadmod.html quadmod %1
 
-java -jar %compilerName% %compilerOptions% --js cache.js --js calccode.js %gaussianJS% --js worker.js --js_output_file WebGlue.js
+java -jar %compilerName% %compilerOptions% --js cache.js --js calccode.js --js firstLineNoAndroid.js %gaussianJS% --js worker.js --js_output_file WebGlue.js
 @if errorlevel 1 exit /b 1
-java -jar %compilerName% %compilerOptionsAnd% %gaussianJS% --js workerAndroid.js --js_output_file AndroidGlue.js
+java -jar %compilerName% %compilerOptionsAnd% --js firstLineAndroid.js %gaussianJS% --js workerAndroid.js --js_output_file AndroidGlue.js
 @if errorlevel 1 exit /b 1
 @call :generate_glue_code_subr GAUSSIAN.HTM gaussian.html GAUSIANO.HTM gausiano.html gaussian %1
 
-java -jar %compilerName% %compilerOptions% --js cache.js --js calccode.js --js ecmNoAndroid.js %ecmJS% --js worker.js --js_output_file WebGlue.js
+java -jar %compilerName% %compilerOptions% --js cache.js --js calccode.js --js ecmNoAndroid.js --js firstLineNoAndroid.js %ecmJS% --js worker.js --js_output_file WebGlue.js
 @if errorlevel 1 exit /b 1
-java -jar %compilerName% %compilerOptionsAnd% --js ecmAndroid.js %ecmJS% --js workerAndroid.js --js_output_file AndroidGlue.js
+java -jar %compilerName% %compilerOptionsAnd% --js ecmAndroid.js --js firstLineAndroid.js %ecmJS% --js workerAndroid.js --js_output_file AndroidGlue.js
 @if errorlevel 1 exit /b 1
 @call :generate_glue_code_subr ECM.HTM ecm.html ECMC.HTM ecmc.html ecm %1
 copy calculatorSW.js toweb\calcSW.js

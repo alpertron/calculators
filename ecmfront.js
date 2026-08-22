@@ -42,9 +42,15 @@
 /* global setStorage */
 /* global setWizardStep */
 /* global show */
+/* global getFirstLine */
 /* global typedOnWizard */
 /* global useBlockly */
+/* global usingWebAssembly */
 /* global wizardNext */
+
+/** @define {boolean} */
+const IS_ANDROID = false;
+
 const points=[0,6, 2,9, 4,0, 5,6, 7,1, 8,0, 13,9, 14,9, 15,7, 16,7, 17,0, 18,13, 20,5, 22,10, 23,12, 24,6, 27,7];
 let fileContents = null;
 let app;
@@ -330,9 +336,7 @@ function performWork(n, valueText)
   hide("cont");
   hide("help");
   show("helphelp");
-  const version = (typeof(WebAssembly) === "undefined"? "nowebassy": "webassy");
-  helphelp.innerHTML = "<p>" + get("firstLine").innerHTML + " " +
-                       get(version).innerHTML + "</p>";
+  helphelp.innerHTML = getFirstLine();
   show("result");
   setInterval(function()
   {

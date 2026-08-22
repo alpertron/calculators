@@ -25,6 +25,7 @@
 /* global resultText */
 /* global setStorage */
 /* global tofile */
+/* global usingWebAssembly */
 function loadPolyCalc(firstChar, value)
 {
   window.sessionStorage.setItem((firstChar === "M"? "F": "E"), value);

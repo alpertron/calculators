@@ -19,6 +19,7 @@
 /* global comingFromWorker */
 /* global fileContents */
 /* global get */
+/* global usingWebAssembly */
 let blob;
 let worker = null;
 function endWorker()
@@ -36,25 +37,25 @@ function callWorker(param)
   {
     if (!blob)
     {
-      if (typeof(WebAssembly) === "undefined")
-      {    // Asm.js
-        blob = new Blob([fileContents],{type: "text/javascript"});
-      }
-      else
+      if (usingWebAssembly)
       {    // WebAssembly
         blob = new Blob([get("worker").textContent],{type: "text/javascript"});
+      }
+      else
+      {    // Asm.js
+        blob = new Blob([fileContents],{type: "text/javascript"});
       }
     }   
     worker = new Worker(window.URL.createObjectURL(blob));
     worker.onmessage = comingFromWorker;
   }
-  if (typeof(WebAssembly) === "undefined")
-  {      // Asm.js
-    worker.postMessage(param);
-  }
-  else
+  if (usingWebAssembly)
   {      // WebAssembly.
     worker.postMessage([param, fileContents]);
+  }
+  else
+  {      // Asm.js
+    worker.postMessage(param);
   }
 }
 

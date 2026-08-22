@@ -62,7 +62,7 @@ let info =
 
 self.onmessage = function (e)
 {
-  if (typeof(WebAssembly) === "undefined")
+  if (typeof(e.data) === "undefined")
   {
     return;
   }

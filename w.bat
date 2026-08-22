@@ -1,6 +1,7 @@
 set compilerName=%userprofile%\emsdk\emsdk\upstream\emscripten\node_modules\google-closure-compiler-java\compiler.jar
 set compilerOptions2=--compilation_level ADVANCED_OPTIMIZATIONS --isolation_mode IIFE --externs=custom-externs.js
-set commonOptions=--no-entry -Os -Wall -s WASM=0 -s TEXTDECODER=0 -s ASSERTIONS=0 -s NO_FILESYSTEM=1 -s WASM_ASYNC_COMPILATION=0 --pre-js preGraphics.js --closure 1
+rem set compilerOptions2=--compilation_level WHITESPACE_ONLY --isolation_mode IIFE --externs=custom-externs.js
+set commonOptions=--no-entry -Os -Wall -s WASM=0 -s TEXTDECODER=2 -s ASSERTIONS=0 -s NO_FILESYSTEM=1 -s WASM_ASYNC_COMPILATION=0 --pre-js preGraphics.js --closure 1
 set wasmCommon=--no-entry -Os -Wall -s WASM=1 -D_USING64BITS_ -s ASSERTIONS=0 -s NO_FILESYSTEM=1 --js-library lib.js --pre-js pre.js
 rem del *.wasm
 rem del *00*js
@@ -8,20 +9,21 @@ rem --compilation_level WHITESPACE_ONLY
 rem --compilation_level ADVANCED_OPTIMIZATIONS
 rem ================== GENERATION OF JAVASCRIPT =============================
 cmd /c emcc %commonOptions% ulam.c isprime.c MontMultGraphic.c graphics.c copyStr.c -s EXPORTED_FUNCTIONS="['_initUlam', '_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 -o ulamW.js
-if errorlevel 1 goto end
+@if errorlevel 1 goto end
 cmd /c emcc %commonOptions% gausspr.c isprime.c MontMultGraphic.c graphics.c -s EXPORTED_FUNCTIONS="['_initGaussPr', '_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 -o gaussprW.js
-if errorlevel 1 goto end
+@if errorlevel 1 goto end
 
 rem ===================== GENERATION OF WASM ================================
 cmd /c emcc %wasmCommon% ulam.c isprime.c MontMultGraphic.c graphics.c copyStr.c -s EXPORTED_FUNCTIONS="['_initUlam', '_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 -o ulam.wasm
-if errorlevel 1 goto end
+@if errorlevel 1 goto end
 cmd /c emcc %wasmCommon% gausspr.c isprime.c MontMultGraphic.c graphics.c -s EXPORTED_FUNCTIONS="['_initGaussPr', '_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 -o gausspr.wasm
-if errorlevel 1 goto end
+@if errorlevel 1 goto end
 
 copy /b ulam.js + common.js + strings.js + commonGraphics.js ulamA.js
 perl generateTempJS.pl ulamA.js ulamW.js ulamT.js moveGraphic drawPartialGraphic nbrChanged getInformation getPixels
 del ulamA.js
-java -jar %compilerName% %compilerOptions2% --js ulamT.js --js initGraphicNoAndroid.js --js_output_file ulamU.js
+java -jar %compilerName% %compilerOptions2% --js ulamT.js --js initGraphicNoAndroid.js --js supportsWasmSimd.js --js_output_file ulamU.js
+@if errorlevel 1 goto end
 copy ulamU.js ulamV.js
 copy ULAM.HTM toweb
 copy ULAM.HTM assets\ulam.html
@@ -46,7 +48,7 @@ perl replaceEmbeddedJSAnd.pl 0000 "assets\eulam.html" ulamSA.js privacidad_calc.
 copy /b gausspr.js + common.js + strings.js + commonGraphics.js gaussprA.js
 perl generateTempJS.pl gaussprA.js gaussprW.js gaussprT.js moveGraphic drawPartialGraphic nbrChanged getInformation getPixels
 del gaussprA.js
-java -jar %compilerName% %compilerOptions2% --js gaussprT.js --js initGraphicNoAndroid.js --js_output_file gaussprU.js
+java -jar %compilerName% %compilerOptions2% --js gaussprT.js --js initGraphicNoAndroid.js --js supportsWasmSimd.js --js_output_file gaussprU.js
 copy gaussprU.js gaussprV.js
 copy GAUSSPR.HTM toweb
 copy GAUSSPR.HTM assets\gausspr.html

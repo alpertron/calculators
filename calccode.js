@@ -22,8 +22,10 @@
 /* global get */
 /* global fileContents */
 /* global req */
+/* global supportsWasmSimd */
 let workPar;
 let req;
+let usingWebAssembly;
 
 function newState(_aEvt)
 {
@@ -37,19 +39,13 @@ function newState(_aEvt)
   }
 }
 
+
 function getCalculatorCode(jsFileName, workerParameter)
 {
   workPar = workerParameter;
-  if (typeof(WebAssembly) === "undefined")
-  {
-    req = new XMLHttpRequest();
-    req.open("GET", addLangToFilename(jsFileName), true);
-    req.responseType = "arraybuffer";
-    req.onreadystatechange = newState;
-    req.send(null);
-  }
-  else
-  {
+  usingWebAssembly = supportsWasmSimd();
+  if (usingWebAssembly)
+  {         // WebAssembly
     let wasm = get("wasmb64").text;
     while (wasm.codePointAt(0) < 32)
     {
@@ -70,5 +66,13 @@ function getCalculatorCode(jsFileName, workerParameter)
     }
     fileContents = new Int8Array(length);
     b64decode(wasm, fileContents);
+  }
+  else
+  {         // JavaScript.
+    req = new XMLHttpRequest();
+    req.open("GET", addLangToFilename(jsFileName), true);
+    req.responseType = "arraybuffer";
+    req.onreadystatechange = newState;
+    req.send(null);
   }
 }

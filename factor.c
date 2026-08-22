@@ -1750,12 +1750,37 @@ static bool getNextInteger(char **ppcFactors, int *result, char delimiter)
   return false;
 }
 
+static void initFactorFields(void)
+{  // Make all fields consecutive in buffer so they are cache-friendly.
+  common.ecm.AA = common.ecm.buffer;
+  common.ecm.UX = common.ecm.AA + NumberLength + 1;
+  common.ecm.UZ = common.ecm.UX + NumberLength + 1;
+  common.ecm.W1 = common.ecm.UZ + NumberLength + 1;
+  common.ecm.W2 = common.ecm.W1 + NumberLength + 1;
+  common.ecm.W3 = common.ecm.W2 + NumberLength + 1;
+  common.ecm.W4 = common.ecm.W3 + NumberLength + 1;
+  common.ecm.X = common.ecm.W4 + NumberLength + 1;
+  common.ecm.Z = common.ecm.X + NumberLength + 1;
+  common.ecm.Aux1 = common.ecm.Z + NumberLength + 1;
+  common.ecm.Aux2 = common.ecm.Aux1 + NumberLength + 1;
+  common.ecm.Aux3 = common.ecm.Aux2 + NumberLength + 1;
+  common.ecm.Aux4 = common.ecm.Aux3 + NumberLength + 1;
+  common.ecm.Aux5 = common.ecm.Aux4 + NumberLength + 1;
+  common.ecm.Aux6 = common.ecm.Aux5 + NumberLength + 1;
+  common.ecm.Aux7 = common.ecm.Aux6 + NumberLength + 1;
+  common.ecm.Aux8 = common.ecm.Aux7 + NumberLength + 1;
+  common.ecm.Xbak = common.ecm.Aux8 + NumberLength + 1;
+  common.ecm.Zbak = common.ecm.Xbak + NumberLength + 1;
+  common.ecm.root = common.ecm.Zbak + NumberLength + 1;
+}
+
 // Return: 0 = No factors found.
 //         1 = Factors found.
 // Use: Xbak for square root of -1.
 //      Zbak for square root of 1.
 static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
 {
+  initFactorFields();
   int randomBase = 0;
 #ifdef __EMSCRIPTEN__
   timePrimalityTests = 0;  // Reset to zero all timings.
@@ -2070,30 +2095,6 @@ static enum eTrialFactorRetCode performTrialDivision(struct sFactors* pstFactors
     return NEXT_FACTOR;
   }
   return CONTINUE_FACTORIZATION;
-}
-
-static void initFactorFields(void)
-{  // Make all fields consecutive in buffer so they are cache-friendly.
-  common.ecm.AA = common.ecm.buffer;
-  common.ecm.UX = common.ecm.AA + NumberLength + 1;
-  common.ecm.UZ = common.ecm.UX + NumberLength + 1;
-  common.ecm.W1 = common.ecm.UZ + NumberLength + 1;
-  common.ecm.W2 = common.ecm.W1 + NumberLength + 1;
-  common.ecm.W3 = common.ecm.W2 + NumberLength + 1;
-  common.ecm.W4 = common.ecm.W3 + NumberLength + 1;
-  common.ecm.X = common.ecm.W4 + NumberLength + 1;
-  common.ecm.Z = common.ecm.X + NumberLength + 1;
-  common.ecm.Aux1 = common.ecm.Z + NumberLength + 1;
-  common.ecm.Aux2 = common.ecm.Aux1 + NumberLength + 1;
-  common.ecm.Aux3 = common.ecm.Aux2 + NumberLength + 1;
-  common.ecm.Aux4 = common.ecm.Aux3 + NumberLength + 1;
-  common.ecm.Aux5 = common.ecm.Aux4 + NumberLength + 1;
-  common.ecm.Aux6 = common.ecm.Aux5 + NumberLength + 1;
-  common.ecm.Aux7 = common.ecm.Aux6 + NumberLength + 1;
-  common.ecm.Aux8 = common.ecm.Aux7 + NumberLength + 1;
-  common.ecm.Xbak = common.ecm.Aux8 + NumberLength + 1;
-  common.ecm.Zbak = common.ecm.Xbak + NumberLength + 1;
-  common.ecm.root = common.ecm.Zbak + NumberLength + 1;
 }
 
 void factor(const BigInteger* toFactor, const int* number, int* factors, struct sFactors* pstFactors)

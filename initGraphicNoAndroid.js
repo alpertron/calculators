@@ -30,12 +30,15 @@
 /* global imgData */
 /* global instantiate */
 /* global pixels */
+/* global supportsWasmSimd */
 /* global updateGraphic */
 /* global wasm */
 
 let startOffset;
+
 function startLowLevelCode(type)
 {
+  let usingWebAssembly;
   let length, bytes;
   let info;
   let getPixels;
@@ -45,22 +48,8 @@ function startLowLevelCode(type)
   imgData = canvas.getContext("2d").createImageData(2048, 4096);  // 32 MB;
   buffer = imgData.data.buffer;
   bitsCanvas = new Uint8Array(buffer);
-  if (typeof(WebAssembly) === "undefined")
-  {                                      // Asm.js initialization.
-    asmJSbuffer = new ArrayBuffer(bufSize);
-    HEAPU8 = new Uint8Array(asmJSbuffer);    // Reserve 32 MB for asm.js variables and buffers.
-    env = {"a": {"buffer": asmJSbuffer},
-      "abort": function(_q)
-               {
-                 /* Not used*/
-               },
-    };
-    asm = instantiate(env);  // Link asm.js module.
-    getPixels = startLowLevelCodeCallback(asm);
-    pixels = HEAPU8.subarray(getPixels());
-    updateGraphic(center, 1);
-  }
-  else
+  usingWebAssembly = supportsWasmSimd();
+  if (usingWebAssembly)
   {                                      // WebAssembly initialization.
     wasm = get("wasmb64").text;
     while (wasm.codePointAt(0) < 32)
@@ -103,6 +92,21 @@ function startLowLevelCode(type)
       pixels = HEAPU8.subarray(asm["getPixels"]());
       updateGraphic(center, 1);
     });
+  }
+  else
+  {                                      // Asm.js initialization.
+    asmJSbuffer = new ArrayBuffer(bufSize);
+    HEAPU8 = new Uint8Array(asmJSbuffer);    // Reserve 32 MB for asm.js variables and buffers.
+    env = {"a": {"buffer": asmJSbuffer},
+      "abort": function(_q)
+               {
+                 /* Not used*/
+               },
+    };
+    asm = instantiate(env);  // Link asm.js module.
+    getPixels = startLowLevelCodeCallback(asm);
+    pixels = HEAPU8.subarray(getPixels());
+    updateGraphic(center, 1);
   }
 }
 

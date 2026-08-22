@@ -22,11 +22,12 @@
 /* global clickFormLink */
 /* global endCalculation */
 /* global endWorker */
-/* global get */
-/* global getConfig */
 /* global formSend */
 /* global generateFuncButtons */
+/* global get */
 /* global getCalculatorCode */
+/* global getConfig */
+/* global getFirstLine */
 /* global hide */
 /* global keyDownOnWizard */
 /* global registerServiceWorker */
@@ -35,6 +36,7 @@
 /* global setWizardStep */
 /* global show */
 /* global typedOnWizard */
+/* global usingWebAssembly */
 /* global wizardNext */
 /** @define {number} */ const app = 0;   // Use with Closure compiler.
 let fileContents = 0;
@@ -246,9 +248,7 @@ function performCalc(from)
   }
   hide("cont");
   let helphelp = get("helphelp");
-  const version = (typeof(WebAssembly) === "undefined"? "nowebassy": "webassy");
-  helphelp.innerHTML = "<p>" + get("firstLine").innerHTML + " " +
-                       get(version).innerHTML + "</p>";
+  helphelp.innerHTML = getFirstLine();
   callWorker(param);
   show("helphelp");
   helphelp.innerHTML = get("firstLine").innerHTML;
