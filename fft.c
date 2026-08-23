@@ -327,7 +327,7 @@ static int ReduceLimbs(const limb *factor, struct sComplex *fftFactor, int len)
       real += UintToInt((unsigned int)(ptrFactor + 1)->x << complementBitExternal);
     }
     maxValueFFTLimb = fftLimbRange - 1;
-    real &= (unsigned int)maxValueFFTLimb;
+    real &= maxValueFFTLimb;
     ptrInternalFactor->real = (double)real;
     bitExternal += fftLimbSize;
     if (bitExternal >= BITS_PER_GROUP)

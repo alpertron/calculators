@@ -51,8 +51,6 @@ extern limb Mult1[MAX_LEN];
 extern limb Mult3[MAX_LEN];
 extern limb Mult4[MAX_LEN];
 extern int valueQ[MAX_LEN];
-extern limb TestNbr[MAX_LEN];
-extern limb MontgomeryMultR1[MAX_LEN];
 int groupLen = 6;
 int smallPrimes[SMALL_PRIMES_ARRLEN+1];
 #ifdef __EMSCRIPTEN__

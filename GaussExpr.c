@@ -82,7 +82,6 @@ static int comprStackValues[COMPR_STACK_SIZE];
 static int comprStackOffset[PAREN_STACK_SIZE];
 static int stackIndex;
 #ifdef __ANDROID__
-  extern char output[3000000];
   extern limb Mult1[MAX_LEN];
   extern limb Mult3[MAX_LEN];
   extern limb Mult4[MAX_LEN];

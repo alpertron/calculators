@@ -77,7 +77,6 @@ static int NumberLengthOther;
 static char textExp[1000];
 struct sFactors astFactorsGO[1000];
 int factorsGO[10000];
-extern int NumberLength;
 static void AdjustExponent(limb *nbr, limb mult, limb add, const BigInteger *subGroupOrder);
 static void ExchangeMods(void);
 

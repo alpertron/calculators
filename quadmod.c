@@ -16,9 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _QUADMOD_H
-#define _QUADMOD_H
-
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -48,7 +45,6 @@ extern char *ptrOutput;
 #else
 char *ptrOutput;
 #endif
-extern int factorsMod[20000];
 
 static int Show(const BigInteger *num, const char *str, int t)
 {
@@ -338,5 +334,4 @@ EXTERNALIZE void doWork(void)
   quadmodText(ptrQuadrCoeff, ptrLinearCoeff, ptrConstCoeff, ptrMod, groupLength);
   databack(output);
 }
-#endif
 #endif

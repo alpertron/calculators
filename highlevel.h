@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _HIGHLEVEL_H
-#define _HIGHLEVEL_H
+#ifndef HIGHLEVEL_H
+#define HIGHLEVEL_H
 void fsquaresText(char* input, int grpLen);
 void fcubesText(char *input, int grpLen);
 void tsqcubesText(char* input, int grpLen, int expon);

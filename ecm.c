@@ -42,7 +42,6 @@ extern int64_t longStep2Bound;
 extern char* ptrLowerText;
 extern char lowerText[MAX_LEN * 16];
 #endif
-extern int StepECM;
 extern int maxIndexM;
 extern int indexM;
 static int SmallPrime[1335]; /* Primes < 11000 */

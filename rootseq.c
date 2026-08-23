@@ -754,7 +754,7 @@ static int showRadicals(int numerator, int denominator, int multipl,
     endSqrt();
   }
   result = ((power2 > 1)? 2 : exprDen);
-  if (strcmp(ptrExpr, "1") && (result != 1))
+  if ((strcmp(ptrExpr, "1") != 0) && (result != 1))
   {
     showText(times);
   }

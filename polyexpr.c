@@ -35,7 +35,6 @@ static enum eExprErr LcmPolynomialExpr(int* ptrArgument1, int* ptrArgument2);
 static enum eExprErr RandomPolynomialExpr(const int* pMinDegree, const int* pMaxDegree,
   const int* pMinCoeff, const int* pMaxCoeff, int* randomPoly);
 static int* stackValues[STACK_OPER_SIZE];
-extern bool onlyEvaluate;
 static int* CopyCompletePolynomial(int* dest, const int* src);
 
 struct sFuncOperExpr stFuncOperPolyExpr[] =

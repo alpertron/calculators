@@ -24,10 +24,6 @@
 #include "rootseq.h"
 #include "expression.h"
 
-extern BigInteger Cubic;
-extern BigInteger Quadratic;
-extern BigInteger Linear;
-extern BigInteger Independent;
 extern char* ptrOutput;
 extern const char* ptrACos;
 extern const char* ptrCos;
@@ -778,9 +774,8 @@ static void linearCoeffNotZero(int multiplicity, char currLetter, bool fromQuart
         BigIntChSign(&RatQuadratic.numerator);
       }
       showText(" = ");
-      switch (rootNbr)
+      if (rootNbr == 1)
       {
-      case 1:
         showVarIndex('r', 1);
         showText(" + ");
         showVarIndex('s', 1);
@@ -788,8 +783,9 @@ static void linearCoeffNotZero(int multiplicity, char currLetter, bool fromQuart
         showVariable(&ptrOutput, 'r');
         showText(" + ");
         showVariable(&ptrOutput, 's');
-        break;
-      default:
+      }
+      else
+      {
         showVarIndex('r', rootNbr);
         showText(" + ");
         showVarIndex('s', 5 - rootNbr);
@@ -815,7 +811,6 @@ static void linearCoeffNotZero(int multiplicity, char currLetter, bool fromQuart
             showText(" + ");
           }
         }
-        break;
       }
       showText("</p>");
     }

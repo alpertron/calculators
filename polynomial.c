@@ -52,11 +52,6 @@ BigInteger operand2;
 BigInteger operand3;
 BigInteger operand4;
 BigInteger operand5;
-extern limb TestNbr[MAX_LEN];
-extern limb MontgomeryMultR2[MAX_LEN];
-extern limb MontgomeryMultR1[MAX_LEN];
-extern int NumberLength;
-extern int NumberLengthR1;
 static int prime;
 static int primeIndex;
 enum eOutput pretty;
@@ -864,7 +859,6 @@ void DerPolynomial(int *ptrArgument)
   }
   (void)CopyPolynomial(ptrArgument + 1, &common.poly.poly1[1], derivDegreePoly);
   *ptrArgument = derivDegreePoly;
-  return;
 }
 
 // Convert from Montgomery notation to standard notation by multiplying by 1.

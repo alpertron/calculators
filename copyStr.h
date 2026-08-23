@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _COPYSTR_H
-#define _COPYSTR_H
+#ifndef COPYSTR_H
+#define COPYSTR_H
 void copyStr(char** pptrString, const char* stringToCopy);
 void formatString(char** pptrString, const char* format, ...);
 void showCopyright(char **pptrOutput);

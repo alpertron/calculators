@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _FACTOR_H
-#define _FACTOR_H
+#ifndef FACTOR_H
+#define FACTOR_H
 #define MAX_FACTORS 5000
 #include "showtime.h"
 #ifdef __EMSCRIPTEN__
@@ -85,7 +85,6 @@ void factor(const BigInteger *toFactor, const int *number, int *factors, struct 
 void factorExt(const BigInteger* toFactor, const int* number,
   int* factors, struct sFactors* pstFactors, char* pcKnownFactors);
 void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor);
-enum eEcmResult pMinus1(int step1Bound);
 extern int nbrToFactor[MAX_LEN];
 extern struct sFactors astFactorsMod[MAX_FACTORS];
 extern int factorsMod[20000];

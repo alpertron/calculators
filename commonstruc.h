@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _COMMONSTRUCT_H
-#define _COMMONSTRUCT_H
+#ifndef COMMONSTRUCT_H
+#define COMMONSTRUCT_H
 
 // These defines are valid for factoring up to 10^110.
 #define BITS_SIQS_HASH          14
@@ -79,7 +79,6 @@ struct stSiqs
   int matrixPartialHashIndex[1 << BITS_SIQS_HASH];
   int matrixB[(MAX_PRIMES*33/32) + 50][MAX_FACTORS_RELATION];
   int amodq[MAX_NBR_FACTORS];
-  int tmodqq[MAX_NBR_FACTORS];
   int smallPrimeUpperLimit;
   int firstLimit;
   int secondLimit;
@@ -100,8 +99,6 @@ struct stSiqs
   BigInteger factorSiqs;
   PrimeSieveData *firstPrimeSieveData;
   BigInteger TempResult;
-  BigInteger biTemp1;
-  BigInteger biTemp2;
   unsigned char logar2;
   char threshold;
 };
@@ -144,7 +141,6 @@ struct stEcm
   BigInteger Temp1;
   BigInteger Temp2;
   BigInteger Temp3;
-  char buffer2[1000000];
 };
 
 struct stBigComplex
@@ -161,7 +157,6 @@ struct stSumSquares
   struct stBigComplex currentValue;
   int GrayCode;
   int indexes[MAX_NBR_PRIMES_4K1];
-  int indexes2[MAX_NBR_PRIMES_4K1];
   int indexes2toIndexes[MAX_NBR_PRIMES_4K1];
   int currentExp[MAX_NBR_PRIMES_4K1];
   int currentExpGray[MAX_NBR_PRIMES_4K1];

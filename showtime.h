@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _SHOWTIME_H
-#define _SHOWTIME_H
+#ifndef SHOWTIME_H
+#define SHOWTIME_H
 #if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
 double tenths(void);
 extern double originalTenthSecond;

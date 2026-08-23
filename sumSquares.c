@@ -816,7 +816,6 @@ static void initializeSumOfTwoSquares(void)
     {
       continue;
     }
-    common.k.sumSquares.indexes2[nbrIndexes2] = index;
     common.k.sumSquares.indexes2toIndexes[nbrIndexes2] = exponentNbr;
     nbrIndexes2++;
     for (int mask = 0x1000000; mask > 0; mask /= 2)

@@ -38,7 +38,7 @@ struct stKaratsubaStack
   int stage;
 };
 
-#define ADJUST_MODULUS(sum, modulus) (sum += modulus & (sum >> 31))
+#define ADJUST_MODULUS(sum, modulus) (sum += (modulus) & ((sum) >> 31))
 static struct stKaratsubaStack astKaratsubaStack[10];
 static BigInteger coeff[2 * KARATSUBA_POLY_CUTOFF];
 int polyInvCached;
@@ -832,7 +832,7 @@ static bool MultiplyUsingKroneckerSubst(int degree1, int degree2,
   KroneckerSubstitution(factor2, degree2, bitsDegree, bitsModulus,
     subst2Limbs, &len2Limbs);
   multiplyWithBothLen(subst1Limbs, subst2Limbs, subst2Limbs,
-    len1Limbs, len2Limbs, &lenProdLimbs);
+      len1Limbs, len2Limbs, &lenProdLimbs);
   while (lenProdLimbs < nbrLimbsProduct)
   {  // Loop that generates most significant zeros.
     (subst2Limbs + lenProdLimbs)->x = 0;

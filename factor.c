@@ -38,7 +38,6 @@ limb factorFound[MAX_LEN];
 static char* text;
 #ifdef __EMSCRIPTEN__
 char* ptrLowerText;
-char upperText[MAX_LEN*16];
 char lowerText[MAX_LEN*16];
 extern mmCback modmultCallback;
 extern int64_t lModularMult;
@@ -1842,7 +1841,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
           lenBytes = NumberLength * (int)sizeof(limb);
           if (((Temp4.nbrLimbs != 1) || (Temp4.limbs[0].x > 1)) &&
             ((Temp4.nbrLimbs != NumberLength) ||
-              memcmp(pValue->limbs, Temp4.limbs, lenBytes)))
+              memcmp(pValue->limbs, Temp4.limbs, lenBytes) != 0))
           {          // Non-trivial factor found.
             insertBigFactor(pstFactors, &Temp4, TYP_RABIN);
             factorsFound = true;
@@ -1856,7 +1855,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
         lenBytes = NumberLength * (int)sizeof(limb);
         if (((Temp4.nbrLimbs != 1) || (Temp4.limbs[0].x > 1)) &&
           ((Temp4.nbrLimbs != NumberLength) ||
-            memcmp(pValue->limbs, Temp4.limbs, lenBytes)))
+            memcmp(pValue->limbs, Temp4.limbs, lenBytes) != 0))
         {          // Non-trivial factor found.
           insertBigFactor(pstFactors, &Temp4, TYP_RABIN);
           factorsFound = true;
@@ -1879,7 +1878,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
           lenBytes = NumberLength * (int)sizeof(limb);
           if (((Temp4.nbrLimbs != 1) || (Temp4.limbs[0].x > 1)) &&
             ((Temp4.nbrLimbs != NumberLength) ||
-              memcmp(pValue->limbs, Temp4.limbs, lenBytes)))
+              memcmp(pValue->limbs, Temp4.limbs, lenBytes) != 0))
           {          // Non-trivial factor found.
             insertBigFactor(pstFactors, &Temp4, TYP_RABIN);
             factorsFound = true;

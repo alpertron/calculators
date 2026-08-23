@@ -307,7 +307,6 @@ static void PrintLinear(enum eLinearSolution Ret, const char *var)
   showText("<br>y = ");
   ShowLinInd(&Ylin, &Yind, var);
   showText("</p>");
-  return;
 }
 
 static void PrintQuad(const BigInteger *coeffT2, const BigInteger *coeffT, const BigInteger *coeffInd, 

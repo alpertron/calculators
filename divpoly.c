@@ -28,9 +28,6 @@
 #include "polynomial.h"
 #include "showtime.h"
 
-extern int valuesIndex;
-extern int NumberLength;
-
 // Decompress polynomial.
 static void ToPoly(int polyDegree, const int* polySrc, int* polyDest)
 {

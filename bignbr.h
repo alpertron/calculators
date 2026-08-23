@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _BIGNBR_H
-#define _BIGNBR_H
+#ifndef BIGNBR_H
+#define BIGNBR_H
 #include <stdint.h>
 #include <stdbool.h>
 #define MAX_LEN_MULT  25000  // 200000 digits
@@ -222,7 +222,6 @@ void MultBigNbrModN(const limb *Nbr1, limb *Nbr2, limb *Prod, const limb *Mod, i
 void MultBigNbrByIntModN(limb *Nbr1, int Nbr2, limb *Prod, const limb *Mod, int nbrLen);
 int intDoubleModPow(int NbrMod, int Expon, int currentPrime);
 void ModInvBigInt(const limb *num, limb *inv, const limb *mod, int nbrLenBigInt);
-void IntToBigNbr(int value, limb *bigNbr, int nbrLength);
 int JacobiSymbol(int upper, int lower);
 int BigIntJacobiSymbol(const BigInteger *upper, const BigInteger *lower);
 void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs);

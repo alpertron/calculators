@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _FROMBLOCKLY_H
-#define _FROMBLOCKLY_H
+#ifndef FROMBLOCKLY_H
+#define FROMBLOCKLY_H
 
 #define BLOCKLY_INSTR_BUFFER_SIZE    10000000
 #define BLOCKLY_INSTR_BUFFER_PTR_SIZE 1000000

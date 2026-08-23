@@ -33,7 +33,7 @@
 #include <stdio.h>
 #endif
 
-#define processCol(col) (*(RightMatr + col) & ((leftMatr << col) >> 31))
+#define processCol(col) (*(RightMatr + (col)) & ((leftMatr << (col)) >> 31))
 #ifdef __EMSCRIPTEN__
 extern char lowerText[MAX_LEN * 16];
 extern char* ptrLowerText;

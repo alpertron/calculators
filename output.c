@@ -43,9 +43,3 @@ void generateEqNbr(void)
   int2dec(&ptrOutput, eqNbr);
   showText("</e-q>");
 }
-
-void showEqNbrs(int eqNbr1, int eqNbr2)
-{
-  // ($1d) and ($2d)
-  formatString(&ptrOutput, LITERAL_SHOW_EQ_NBRS, eqNbr1, eqNbr2);
-}

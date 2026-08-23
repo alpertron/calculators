@@ -25,8 +25,6 @@
 #include "expression.h"
 #include "copyStr.h"
 
-extern BigInteger Linear;
-extern BigInteger Independent;
 extern char* ptrOutput;
 
 // Compute x = -c_0 / c_1

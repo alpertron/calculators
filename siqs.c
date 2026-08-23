@@ -53,18 +53,17 @@ int congruencesFound;
 int polynomialsSieved;
 int nbrPartials;
 int numberThreads = 1;
-extern int NumberLength;
 static bool InsertNewRelation(
-  const int *rowMatrixB,
-  limb *biT, limb *biU, limb *biR,
-  int NumberLength);
+  const int* rowMatrixB,
+  limb* biT, limb* squareRightHandSide, limb* squareLeftHandSide,
+  int NumberLengthMod);
 bool LinearAlgebraPhase(limb* biT, limb* biR, limb* biU, int nbrLength);
 #if 0
 static unsigned char isProbablePrime(double value);
 static int SQUFOF(double N, int queue[]);
 #endif
 void ShowSIQSStatus(void);
-static unsigned int getFactorsOfA(unsigned int seed, int *aindex);
+static unsigned int getFactorsOfA(unsigned int oldSeed, int* indexA);
 static void sieveThread(BigInteger *result);
 
 #ifdef __EMSCRIPTEN__
@@ -2346,17 +2345,13 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
     common.siqs.matrixBLength = common.siqs.nbrFactorBasePrimes + 50;
   }
   rowPrimeSieveData->modsqrt = (pNbrToFactor->x & 1) ? 1 : 0;
-  switch (common.siqs.Modulus[0].x & 0x07)
+  if ((common.siqs.Modulus[0].x & 0x07) == 1)
   {
-  case 1:
     common.siqs.logar2 = (unsigned char)3;
-    break;
-  case 5:
+  }
+  else
+  {
     common.siqs.logar2 = (unsigned char)1;
-    break;
-  default:
-    common.siqs.logar2 = (unsigned char)1;
-    break;
   }
   if ((common.siqs.multiplier != 1) && (common.siqs.multiplier != 2))
   {
@@ -2970,8 +2965,6 @@ static void sieveThread(BigInteger *result)
             Q = common.siqs.primeSieveData[common.siqs.aindex[index]].modsqrt *
               intModInv(D, currentPrime) % currentPrime;
             common.siqs.amodq[index] = D << 1;
-            common.siqs.tmodqq[index] = RemDivBigNbrByInt(common.siqs.Modulus,
-              currentPrime*currentPrime, NumberLength);
             if ((Q + Q) > currentPrime)
             {
               Q = currentPrime - Q;

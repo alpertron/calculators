@@ -235,7 +235,6 @@ void partition(int val, BigInteger *pResult)
     prodModulusLimbs--;
   }
   pResult->nbrLimbs = prodModulusLimbs;
-  return;
 }
 
 static int numberofBitsSetToOne(int value)

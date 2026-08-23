@@ -110,7 +110,7 @@ void int2dec(char **pOutput, int nbr)
   {
     int digit;
 
-    digit = value/div;
+    digit = (int)(value/div);
     if ((digit > 0) || significantZero)
     {
       significantZero = true;
@@ -169,7 +169,7 @@ void int2hex(char **pOutput, int nbr)
   {
     int digit;
 
-    digit = value / div;
+    digit = (int)(value / div);
     if ((digit > 0) || significantZero)
     {
       significantZero = true;
@@ -472,7 +472,6 @@ static void add(const limb *addend1, const limb *addend2, limb *sum, int length)
       carry = 0;
     }
   }
-  return;
 }
 
 void BigInteger2Dec(char **ppDecimal, const BigInteger *pBigInt, int groupLength)

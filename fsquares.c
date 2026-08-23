@@ -40,8 +40,6 @@ static void batchSquaresCallback(char** pptrOutput, int type);
 static BigInteger toProcess;
 static BigInteger biFirstTerm;
 static BigInteger biSecondTerm;
-extern limb TestNbr[MAX_LEN];
-extern limb MontgomeryMultR1[MAX_LEN];
 
  // If Mult1 < Mult2, exchange both numbers.
 static void SortBigNbrs(BigInteger *pbiMult1, BigInteger *pbiMult2)

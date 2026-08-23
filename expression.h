@@ -16,11 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _EXPRESSION_H
-#define _EXPRESSION_H
-
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 22 de agosto de 2026."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 22 August 2026."
+#ifndef EXPRESSION_H
+#define EXPRESSION_H
 
 #include "bignbr.h"
 #ifdef __EMSCRIPTEN__

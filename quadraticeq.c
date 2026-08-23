@@ -25,9 +25,6 @@
 #include "expression.h"
 #include "copyStr.h"
 
-extern BigInteger Quadratic;
-extern BigInteger Linear;
-extern BigInteger Independent;
 extern char* ptrOutput;
 extern const char* ptrSin;
 extern const char* ptrCos;

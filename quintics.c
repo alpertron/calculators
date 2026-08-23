@@ -58,12 +58,6 @@ extern char* ptrOutput;
 extern const char* ptrCos;
 extern const char* ptrACos;
 extern const char* ptrPi;
-extern BigInteger Quintic;
-extern BigInteger Quartic;
-extern BigInteger Cubic;
-extern BigInteger Quadratic;
-extern BigInteger Linear;
-extern BigInteger Independent;
 
 // Coefficients taken from Dummit's Solving Solvable Quintics article.
 static struct stQuinticF20 astQuinticF20[] =
@@ -1374,5 +1368,4 @@ void QuinticEquation(const int* ptrPoly, int multiplicity)
   }
   GaloisGroupHasOrder10Or20(10);
   ShowQuinticsRootsRealR(multiplicity);
-  return;
 }

@@ -338,8 +338,8 @@ static bool convertExpressionsToRPN(const char* batchText)
     {
       if (*ptrCharFound == '%')
       {
-        char upper = *(ptrCharFound + 1) & 0xDF;
-        char upper2 = *(ptrCharFound + 2) & 0xDF;
+        char upper = (char)(*(ptrCharFound + 1) & 0xDF);
+        char upper2 = (char)(*(ptrCharFound + 2) & 0xDF);
         if ((upper == 'D') || (upper == 'X') || (upper == 'L'))
         {    // Decimal, hexadecimal or logic.
           ptrCharFound += 2;
@@ -470,7 +470,7 @@ static bool InternalProcessLoop(bool* pIsBatch, const char* batchText,
     }
     if (valuesProcessed >= endValuesProcessed)
     {
-      output[0] = (fromFile ? 'A' : '6');  // Show Continue button.
+      output[0] = (char)(fromFile ? 'A' : '6');  // Show Continue button.
       break;
     }
     if (ptrConditionExpr != NULL)
@@ -751,7 +751,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
 #endif
       if (valuesProcessed >= endValuesProcessed)
       {
-        output[0] = (fromFile ? 'A' : '6');  // Show Continue button.
+        output[0] = (char)(fromFile ? 'A' : '6');  // Show Continue button.
       }
       rc = ComputeExpression(ptrSrcString, valueFound);
       if (rc == EXPR_OK)
@@ -782,7 +782,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
     }
     if (ptrOutput >= &output[(int)sizeof(output) - 200000])
     {
-      output[0] = (fromFile ? 'A' : '6');  // Show Continue button.
+      output[0] = (char)(fromFile ? 'A' : '6');  // Show Continue button.
       break;
     }
     if ((*ptrCurrBatchFactor & 0xDF) == 'X')

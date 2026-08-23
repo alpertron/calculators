@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _QUINTICS_H
-#define _QUINTICS_H
+#ifndef QUINTICS_H
+#define QUINTICS_H
 
 #define FIVEexp (1U << 20)
 #define Pexp (1U << 15)

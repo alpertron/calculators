@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _TSQUARES_H
-#define _TSQUARES_H
+#ifndef TSQUARES_H
+#define TSQUARES_H
 #define MAX_SIEVE 65536
 
 bool FindTwoSquaresNoNumTheory(void);

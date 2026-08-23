@@ -29,7 +29,6 @@ static BigInteger BigInt1;
 static BigInteger BigInt2;
 static BigInteger BigGcd;
 
-limb NbrBak[MAX_LIMBS_SIQS];
 void ChSignBigNbr(limb *nbr, int length)
 {
   int carry = 0;
@@ -133,7 +132,7 @@ void SubtractBigNbrB(const limb *pNbr1, const limb *pNbr2, limb *pDiff, int nbrL
   }
   borrow = (unsigned int)ptrNbr1->x - (unsigned int)ptrNbr2->x -
     (borrow >> BITS_PER_GROUP);
-  ptrDiff->x = borrow;
+  ptrDiff->x = (int)borrow;
 }
 
 void AddBigIntModN(const limb *pNbr1, const limb *pNbr2, limb *pSum, const limb *pMod,
@@ -358,7 +357,7 @@ int RemDivBigNbrByInt(const limb *pDividend, int divisor, int nbrLen)
     }
     ptrDividend--;
   }
-  return remainder;
+  return (int)remainder;
 }
 
 void MultBigNbr(const limb *pFactor1, const limb *pFactor2, limb *pProd, int nbrLen)

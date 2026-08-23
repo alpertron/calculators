@@ -75,8 +75,8 @@ static void ClassicalMult2Limbs(int idxFactor1, int idxFactor2)
   M(0); M(1);
   PROLOG_MULTIPLICATION_DOUBLE;
   EPILOG_MULTIPLICATION_DOUBLE(0, 1);
-  arrayAux[2].x = prod_iPlus0;
-  arrayAux[3].x = prod_iPlus1;
+  arrayAux[2].x = (int)prod_iPlus0;
+  arrayAux[3].x = (int)prod_iPlus1;
 }
 
 static void ClassicalMult3Limbs(int idxFactor1, int idxFactor2)
@@ -108,10 +108,10 @@ static void ClassicalMult4Limbs(int idxFactor1, int idxFactor2)
     MULT_MACRO_DOUBLE(1, 2, 3);
     EPILOG_MULTIPLICATION_DOUBLE(2, 3);
   }
-  arrayAux[4].x = prod_iPlus0;
-  arrayAux[5].x = prod_iPlus1;
-  arrayAux[6].x = prod_iPlus2;
-  arrayAux[7].x = prod_iPlus3;
+  arrayAux[4].x = (int)prod_iPlus0;
+  arrayAux[5].x = (int)prod_iPlus1;
+  arrayAux[6].x = (int)prod_iPlus2;
+  arrayAux[7].x = (int)prod_iPlus3;
 }
 
 static void ClassicalMult5Limbs(int idxFactor1, int idxFactor2)
@@ -151,12 +151,12 @@ static void ClassicalMult6Limbs(int idxFactor1, int idxFactor2)
     MULT_MACRO_DOUBLE(3, 4, 5);
     EPILOG_MULTIPLICATION_DOUBLE(4, 5);
   }
-  arrayAux[6].x = prod_iPlus0;
-  arrayAux[7].x = prod_iPlus1;
-  arrayAux[8].x = prod_iPlus2;
-  arrayAux[9].x = prod_iPlus3;
-  arrayAux[10].x = prod_iPlus4;
-  arrayAux[11].x = prod_iPlus5;
+  arrayAux[6].x = (int)prod_iPlus0;
+  arrayAux[7].x = (int)prod_iPlus1;
+  arrayAux[8].x = (int)prod_iPlus2;
+  arrayAux[9].x = (int)prod_iPlus3;
+  arrayAux[10].x = (int)prod_iPlus4;
+  arrayAux[11].x = (int)prod_iPlus5;
 }
 
 static void ClassicalMult7Limbs(int idxFactor1, int idxFactor2)
@@ -202,14 +202,14 @@ static void ClassicalMult8Limbs(int idxFactor1, int idxFactor2)
     MULT_MACRO_DOUBLE(5, 6, 7);
     EPILOG_MULTIPLICATION_DOUBLE(6, 7);
   }
-  arrayAux[8].x = prod_iPlus0;
-  arrayAux[9].x = prod_iPlus1;
-  arrayAux[10].x = prod_iPlus2;
-  arrayAux[11].x = prod_iPlus3;
-  arrayAux[12].x = prod_iPlus4;
-  arrayAux[13].x = prod_iPlus5;
-  arrayAux[14].x = prod_iPlus6;
-  arrayAux[15].x = prod_iPlus7;
+  arrayAux[8].x = (int)prod_iPlus0;
+  arrayAux[9].x = (int)prod_iPlus1;
+  arrayAux[10].x = (int)prod_iPlus2;
+  arrayAux[11].x = (int)prod_iPlus3;
+  arrayAux[12].x = (int)prod_iPlus4;
+  arrayAux[13].x = (int)prod_iPlus5;
+  arrayAux[14].x = (int)prod_iPlus6;
+  arrayAux[15].x = (int)prod_iPlus7;
 }
 
 static void ClassicalMult9Limbs(int idxFactor1, int idxFactor2)
@@ -261,16 +261,16 @@ static void ClassicalMult10Limbs(int idxFactor1, int idxFactor2)
     MULT_MACRO_DOUBLE(7, 8, 9);
     EPILOG_MULTIPLICATION_DOUBLE(8, 9);
   }
-  arrayAux[10].x = prod_iPlus0;
-  arrayAux[11].x = prod_iPlus1;
-  arrayAux[12].x = prod_iPlus2;
-  arrayAux[13].x = prod_iPlus3;
-  arrayAux[14].x = prod_iPlus4;
-  arrayAux[15].x = prod_iPlus5;
-  arrayAux[16].x = prod_iPlus6;
-  arrayAux[17].x = prod_iPlus7;
-  arrayAux[18].x = prod_iPlus8;
-  arrayAux[19].x = prod_iPlus9;
+  arrayAux[10].x = (int)prod_iPlus0;
+  arrayAux[11].x = (int)prod_iPlus1;
+  arrayAux[12].x = (int)prod_iPlus2;
+  arrayAux[13].x = (int)prod_iPlus3;
+  arrayAux[14].x = (int)prod_iPlus4;
+  arrayAux[15].x = (int)prod_iPlus5;
+  arrayAux[16].x = (int)prod_iPlus6;
+  arrayAux[17].x = (int)prod_iPlus7;
+  arrayAux[18].x = (int)prod_iPlus8;
+  arrayAux[19].x = (int)prod_iPlus9;
 }
 
 static void ClassicalMult11Limbs(int idxFactor1, int idxFactor2)
@@ -329,18 +329,18 @@ static void ClassicalMult12Limbs(int idxFactor1, int idxFactor2)
     MULT_MACRO_DOUBLE(9, 10, 11);
     EPILOG_MULTIPLICATION_DOUBLE(10, 11);
   }
-  arrayAux[12].x = prod_iPlus0;
-  arrayAux[13].x = prod_iPlus1;
-  arrayAux[14].x = prod_iPlus2;
-  arrayAux[15].x = prod_iPlus3;
-  arrayAux[16].x = prod_iPlus4;
-  arrayAux[17].x = prod_iPlus5;
-  arrayAux[18].x = prod_iPlus6;
-  arrayAux[19].x = prod_iPlus7;
-  arrayAux[20].x = prod_iPlus8;
-  arrayAux[21].x = prod_iPlus9;
-  arrayAux[22].x = prod_iPlus10;
-  arrayAux[23].x = prod_iPlus11;
+  arrayAux[12].x = (int)prod_iPlus0;
+  arrayAux[13].x = (int)prod_iPlus1;
+  arrayAux[14].x = (int)prod_iPlus2;
+  arrayAux[15].x = (int)prod_iPlus3;
+  arrayAux[16].x = (int)prod_iPlus4;
+  arrayAux[17].x = (int)prod_iPlus5;
+  arrayAux[18].x = (int)prod_iPlus6;
+  arrayAux[19].x = (int)prod_iPlus7;
+  arrayAux[20].x = (int)prod_iPlus8;
+  arrayAux[21].x = (int)prod_iPlus9;
+  arrayAux[22].x = (int)prod_iPlus10;
+  arrayAux[23].x = (int)prod_iPlus11;
 }
 
 static void ClassicalMult13Limbs(int idxFactor1, int idxFactor2)
@@ -406,20 +406,20 @@ static void ClassicalMult14Limbs(int idxFactor1, int idxFactor2)
     MULT_MACRO_DOUBLE(11, 12, 13);
     EPILOG_MULTIPLICATION_DOUBLE(12, 13);
   }
-  arrayAux[14].x = prod_iPlus0;
-  arrayAux[15].x = prod_iPlus1;
-  arrayAux[16].x = prod_iPlus2;
-  arrayAux[17].x = prod_iPlus3;
-  arrayAux[18].x = prod_iPlus4;
-  arrayAux[19].x = prod_iPlus5;
-  arrayAux[20].x = prod_iPlus6;
-  arrayAux[21].x = prod_iPlus7;
-  arrayAux[22].x = prod_iPlus8;
-  arrayAux[23].x = prod_iPlus9;
-  arrayAux[24].x = prod_iPlus10;
-  arrayAux[25].x = prod_iPlus11;
-  arrayAux[26].x = prod_iPlus12;
-  arrayAux[27].x = prod_iPlus13;
+  arrayAux[14].x = (int)prod_iPlus0;
+  arrayAux[15].x = (int)prod_iPlus1;
+  arrayAux[16].x = (int)prod_iPlus2;
+  arrayAux[17].x = (int)prod_iPlus3;
+  arrayAux[18].x = (int)prod_iPlus4;
+  arrayAux[19].x = (int)prod_iPlus5;
+  arrayAux[20].x = (int)prod_iPlus6;
+  arrayAux[21].x = (int)prod_iPlus7;
+  arrayAux[22].x = (int)prod_iPlus8;
+  arrayAux[23].x = (int)prod_iPlus9;
+  arrayAux[24].x = (int)prod_iPlus10;
+  arrayAux[25].x = (int)prod_iPlus11;
+  arrayAux[26].x = (int)prod_iPlus12;
+  arrayAux[27].x = (int)prod_iPlus13;
 }
 
 static void ClassicalMult15Limbs(int idxFactor1, int idxFactor2)
@@ -491,22 +491,22 @@ static void ClassicalMult16Limbs(int idxFactor1, int idxFactor2)
     MULT_MACRO_DOUBLE(13, 14, 15);
     EPILOG_MULTIPLICATION_DOUBLE(14, 15);
   }
-  arrayAux[16].x = prod_iPlus0;
-  arrayAux[17].x = prod_iPlus1;
-  arrayAux[18].x = prod_iPlus2;
-  arrayAux[19].x = prod_iPlus3;
-  arrayAux[20].x = prod_iPlus4;
-  arrayAux[21].x = prod_iPlus5;
-  arrayAux[22].x = prod_iPlus6;
-  arrayAux[23].x = prod_iPlus7;
-  arrayAux[24].x = prod_iPlus8;
-  arrayAux[25].x = prod_iPlus9;
-  arrayAux[26].x = prod_iPlus10;
-  arrayAux[27].x = prod_iPlus11;
-  arrayAux[28].x = prod_iPlus12;
-  arrayAux[29].x = prod_iPlus13;
-  arrayAux[30].x = prod_iPlus14;
-  arrayAux[31].x = prod_iPlus15;
+  arrayAux[16].x = (int)prod_iPlus0;
+  arrayAux[17].x = (int)prod_iPlus1;
+  arrayAux[18].x = (int)prod_iPlus2;
+  arrayAux[19].x = (int)prod_iPlus3;
+  arrayAux[20].x = (int)prod_iPlus4;
+  arrayAux[21].x = (int)prod_iPlus5;
+  arrayAux[22].x = (int)prod_iPlus6;
+  arrayAux[23].x = (int)prod_iPlus7;
+  arrayAux[24].x = (int)prod_iPlus8;
+  arrayAux[25].x = (int)prod_iPlus9;
+  arrayAux[26].x = (int)prod_iPlus10;
+  arrayAux[27].x = (int)prod_iPlus11;
+  arrayAux[28].x = (int)prod_iPlus12;
+  arrayAux[29].x = (int)prod_iPlus13;
+  arrayAux[30].x = (int)prod_iPlus14;
+  arrayAux[31].x = (int)prod_iPlus15;
 }
 #endif
 

@@ -23,8 +23,8 @@ typedef void (*pShowSolutionsModPrime)(int factorIndex, int expon,
 typedef void (*pSolution)(BigInteger* value);
 typedef void (*pShowNoSolsModPrime)(int expon);
 
-void SolveEquation(BigInteger *pValA, const BigInteger* pValB,
-  const BigInteger* pValC, BigInteger* pValN, 
-  BigInteger *GcdAll, BigInteger *pValNn);
+void SolveEquation(BigInteger* pValA, const BigInteger* pValB,
+  const BigInteger* pValC, BigInteger* pValN,
+  BigInteger* pGcdAllParm, BigInteger* pValNnParm);
 void SetCallbacksForSolveEquation(pSolution solutionCback,
   pShowSolutionsModPrime showSolutionsModPrime, pShowNoSolsModPrime showNoSolsModPrime);

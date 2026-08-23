@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef __POLYNOMIAL_H
-#define __POLYNOMIAL_H
+#ifndef POLYNOMIAL_H
+#define POLYNOMIAL_H
 #define MAX_DEGREE          1024
 #define COMPRESSED_POLY_MAX_LENGTH 1000000
 
@@ -104,12 +104,10 @@ int *CopyPolynomialFixedCoeffSize(int *ptrDest, const int *ptrSrc, int degree, i
 void computePower(int expo);
 void UncompressBigIntegerB(const int *ptrValues, BigInteger *bigint);
 int numLimbs(const int *pLen);
-void polyToStandardNotation(int *nbr, int qtyNbrs);
 void polyToMontgomeryNotation(int *nbr, int qtyNbrs);
 int *getContent(int *poly, BigInteger *content);
 int *CopyPolyProduct(const int *ptrSrc, int *ptrDest, int polyDegree);
 int FactorPolyOverIntegers(void);
-void polyFactText(const char* modText, const char* polyText, int groupLength);
 void showPower(char** pptrOutput, int exponent);
 void showPowerX(char** pptrOutput, int polyDegree);
 void showPowerVar(char** pptrOutput, int polyDegree, char letter);

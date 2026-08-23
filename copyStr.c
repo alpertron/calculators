@@ -49,14 +49,14 @@ void copyStr(char** pptrString, const char* stringToCopy)
 
 static int getRangeNumber(const char** pptrOutput)
 {
-  const char* ptrOutput = *pptrOutput;
+  const char* ptrOut = *pptrOutput;
   int number = 0;
-  while ((*ptrOutput >= '0') && (*ptrOutput <= '9'))
+  while ((*ptrOut >= '0') && (*ptrOut <= '9'))
   {
-    number = number * 10 + (*ptrOutput - '0');
-    ptrOutput++;
+    number = number * 10 + (*ptrOut - '0');
+    ptrOut++;
   }
-  *pptrOutput = ptrOutput;
+  *pptrOutput = ptrOut;
   return number;
 }
 

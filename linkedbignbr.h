@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _LINKED_BIGNBR_H
-#define _LINKED_BIGNBR_H
+#ifndef LINKED_BIGNBR_H
+#define LINKED_BIGNBR_H
 
 #define NBR_LINKED_NODES      3000000
 #define LIMBS_PER_LINKED_NODE       7  // It must be greater than 2.

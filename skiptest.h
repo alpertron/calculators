@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _SKIPTEST_H
-#define _SKIPTEST_H
+#ifndef SKIPTEST_H
+#define SKIPTEST_H
 #ifdef __EMSCRIPTEN__
 void startSkipTest(void);
 void endSkipTest(void);

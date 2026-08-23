@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _EXPRFACT_H
-#define _EXPRFACT_H
+#ifndef EXPRFACT_H
+#define EXPRFACT_H
 
 #ifdef FACTORIZATION_FUNCTIONS
 #define TOKEN_TOTIENT        34

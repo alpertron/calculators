@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _ISPRIME_H
-#define _ISPRIME_H
+#ifndef ISPRIME_H
+#define ISPRIME_H
 
 #define NBR_LIMBS        2
 #define BITS_PER_GROUP   31
