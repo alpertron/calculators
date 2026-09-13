@@ -27,8 +27,8 @@ my $jsFile = $ARGV[2];
 my $workerContents = "";
 my $wasmContents = "";
 my $wasmb64 = "";
-# Argument 3 or 4 can be optionally, WebAssembly file (file name ends with .wasm)
-# and worker file (file name ends with .js).
+# Argument 3 or 4 can be optionally, WebAssembly with SIMD support file (file name ends with .wasm)
+# and WebAssembly without SIMD support file (file name ends with .wasm).
 for (my $cmdLineArgNbr = 3; $cmdLineArgNbr <= $#ARGV; $cmdLineArgNbr++)
 {
   if ($ARGV[$cmdLineArgNbr] =~ /wasm$/)
@@ -60,8 +60,8 @@ for (my $cmdLineArgNbr = 3; $cmdLineArgNbr <= $#ARGV; $cmdLineArgNbr++)
     close $workerFile;
   }
 }
-my $oldJS = "0000\.js";
-my $newJS = $commandLine."\.js";
+my $oldJS = "0000\.wasm";
+my $newJS = $commandLine."\.wasm";
 my $tempFile = "temp.tmp";
 my $step = 1;
 open(htmlFile, '<', $htmlFile) or die "couldn't open HTML file ".$htmlFile;

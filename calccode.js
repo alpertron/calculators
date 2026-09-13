@@ -32,20 +32,15 @@ function newState(_aEvt)
   if (req.readyState === 4 && req.status === 200)
   {
     fileContents = /** @type {ArrayBuffer} */ (req.response);
-    if (workPar)
-    {
-      callWorker(workPar);
-    }
   }
 }
 
-
-function getCalculatorCode(jsFileName, workerParameter)
+function getCalculatorCode(wasmFileName, workerParameter)
 {
   workPar = workerParameter;
   usingWebAssembly = supportsWasmSimd();
-  if (usingWebAssembly)
-  {         // WebAssembly
+  if (usingWebAssembly == 2)
+  {         // WebAssembly with SIMD
     let wasm = get("wasmb64").text;
     while (wasm.codePointAt(0) < 32)
     {
@@ -67,12 +62,17 @@ function getCalculatorCode(jsFileName, workerParameter)
     fileContents = new Int8Array(length);
     b64decode(wasm, fileContents);
   }
-  else
-  {         // JavaScript.
+  else if (usingWebAssembly == 1)
+  {         // WebAssembly without SIMD.
     req = new XMLHttpRequest();
-    req.open("GET", addLangToFilename(jsFileName), true);
+    req.open("GET", addLangToFilename(wasmFileName), true);
     req.responseType = "arraybuffer";
     req.onreadystatechange = newState;
     req.send(null);
   }
+  else
+  {
+    get("valueapp").innerHTML = get("nowebassy").innerHTML;
+  }
+  return usingWebAssembly;
 }

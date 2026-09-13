@@ -35,6 +35,7 @@ function getStorage(name)
 function getCalculatorCode(filename, workerParam)
 {
   fileContents = 1;
+  return 1;
 }
 
 function registerServiceWorker()

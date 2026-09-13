@@ -37,25 +37,11 @@ function callWorker(param)
   {
     if (!blob)
     {
-      if (usingWebAssembly)
-      {    // WebAssembly
-        blob = new Blob([get("worker").textContent],{type: "text/javascript"});
-      }
-      else
-      {    // Asm.js
-        blob = new Blob([fileContents],{type: "text/javascript"});
-      }
+      blob = new Blob([get("worker").textContent],{type: "text/javascript"});
     }   
     worker = new Worker(window.URL.createObjectURL(blob));
     worker.onmessage = comingFromWorker;
   }
-  if (usingWebAssembly)
-  {      // WebAssembly.
-    worker.postMessage([param, fileContents]);
-  }
-  else
-  {      // Asm.js
-    worker.postMessage(param);
-  }
+  worker.postMessage([param, fileContents]);
 }
 

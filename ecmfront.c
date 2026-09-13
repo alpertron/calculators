@@ -102,47 +102,24 @@ void batchEcmCallback(char **pptrOutput, int type)
     *ptrFactorDecNoSpaces = 0;   // Add string terminator.
   }
   if (doFactorization)
-  {
+  {      // User pressed the "Factor" button.
     factorExt(&tofactor, nbrToFactor, factorsMod, astFactorsMod, knownFactors);
     knownFactors = NULL;
   }
   else if (doShowPrime)
-  {
-    if (tofactor.sign == SIGN_NEGATIVE)
-    {
-      copyStr(pptrOutput, "-");
-    }
-    if (hexadecimal)
-    {
-      Bin2Hex(pptrOutput, tofactor.limbs, tofactor.nbrLimbs, groupLen);
-    }
-    else
-    {
-      Bin2Dec(pptrOutput, tofactor.limbs, tofactor.nbrLimbs, groupLen);
-    }
+  {      // User pressed the "Is prime?" button.
     if (BpswPrimalityTest(&tofactor, NULL) == 0)
-    {    // Argument is a probable prime.
-      copyStr(pptrOutput, LITERAL_ECM_BATCH_CBACK1);
+    {    // Argument is a probable prime.         
+      formatString(pptrOutput, LITERAL_ECM_BATCH_CBACK1, &tofactor);  // $1b is prime
     }
     else
     {
-      copyStr(pptrOutput, LITERAL_ECM_BATCH_CBACK2);
+      formatString(pptrOutput, LITERAL_ECM_BATCH_CBACK2, &tofactor);  // $1b is not prime
     }
   }
   else
-  {
-    if (tofactor.sign == SIGN_NEGATIVE)
-    {
-      copyStr(pptrOutput, "-");
-    }
-    if (hexadecimal)
-    {
-      Bin2Hex(pptrOutput, tofactor.limbs, tofactor.nbrLimbs, groupLen);
-    }
-    else
-    {
-      Bin2Dec(pptrOutput, tofactor.limbs, tofactor.nbrLimbs, groupLen);
-    }
+  {      // User pressed the "Only evaluate" button.
+    formatString(pptrOutput, "$1b", &tofactor);    // $1b
   }
   SendFactorizationToOutput(astFactorsMod, pptrOutput, doFactorization,
     (type != BATCH_NO_QUOTE));
@@ -616,17 +593,13 @@ void showDivisors(void)
     }
     IntArray2BigInteger(common.k.divisors.ptrFoundDivisors[divisorNbr], &Tmp);
     copyStr(&ptrOutput, "<li>");
-    if (hexadecimal)
-    {
-      Bin2Hex(&ptrOutput, (const limb *)ptrIntArray + 1, NumberLength, groupLen);
+    if (*ptrIntArray < 0)
+    {    // $1a (prime)
+      formatString(&ptrOutput, LITERAL_SHOW_DIVISORS3, (const limb*)ptrIntArray + 1);
     }
     else
     {
-      Bin2Dec(&ptrOutput, (const limb*)ptrIntArray + 1, NumberLength, groupLen);
-    }
-    if (*ptrIntArray < 0)
-    {
-      copyStr(&ptrOutput, LITERAL_SHOW_DIVISORS3);
+      formatString(&ptrOutput, "$1a", (const limb*)ptrIntArray + 1);
     }
     copyStr(&ptrOutput, "</li>");
   }

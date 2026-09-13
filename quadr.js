@@ -156,7 +156,7 @@ function moveNext(e, curr, next)
 
 function getCalcURLs()
 {
-  return [addLangToFilename("quadW0000.js"),
+  return [addLangToFilename("quadW0000.wasm"),
           "quad.webmanifest", "cuad.webmanifest", "quad-icon-1x.png",
           "quad-icon-2x.png", "quad-icon-4x.png", "quad-icon-180px.png",
           "quad-icon-512px.png", "favicon.ico"];
@@ -344,7 +344,9 @@ function startUp()
   generateFuncButtons("funccat", "funcbtns");
   registerServiceWorker();
 }
-window.addEventListener("load", startUp);
-window.addEventListener("popstate", popstate);
-getCalculatorCode("quadW0000.js", false);
-window["fromWorker"] = fromWorker;
+if (getCalculatorCode("quadW0000.wasm", false))
+{
+  window.addEventListener("load", startUp);
+  window.addEventListener("popstate", popstate);
+  window["fromWorker"] = fromWorker;
+}

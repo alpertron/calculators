@@ -20,6 +20,7 @@ cmd /c emcc %wasmCommon% gausspr.c isprime.c MontMultGraphic.c graphics.c -s EXP
 @if errorlevel 1 goto end
 
 copy /b ulam.js + common.js + strings.js + commonGraphics.js ulamA.js
+copy ulamW.js ulamX.js
 perl generateTempJS.pl ulamA.js ulamW.js ulamT.js moveGraphic drawPartialGraphic nbrChanged getInformation getPixels
 del ulamA.js
 java -jar %compilerName% %compilerOptions2% --js ulamT.js --js initGraphicNoAndroid.js --js supportsWasmSimd.js --js_output_file ulamU.js
@@ -30,7 +31,7 @@ copy ULAM.HTM assets\ulam.html
 perl replaceEmbeddedJS.pl 0000 toweb\ULAM.HTM ulamV.js ulam.wasm
 @if errorlevel 1 goto end
 copy /b ulam.js + common.js + commonAndroid.js + stringsAndroid.js + commonGraphics.js ulamA.js
-perl generateTempJS.pl ulamA.js ulamW.js ulamT.js moveGraphic drawPartialGraphic nbrChanged getInformation getPixels
+perl generateTempJS.pl ulamA.js ulamX.js ulamT.js moveGraphic drawPartialGraphic nbrChanged getInformation getPixels
 del ulamA.js
 java -jar %compilerName% %compilerOptions2% --js ulamT.js --js initGraphicAndroid.js --js androidextern.js --js_output_file ulamEA.js
 @if errorlevel 1 goto end

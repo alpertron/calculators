@@ -138,7 +138,7 @@ function dowork(n)
 
 function getCalcURLs()
 {
-  return [addLangToFilename("gaussianW0000.js"),
+  return [addLangToFilename("gaussianW0000.wasm"),
           "gaussian.webmanifest", "gausiano.webmanifest", "gaussian-icon-1x.png",
           "gaussian-icon-2x.png", "gaussian-icon-4x.png", "gaussian-icon-180px.png",
           "gaussian-icon-512px.png", "favicon.ico"];
@@ -297,7 +297,10 @@ function startUp()
   registerServiceWorker();
   currentInputBox = get("value");
 }
-getCalculatorCode("gaussianW0000.js", false);
-window.addEventListener("load", startUp);
-window.addEventListener("popstate", popstate);
-window["fromWorker"] = fromWorker;
+if (getCalculatorCode("gaussianW0000.wasm", false))
+{
+  window.addEventListener("load", startUp);
+  window.addEventListener("popstate", popstate);
+  window["fromWorker"] = fromWorker;
+}
+

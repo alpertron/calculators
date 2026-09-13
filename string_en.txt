@@ -27,7 +27,7 @@ LITERAL_STEP2_BPSW "Step 2 of BPSW probable prime algorithm: Strong Lucas with P
 contfrac
 LITERAL_START_PERIODIC_PART "start periodic part"
 LITERAL_PERIODIC_PART_IN_BOLD "where the periodic part is marked in bold"
-LITERAL_COEFFICIENTS_IN_PERIOD " (the period has $1d coefficients)"
+LITERAL_COEFFICIENTS_IN_PERIOD " (the period has $1d coefficients)."
 LITERAL_TRUNCATED_PERIOD "where the periodic part (truncated after $1d coefficients) is marked in bold."
 LITERAL_SHOW_FORMULA_NUM "the fraction whose numerator is"
 LITERAL_SHOW_FORMULA_DEN "and the denominator is "
@@ -83,8 +83,8 @@ LITERAL_ECM1 "$1d-digit level:"
 LITERAL_ECM2 "Curve $1d using bounds B1=$2d and B2=$3l"
 
 ecmfront
-LITERAL_ECM_BATCH_CBACK1 " is prime"
-LITERAL_ECM_BATCH_CBACK2 " is not prime"
+LITERAL_ECM_BATCH_CBACK1 "$1b is prime"
+LITERAL_ECM_BATCH_CBACK2 "$1b is not prime"
 LITERAL_NBR_DIVISORS "Number of divisors: $1b"
 LITERAL_SUM_DIVISORS "Sum of divisors: $1b"
 LITERAL_PHI_EULER "Euler's totient: $1b"
@@ -109,7 +109,7 @@ LITERAL_ECMFRONT17 "Factoring $1d $1?1?number??$1?2+?numbers?? using ECM: $2t"
 LITERAL_ECMFRONT18 "Factoring $1d $1?1?number??$1?2+?numbers?? using SIQS: $2t"
 LITERAL_SHOW_DIVISORS1 "List of divisors:"
 LITERAL_SHOW_DIVISORS2 "Any natural number"
-LITERAL_SHOW_DIVISORS3 " (prime)"
+LITERAL_SHOW_DIVISORS3 "$1a (prime)"
 LITERAL_SHOW_DIVISORS4 "Show more divisors"
 
 errors
@@ -220,7 +220,7 @@ LITERAL_FACTOR_MODULAR_POLY "List of factors"
 
 output
 LITERAL_SHOW_EQ_NBRS "($1d) and ($2d)"
-LITERAL_COPYRIGHT "Written by Dario Alpern. Last updated on 22 August 2026."
+LITERAL_COPYRIGHT "Written by Dario Alpern. Last updated on 13 September 2026."
 
 pminus1
 LITERAL_PMINUS1_1 "p&minus;1 using bounds B1=$2d and B2=$3l"
@@ -258,9 +258,8 @@ LITERAL_ERROR_POL13 "Equal sign inside parentheses"
 quad
 LITERAL_SHOW_ALSO "and also:"
 LITERAL_PRINT_LINEAR "x, y: any integer"
-LITERAL_NO_SOLS_MOD_PRIME1 "There are no solutions modulo "
-LITERAL_NO_SOLS_MOD_PRIME2 ", so the modular equation does not have any solution."
-LITERAL_SOLS_MOD_PRIME1 "Solutions modulo "
+LITERAL_NO_SOLS_MOD_PRIME "There are no solutions modulo $1b$2e, so the modular equation does not have any solution."
+LITERAL_SOLS_MOD_PRIME1 "Solutions modulo $1b$2e: "
 LITERAL_SOLS_MOD_PRIME2 " and "
 LITERAL_SOLVE_QUADMOD1 "To solve this quadratic modular equation we have to factor the modulus and find the solution modulo the powers of the prime factors. Then we combine them by using the Chinese Remainder Theorem."
 LITERAL_LINEAREQ1 "This is a linear equation "

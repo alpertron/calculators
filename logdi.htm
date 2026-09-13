@@ -18,7 +18,7 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:description" content="Aplicación Web que halla logaritmos discretos.">
-<meta property="article:published_time" content="2026-08-22">
+<meta property="article:published_time" content="2026-09-13">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/LOGDI.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/DILOG.HTM">
@@ -294,7 +294,7 @@ Para ingresar números en el formato hexadecimal es necesario que tengan los car
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente del programa actual y del viejo applet de cálculo de logaritmos discretos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 22 de agosto de 2026.</p>
+<p>Escrito por Dario Alpern. Actualizado el 13 de septiembre de 2026.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div id="footer">
@@ -373,6 +373,7 @@ Para ingresar números en el formato hexadecimal es necesario que tengan los car
 <div class="center"><button type="button" id="btnNotSent">Volver</button></div>
 </aside>
 <div id="strings">
+<div id="nowebassy">Esta aplicación requiere WebAssembly. Por favor habilítelo o use otro navegador web.</div>
 <div id="btn1">Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Raíz cuadrada entera,sqrt1,Raíz entera\n\nPrimer argumento: radicando\nSegundo argumento: orden de la raíz,iroot2,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random2,Valor absoluto,Abs1,Signo,Sign1</div>
 <div id="btn2">Igual,=,Distinto,!=,,,Mayor,>,Menor o igual,&lt;=,Menor,&lt;,Mayor o igual,&gt;=</div>
 <div id="btn3">Desplazamiento a la izquierda\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHL ,Desplazamiento a la derecha\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHR ,,,Y lógica, AND ,O lógica, OR ,O exclusiva, XOR ,Negación lógica, NOT </div>
@@ -388,6 +389,8 @@ Para ingresar números en el formato hexadecimal es necesario que tengan los car
 <div id="solving">Calculando el logaritmo discreto...</div>
 <div id="stopped"><p>Cálculo detenido por el usuario.</p></div>
 <div id="formatUserData">\nBase = {base}\nPotencia = {power}\nMódulo = {mod}</div>
+<div id="webassyNoSimd">Esta es la versión WebAssembly sin SIMD.</div>
+<div id="webassySimd">Esta es la versión WebAssembly con SIMD.</div>
 <div id="sendmail">enviomail</div>
 </div>
 <script type="text/wasmb64" id="wasmb64">
@@ -408,8 +411,8 @@ Para ingresar números en el formato hexadecimal es necesario que tengan los car
   "name": "Calculadora de logaritmos discretos",
   "description": "Aplicación Web que halla logaritmos discretos.",
   "image": ["https://www.alpertron.com.ar/logdi.png"],
-  "datePublished": "2026-08-22",
-  "dateModified": "2026-08-22",
+  "datePublished": "2026-09-13",
+  "dateModified": "2026-09-13",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {

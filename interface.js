@@ -85,28 +85,28 @@ let calcURLs;
 
 if (app < 2)
 {
-  calcURLs = [addLangToFilename("fsquaresW0000.js"),
+  calcURLs = [addLangToFilename("fsquaresW0000.wasm"),
               "fsquares.webmanifest", "sumcuad.webmanifest", "fsquares-icon-1x.png",
               "fsquares-icon-2x.png", "fsquares-icon-4x.png", "fsquares-icon-180px.png",
               "fsquares-icon-512px.png", "favicon.ico"];
 }
 else if (app < 4)
 {
-  calcURLs = [addLangToFilename("fcubesW0000.js"),
+  calcURLs = [addLangToFilename("fcubesW0000.wasm"),
               "fcubes.webmanifest", "sumcubos.webmanifest", "fcubes-icon-1x.png",
               "fcubes-icon-2x.png", "fcubes-icon-4x.png", "fcubes-icon-180px.png",
               "fcubes-icon-512px.png", "favicon.ico"];
 }
 else if (app < 6)
 {
-  calcURLs = [addLangToFilename("contfracW0000.js"),
+  calcURLs = [addLangToFilename("contfracW0000.wasm"),
               "contfrac.webmanifest", "fraccont.webmanifest", "contfrac-icon-1x.png",
               "contfrac-icon-2x.png", "contfrac-icon-4x.png", "contfrac-icon-180px.png",
               "contfrac-icon-512px.png", "favicon.ico"];
 }
 else
 {
-  calcURLs = [addLangToFilename("tsqcubesW0000.js"),
+  calcURLs = [addLangToFilename("tsqcubesW0000.wasm"),
               "tsqcubes.webmanifest", "tcuadcub.webmanifest", "tsqcubes-icon-1x.png",
               "tsqcubes-icon-2x.png", "tsqcubes-icon-4x.png", "tsqcubes-icon-180px.png",
               "tsqcubes-icon-512px.png", "favicon.ico"];
@@ -536,22 +536,26 @@ function startUp()
   getConfig();
   registerServiceWorker();
 }
+let fileName;
 if (app < 2)
 {
-  getCalculatorCode("fsquaresW0000.js", false);
+  fileName = "fsquaresW0000.wasm";
 }
 else if (app < 4)
 {
-  getCalculatorCode("fcubesW0000.js", false);
+  fileName = "fcubesW0000.wasm";
 }
 else if (app < 6)
 {
-  getCalculatorCode("contfracW0000.js", false);
+  fileName = "contfracW0000.wasm";
 }
 else
 {
-  getCalculatorCode("tsqcubesW0000.js", false);
+  fileName = "tsqcubesW0000.wasm";
 }
-window.addEventListener("load", startUp);
-window.addEventListener("popstate", popstate);
-window["fromWorker"] = fromWorker;
+if (getCalculatorCode(fileName, false))
+{
+  window.addEventListener("load", startUp);
+  window.addEventListener("popstate", popstate);
+  window["fromWorker"] = fromWorker;
+}

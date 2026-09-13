@@ -636,17 +636,9 @@ static void NoSolsModPrime(int expon)
 {
   if (teach)
   {
-    // There are no solutions modulo
-    formatString(&ptrOutput, "<p>$1s", LITERAL_NO_SOLS_MOD_PRIME1);
-    shownbr(&prime);
-    if (expon != 1)
-    {
-      showText("<sup>");
-      int2dec(&ptrOutput, expon);
-      showText("</sup>");
-    }
-    // , so the modular equation does not have any solution.
-    formatString(&ptrOutput, "$1s</p>", LITERAL_NO_SOLS_MOD_PRIME2);
+    copyStr(&ptrOutput, "<p>");
+    formatString(&ptrOutput, LITERAL_NO_SOLS_MOD_PRIME, &prime, expon);
+    copyStr(&ptrOutput, "</p>");
   }
 }
 
@@ -660,16 +652,9 @@ static void ShowSolutionsModPrime(int factorIndex, int expon, const BigInteger *
   }
   (void)BigIntPowerIntExp(&prime, expon, &primePower);       // Get value of prime power.
   intToBigInteger(&ValH, 0);
-  // Solutions modulo
-  formatString(&ptrOutput, "<p>$1s", LITERAL_SOLS_MOD_PRIME1);
-  shownbr(&prime);
-  if (expon != 1)
-  {
-    showText("<sup>");
-    int2dec(&ptrOutput, expon);
-    showText("</sup>");
-  }
-  showText(": ");
+  copyStr(&ptrOutput, "<p>");
+  // Solutions modulo $1b$2e:
+  formatString(&ptrOutput, LITERAL_SOLS_MOD_PRIME1, &prime, expon);
   do
   {
     bool oneSolution = BigIntEqual(&common.quad.Solution1[factorIndex],

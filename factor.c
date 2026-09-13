@@ -1232,28 +1232,16 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
   for (;;)
   {
     NumberLength = *pstFactor->ptrFactor;
-    IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
-    if (hexadecimal)
-    {
-      Bin2Hex(&ptrOutput, factorValue.limbs, factorValue.nbrLimbs, groupLen);
-    }
-    else
-    {
-      Bin2Dec(&ptrOutput, factorValue.limbs, factorValue.nbrLimbs, groupLen);
-    }
+    formatString(&ptrOutput, "$1a", pstFactor->ptrFactor + 1);
     if (pstFactor->multiplicity > 1)
     {
       if (prettyprint)
       {
-        copyStr(&ptrOutput, "<sup>");
-        int2dec(&ptrOutput, pstFactor->multiplicity);
-        copyStr(&ptrOutput, "</sup>");
+        formatString(&ptrOutput, "<sup>$1d</sup>", pstFactor->multiplicity);
       }
       else
       {
-        *ptrOutput = '^';
-        ptrOutput++;
-        int2dec(&ptrOutput, pstFactor->multiplicity);
+        formatString(&ptrOutput, "^$1d", pstFactor->multiplicity);
       }
     }
 #ifdef ENABLE_VERBOSE
@@ -2322,6 +2310,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
     factorNbr++;
     pstCurFactor++;
     NumberLength = *pstCurFactor->ptrFactor;
+    initFactorFields();
     IntArray2BigInteger(pstCurFactor->ptrFactor, &prime);
     NumberLength = power.nbrLimbs;
 #ifdef __EMSCRIPTEN__

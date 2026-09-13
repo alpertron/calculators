@@ -21,7 +21,7 @@
 /* global usingWebAssembly */
 function getFirstLine()
 {
-  const version = (usingWebAssembly? "webassy": "nowebassy");
+  const version = (usingWebAssembly == 2? "webassySimd": "webassyNoSimd");
   return "<p>" + get("firstLine").innerHTML + " " +
          get(version).innerHTML + "</p>";
 }

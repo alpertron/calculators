@@ -27,7 +27,7 @@ LITERAL_STEP2_BPSW "Paso 2 del algoritmo BPSW de primos probables: Lucas fuerte 
 contfrac
 LITERAL_START_PERIODIC_PART "inicio del período"
 LITERAL_PERIODIC_PART_IN_BOLD "donde la parte periódica está señalada en negrita"
-LITERAL_COEFFICIENTS_IN_PERIOD " (el período tiene $1d coeficientes)"
+LITERAL_COEFFICIENTS_IN_PERIOD " (el período tiene $1d coeficientes)."
 LITERAL_TRUNCATED_PERIOD "donde la parte periódica (truncada a partir de los $1d coeficientes) está señalada en negrita."
 LITERAL_SHOW_FORMULA_NUM "la fracción cuyo numerador es"
 LITERAL_SHOW_FORMULA_DEN "y el denominador es "
@@ -83,8 +83,8 @@ LITERAL_ECM1 "Nivel de $1d dígitos:"
 LITERAL_ECM2 "Curva $1d usando límites B1=$2d y B2=$3l"
 
 ecmfront
-LITERAL_ECM_BATCH_CBACK1 " es primo"
-LITERAL_ECM_BATCH_CBACK2 " no es primo"
+LITERAL_ECM_BATCH_CBACK1 "$1b es primo"
+LITERAL_ECM_BATCH_CBACK2 "$1b no es primo"
 LITERAL_NBR_DIVISORS "Cantidad de divisores: $1b"
 LITERAL_SUM_DIVISORS "Suma de divisores: $1b"
 LITERAL_PHI_EULER "Phi de Euler: $1b"
@@ -109,7 +109,7 @@ LITERAL_ECMFRONT17 "Factorización de $1d $1?1?número??$1?2+?números?? mediant
 LITERAL_ECMFRONT18 "Factorización de $1d $1?1?número??$1?2+?números?? mediante SIQS: $2t"
 LITERAL_SHOW_DIVISORS1 "Lista de divisores:"
 LITERAL_SHOW_DIVISORS2 "Cualquier número natural"
-LITERAL_SHOW_DIVISORS3 " (primo)"
+LITERAL_SHOW_DIVISORS3 "$1a (primo)"
 LITERAL_SHOW_DIVISORS4 "Mostrar más divisores"
 
 errors
@@ -220,7 +220,7 @@ LITERAL_FACTOR_MODULAR_POLY "Lista de factores"
 
 output
 LITERAL_SHOW_EQ_NBRS "($1d) y ($2d)"
-LITERAL_COPYRIGHT "Hecho por Darío Alpern. Actualizado el 22 de agosto de 2026."
+LITERAL_COPYRIGHT "Hecho por Darío Alpern. Actualizado el 13 de septiembre de 2026."
 
 pminus1
 LITERAL_PMINUS1_1 "p&minus;1 usando límites B1=$2d y B2=$3l"
@@ -258,9 +258,8 @@ LITERAL_ERROR_POL13 "Hay un signo igual dentro de paréntesis"
 quad
 LITERAL_SHOW_ALSO "y también:"
 LITERAL_PRINT_LINEAR "x, y: cualquier entero"
-LITERAL_NO_SOLS_MOD_PRIME1 "No hay soluciones módulo "
-LITERAL_NO_SOLS_MOD_PRIME2 ", así que la ecuación modular no tiene soluciones."
-LITERAL_SOLS_MOD_PRIME1 "Soluciones módulo "
+LITERAL_NO_SOLS_MOD_PRIME "No hay soluciones módulo $1b$2e, así que la ecuación modular no tiene soluciones."
+LITERAL_SOLS_MOD_PRIME1 "Soluciones módulo $1b$2e: "
 LITERAL_SOLS_MOD_PRIME2 " y "
 LITERAL_SOLVE_QUADMOD1 "Para resolver esta ecuación cuadrática modular debemos factorizar el módulo y hallar las soluciones módulo las potencias de los factores primos. Luego debemos combinar estas soluciones usando el teorema chino del resto."
 LITERAL_LINEAREQ1 "Esta es una ecuación lineal "

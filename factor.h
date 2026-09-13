@@ -51,9 +51,7 @@ struct sFactors
   int upperBound;
   int type;
 };
-#ifdef FACTORIZATION_APP
 extern int StepECM;
-#endif
 
 extern int64_t primeModMult;
 extern int64_t SIQSModMult;

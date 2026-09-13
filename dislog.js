@@ -117,7 +117,7 @@ function dowork(n)
 
 function getCalcURLs()
 {
-  return [addLangToFilename("dilogW0000.js"),
+  return [addLangToFilename("dilogW0000.wasm"),
           "dilog.webmanifest", "logdi.webmanifest", "dilog-icon-1x.png",
           "dilog-icon-2x.png", "dilog-icon-4x.png", "dilog-icon-180px.png",
           "dilog-icon-512px.png", "favicon.ico"];
@@ -260,7 +260,10 @@ function startUp()
   generateFuncButtons("funccat", "funcbtns");
   registerServiceWorker();
 }
-getCalculatorCode("dilogW0000.js", false);
-window.addEventListener("load", startUp);
-window.addEventListener("popstate", popstate);
-window["fromWorker"] = fromWorker;
+if (getCalculatorCode("dilogW0000.wasm", false))
+{
+  window.addEventListener("load", startUp);
+  window.addEventListener("popstate", popstate);
+  window["fromWorker"] = fromWorker;
+}
+

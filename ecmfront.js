@@ -45,7 +45,6 @@
 /* global getFirstLine */
 /* global typedOnWizard */
 /* global useBlockly */
-/* global usingWebAssembly */
 /* global wizardNext */
 
 /** @define {boolean} */
@@ -117,7 +116,7 @@ function getParens()
 
 function getCalcURLs()
 {
-  return [addLangToFilename("ecmW0000.js"),
+  return [addLangToFilename("ecmW0000.wasm"),
           "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png",
           "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-180px.png",
           "ecm-icon-512px.png", "favicon.ico"];
@@ -321,6 +320,7 @@ function comingFromWorker(e)
 function performWork(n, valueText)
 {
   let param;
+  let intervalId;
   app = n;
   let charNull = String.fromCharCode(0);
   let charSeparator = String.fromCharCode(1);
@@ -338,11 +338,12 @@ function performWork(n, valueText)
   show("helphelp");
   helphelp.innerHTML = getFirstLine();
   show("result");
-  setInterval(function()
+  intervalId = setInterval(function()
   {
     if (insideFactoring)
     {                      // Enable "more" and "stop" buttons
       styleButtons("none", "inline");
+      clearTimeout(intervalId);  // Do not repeat this code.
     }
   }, 100);
   insideFactoring = true;
@@ -963,7 +964,9 @@ function startUp()
   generateFuncButtons("wzdfunccat", "wzdfuncbtns");
   completeFuncButtons("funcbtns");
 }
-getCalculatorCode("ecmW0000.js", workerParam);
-window.addEventListener("load", startUp);
-window.addEventListener("popstate", popstate);
-window["fromWorker"] = fromWorker;
+if (getCalculatorCode("ecmW0000.wasm", workerParam))
+{
+  window.addEventListener("load", startUp);
+  window.addEventListener("popstate", popstate);
+  window["fromWorker"] = fromWorker;
+}

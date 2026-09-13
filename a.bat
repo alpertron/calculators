@@ -7,10 +7,8 @@ set compilerOptions=%optimization% --language_out ECMASCRIPT_2015 --isolation_mo
 set compilerOptionsAnd=%optimization% --language_out ECMASCRIPT_2015 --isolation_mode IIFE --externs=custom-externs.js --js androidextern.js --js commonAndroid.js
 set compileFlags=-flto -Os -Wall -finline-functions -DNDEBUG
 set commonLinkFlags=-flto -Os --no-entry -s ASSERTIONS=0 -s NO_FILESYSTEM=1 --js-library lib.js --pre-js pre.js
-set jsCommon=%commonLinkFlags% -s WASM=0 -s DYNAMIC_EXECUTION=0 -s SINGLE_FILE=1 -s TEXTDECODER=2 -s INCOMING_MODULE_JS_API=['preRun','noInitialRun'] -s WASM_ASYNC_COMPILATION=0 -s ENVIRONMENT='worker' --closure 1
-set wasmCommon=%commonLinkFlags% -s WASM=1 -D_USING64BITS_ -msimd128
+set wasmCommon=%commonLinkFlags% -s WASM=1 -D_USING64BITS_
 del *.wasm
-del *00*js
 
 rem ===================== FILES TO USE DURING COMPILATION =====================
 set fsquaresFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c fftUtil.c
@@ -49,54 +47,54 @@ goto :generate_glue_code
 :compile
 perl ClassicalMult_wasm.pl > ClassicalMult_wasm.S
 perl internationalize.pl string_%2.txt string\strings.h
-cmd /c emcc %compileFlags% %fsquaresFiles% fsquares.c ClassicalMult.c tsquares.c %jsCommon% %fsquaresOptions% -o toweb\fsquaresW%1%2.js
+cmd /c emcc %compileFlags% %fsquaresFiles% fsquares.c ClassicalMult.c tsquares.c %wasmCommon% %fsquaresOptions% -o toweb\fsquaresW%1%2.wasm
 @if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %fsquaresFiles% fsquares.c ClassicalMult_wasm.S tsquares.c %wasmCommon% %fsquaresOptions% -o fsquares_%2.wasm
-@if errorlevel 1 exit /b 1
-
-cmd /c emcc %compileFlags% %fsquaresFiles% fcubes.c ClassicalMult.c %jsCommon% %fsquaresOptions% -o toweb\fcubesW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %fsquaresFiles% fcubes.c ClassicalMult_wasm.S %wasmCommon% %fsquaresOptions% -o fcubes_%2.wasm
+cmd /c emcc %compileFlags% -msimd128 %fsquaresFiles% fsquares.c ClassicalMult_wasm.S tsquares.c %wasmCommon% %fsquaresOptions% -o fsquares_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% %fsquaresFiles% tsqcubes.c ClassicalMult.c tsquares.c %jsCommon% %fsquaresOptions% -o toweb\tsqcubesW%1%2.js
+cmd /c emcc %compileFlags% %fsquaresFiles% fcubes.c ClassicalMult.c %wasmCommon% %fsquaresOptions% -o toweb\fcubesW%1%2.wasm
 @if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %fsquaresFiles% tsqcubes.c ClassicalMult_wasm.S tsquares.c %wasmCommon% %fsquaresOptions% -o tsqcubes_%2.wasm
-@if errorlevel 1 exit /b 1
-
-cmd /c emcc %compileFlags% %fsquaresFiles% contfrac.c ClassicalMult.c %jsCommon% %fsquaresOptions% -o toweb\contfracW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %fsquaresFiles% contfrac.c ClassicalMult_wasm.S %wasmCommon% %fsquaresOptions% -o contfrac_%2.wasm
+cmd /c emcc %compileFlags% -msimd128 %fsquaresFiles% fcubes.c ClassicalMult_wasm.S %wasmCommon% %fsquaresOptions% -o fcubes_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% %polfactFiles% ClassicalMult.c %jsCommon% %polfactOptions% -o toweb\polfactW%1%2.js
+cmd /c emcc %compileFlags% %fsquaresFiles% tsqcubes.c ClassicalMult.c tsquares.c %wasmCommon% %fsquaresOptions% -o toweb\tsqcubesW%1%2.wasm
 @if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %polfactFiles% ClassicalMult_wasm.S %wasmCommon% %polfactOptions% -o polfact_%2.wasm
-@if errorlevel 1 exit /b 1
-
-cmd /c emcc %compileFlags% %dilogFiles% ClassicalMult.c %jsCommon% %dilogOptions% -o toweb\dilogW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %dilogFiles% ClassicalMult_wasm.S %wasmCommon% %dilogOptions% -o dilog_%2.wasm
+cmd /c emcc %compileFlags% -msimd128 %fsquaresFiles% tsqcubes.c ClassicalMult_wasm.S tsquares.c %wasmCommon% %fsquaresOptions% -o tsqcubes_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% %quadmodFiles% ClassicalMult.c %jsCommon% %quadmodOptions% -o toweb\quadmodW%1%2.js
+cmd /c emcc %compileFlags% %fsquaresFiles% contfrac.c ClassicalMult.c %wasmCommon% %fsquaresOptions% -o toweb\contfracW%1%2.wasm
 @if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %quadmodFiles% ClassicalMult_wasm.S %wasmCommon% %quadmodOptions% -o quadmod_%2.wasm
-@if errorlevel 1 exit /b 1
-
-cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 %quadFiles% ClassicalMult.c %jsCommon% %quadOptions% -o toweb\quadW%1%2.js
-@if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 %quadFiles% ClassicalMult_wasm.S %wasmCommon% %quadOptions% -o quad_%2.wasm
+cmd /c emcc %compileFlags% -msimd128 %fsquaresFiles% contfrac.c ClassicalMult_wasm.S %wasmCommon% %fsquaresOptions% -o contfrac_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% %gaussianFiles% ClassicalMult.c %jsCommon% %gaussianOptions% -o toweb\gaussianW%1%2.js
+cmd /c emcc %compileFlags% %polfactFiles% ClassicalMult.c %wasmCommon% %polfactOptions% -o toweb\polfactW%1%2.wasm
 @if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% %gaussianFiles% ClassicalMult_wasm.S %wasmCommon% %gaussianOptions% -o gaussian_%2.wasm
+cmd /c emcc %compileFlags% -msimd128 %polfactFiles% ClassicalMult_wasm.S %wasmCommon% %polfactOptions% -o polfact_%2.wasm
 @if errorlevel 1 exit /b 1
 
-cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DUSING_BLOCKLY=1 -DENABLE_VERBOSE=1 %ecmFiles% ClassicalMult.c %jsCommon% %ecmOptions% -o toweb\ecmW%1%2.js
+cmd /c emcc %compileFlags% %dilogFiles% ClassicalMult.c %wasmCommon% %dilogOptions% -o toweb\dilogW%1%2.wasm
 @if errorlevel 1 exit /b 1
-cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DUSING_BLOCKLY=1 -DENABLE_VERBOSE=1 %ecmFiles% ClassicalMult_wasm.S %wasmCommon% %ecmOptions% -o ecm_%2.wasm
+cmd /c emcc %compileFlags% -msimd128 %dilogFiles% ClassicalMult_wasm.S %wasmCommon% %dilogOptions% -o dilog_%2.wasm
+@if errorlevel 1 exit /b 1
+
+cmd /c emcc %compileFlags% %quadmodFiles% ClassicalMult.c %wasmCommon% %quadmodOptions% -o toweb\quadmodW%1%2.wasm
+@if errorlevel 1 exit /b 1
+cmd /c emcc %compileFlags% -msimd128 %quadmodFiles% ClassicalMult_wasm.S %wasmCommon% %quadmodOptions% -o quadmod_%2.wasm
+@if errorlevel 1 exit /b 1
+
+cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 %quadFiles% ClassicalMult.c %wasmCommon% %quadOptions% -o toweb\quadW%1%2.wasm
+@if errorlevel 1 exit /b 1
+cmd /c emcc %compileFlags% -msimd128 -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 %quadFiles% ClassicalMult_wasm.S %wasmCommon% %quadOptions% -o quad_%2.wasm
+@if errorlevel 1 exit /b 1
+
+cmd /c emcc %compileFlags% %gaussianFiles% ClassicalMult.c %wasmCommon% %gaussianOptions% -o toweb\gaussianW%1%2.wasm
+@if errorlevel 1 exit /b 1
+cmd /c emcc %compileFlags% -msimd128 %gaussianFiles% ClassicalMult_wasm.S %wasmCommon% %gaussianOptions% -o gaussian_%2.wasm
+@if errorlevel 1 exit /b 1
+
+cmd /c emcc %compileFlags% -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DUSING_BLOCKLY=1 -DENABLE_VERBOSE=1 %ecmFiles% ClassicalMult.c %wasmCommon% %ecmOptions% -o toweb\ecmW%1%2.wasm
+@if errorlevel 1 exit /b 1
+cmd /c emcc %compileFlags% -msimd128 -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DUSING_BLOCKLY=1 -DENABLE_VERBOSE=1 %ecmFiles% ClassicalMult_wasm.S %wasmCommon% %ecmOptions% -o ecm_%2.wasm
 @if errorlevel 1 exit /b 1
 
 del ClassicalMult_wasm.S

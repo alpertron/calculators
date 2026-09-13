@@ -43,7 +43,13 @@ function supportsWasmSimd()
     0xfd, 0x62,             // i8x16.popcnt
     0x0b                    // end
   ]);
-
-  return typeof(WebAssembly) === "object" &&
-         WebAssembly["validate"](simdModule);
+  if (typeof(WebAssembly) !== "object")
+  {
+    return 0;       // Web browser does not support WebAssembly.
+  }
+  if (WebAssembly["validate"](simdModule))
+  {
+    return 2;       // Web browser supports WebAssembly with SIMD.
+  }
+  return 1;         // Web browser supports WebAssembly without SIMD.
 }

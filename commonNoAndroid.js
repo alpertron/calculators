@@ -45,5 +45,5 @@ function setFocusTo(newFocusObj)
 function addLangToFilename(filename)
 {
   const lang = document.documentElement.lang || "en";
-  return filename.replace(/\.js$/, lang + ".js");
+  return filename.replace(/\.wasm$/, lang + ".wasm");
 }

@@ -32,6 +32,7 @@ echo -e "\n\n**** ECM ****" >> coverage.out
 ./ecm "221313+sumdigits(23,10)+numdigits(232,10)+revdigits(765,10)+gcd(8,6)+minfact(143)+totient(226)+jacobi(3,7)+modpow(3,8,29)" >> coverage.out
 ./ecm "n(10^30+2)*n(3*10^30+10000)" >> coverage.out
 ./ecm "10**59+213" 1 >> coverage.out
+./ecm "99999999999999999900000000000000004011" >> coverage.out
 ./ecm "2**54654365465346459" 1 >> coverage.out
 ./ecm "1**54654365465346459" 1 >> coverage.out
 ./ecm "0**54654365465346459" 1 >> coverage.out
@@ -623,6 +624,4 @@ make clean || exit $?
 done
 gcovr --merge-mode-functions=merge-use-line-min --add-tracefile "run-*.json" --sonarqube > coverage.xml
 rm run*json
-rm *.gcda
-rm *.gcno
 make clean || exit $?

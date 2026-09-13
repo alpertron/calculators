@@ -126,7 +126,7 @@ function dowork()
 
 function getCalcURLs()
 {
-  return [addLangToFilename("quadmodW0000.js"),
+  return [addLangToFilename("quadmodW0000.wasm"),
           "quadmod.webmanifest", "cuadmod.webmanifest", "quadmod-icon-1x.png",
           "quadmod-icon-2x.png", "quadmod-icon-4x.png", "quadmod-icon-180px.png",
           "quadmod-icon-512px.png", "favicon.ico"];
@@ -261,7 +261,9 @@ function startUp()
   completeFuncButtons("funcbtns");
 }
 
-window.addEventListener("load", startUp);
-window.addEventListener("popstate", popstate);
-getCalculatorCode("quadmodW0000.js", false);
-window["fromWorker"] = fromWorker;
+if (getCalculatorCode("quadmodW0000.wasm", false))
+{
+  window.addEventListener("load", startUp);
+  window.addEventListener("popstate", popstate);
+  window["fromWorker"] = fromWorker;
+}

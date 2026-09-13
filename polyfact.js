@@ -108,7 +108,7 @@ function dowork(n)
 
 function getCalcURLs()
 {
-  return [addLangToFilename("polfactW0000.js"),
+  return [addLangToFilename("polfactW0000.wasm"),
           "polfact.webmanifest", "factpol.webmanifest", "polfact-icon-1x.png",
           "polfact-icon-2x.png", "polfact-icon-4x.png", "polfact-icon-180px.png",
           "polfact-icon-512px.png", "favicon.ico"];
@@ -258,7 +258,10 @@ function startUp()
   }
   registerServiceWorker();
 }
-getCalculatorCode("polfactW0000.js", workerParam);
-window.addEventListener("load", startUp);
-window.addEventListener("popstate", popstate);
-window["fromWorker"] = fromWorker;
+if (getCalculatorCode("polfactW0000.wasm", workerParam))
+{
+  window.addEventListener("load", startUp);
+  window.addEventListener("popstate", popstate);
+  window["fromWorker"] = fromWorker;
+}
+

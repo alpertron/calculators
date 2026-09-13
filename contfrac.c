@@ -199,9 +199,9 @@ static void PeriodicContinuedFraction(bool isContinuation)
     showText("<br>");
     // where the periodic part (truncated after $1d coefficients) is marked in bold.
     formatString(&ptrOutput, LITERAL_TRUNCATED_PERIOD, periodIndex);
-    showText("</p>");
     output[0] = '6';         // Show Continue button.
   }
+  showText("</p>");
 }
 
 static void showFooter(void)
