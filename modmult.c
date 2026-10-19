@@ -33,9 +33,9 @@ enum eNbrCached CustomNbrCached;
 const limb* CustomNbrAddr;
 limb MontgomeryR1[MAX_LEN];
 limb TestNbr[MAX_LEN];
-limb MontgomeryMultN[MAX_LEN];
-limb MontgomeryMultR1[MAX_LEN];
-limb MontgomeryMultR2[MAX_LEN];
+limb MontgomeryMultN[MAX_LEN];     // Multiplier to be used in Montgomery multiplication.
+limb MontgomeryMultR1[MAX_LEN];    // Number 1 in Montgomery notation.
+limb MontgomeryMultR2[MAX_LEN];    // 2^(2*NumberLength*BITS_PER_GROUP) % TestNbr if TestNbr is odd.
 int powerOf2Exponent;
 static limb aux[MAX_LEN];
 static limb aux2[MAX_LEN];

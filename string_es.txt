@@ -74,6 +74,7 @@ LITERAL_POWER_POSITIVE "La potencia debe ser mayor que cero"
 LITERAL_MODULUS_GREATER_THAN1 "El módulo debe ser mayor que 1"
 LITERAL_COMPUTE_DISCR_SUBGROUP1 "Calculando el logaritmo discreto en subgrupo de $1b$2e elementos"
 LITERAL_COMPUTE_DISCR_SUBGROUP2 " módulo $1b"
+LITERAL_CANNOT_COMPUTE_LOG "No se puede hallar el logaritmo discreto: subgrupo=$1b, exponente=$2d."
 LITERAL_DISCR_LOG1 "Calculando el logaritmo discreto..."
 LITERAL_DISCR_LOG2 "Hallar <var>exp</var> tal que $1b<sup><var>exp</var></sup> &equiv; $2b (mod $3b)"
 LITERAL_DISCR_LOG3 "Ningún valor de <var>exp</var> satisface la congruencia."
@@ -220,7 +221,7 @@ LITERAL_FACTOR_MODULAR_POLY "Lista de factores"
 
 output
 LITERAL_SHOW_EQ_NBRS "($1d) y ($2d)"
-LITERAL_COPYRIGHT "Hecho por Darío Alpern. Actualizado el 13 de septiembre de 2026."
+LITERAL_COPYRIGHT "Hecho por Darío Alpern. Actualizado el 18 de octubre de 2026."
 
 pminus1
 LITERAL_PMINUS1_1 "p&minus;1 usando límites B1=$2d y B2=$3l"

@@ -25,7 +25,6 @@
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
-
 #ifdef __EMSCRIPTEN__
 extern int64_t lModularMult;
 #endif
@@ -73,6 +72,8 @@ static limb primRoot[MAX_LEN];
 static limb primRootPwr[MAX_LEN];
 static limb TestNbrOther[MAX_LEN];
 static limb MontgomeryMultR1Other[MAX_LEN];
+static limb MontgomeryMultR2Other[MAX_LEN];
+static limb MontgomeryMultNOther[MAX_LEN];
 static int NumberLengthOther;
 static char textExp[1000];
 struct sFactors astFactorsGO[1000];
@@ -144,16 +145,14 @@ static void indicateCannotComputeLog(int indexBase, int indexExp)
 {
   char *ptrText = textExp;
   const struct sFactors *pstFactors = &astFactorsGO[indexBase + 1];
-  copyStr(&ptrText, "Cannot compute discrete logarithm: subgroup=");
   IntArray2BigInteger(pstFactors->ptrFactor, &tmpBase);
-  Bin2Out(&ptrText, tmpBase.limbs, tmpBase.nbrLimbs, groupLen);
-  copyStr(&ptrText, ", exponent=");
-  int2dec(&ptrText, indexExp);
-  DiscreteLogPeriod.sign = SIGN_NEGATIVE;
+  // Cannot compute discrete logarithm: subgroup=$1b, exponent=$2d.
+  formatString(&ptrText, LITERAL_CANNOT_COMPUTE_LOG, &tmpBase, indexExp);
+  DiscreteLogPeriod.sign = SIGN_NEGATIVE;   // Indicate no solutions.
 }
 
-// primRootPwr = base
-// powerPHmont = power
+// primRootPwr = base in Montgomery notation.
+// powerPHmont = power in Montgomery notation.
 static bool ComputeDLogModSubGroupOrder(int indexBase, int indexExp, 
   BigInteger *bigExp, const BigInteger *bigSubGroupOrder)
 {
@@ -179,8 +178,8 @@ static bool ComputeDLogModSubGroupOrder(int indexBase, int indexExp,
 }
 
 // On input: 
-// - primRootPwr = base
-// - powerPHmont = power
+// - primRootPwr = base in Montgomery notation.
+// - powerPHmont = power in Montgomery notation.
 // - NumberSizeBytes: number of bytes of subgroup (multiple of 4).
 // - firstLimit: limit between the sets S_0 and S_1.
 // - secondLimit: limit between the sets S_1 and S_2.
@@ -412,7 +411,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
     modPow(primRoot, subGroupOrder.limbs, subGroupOrder.nbrLimbs, tmpBase.limbs);
     (void)memcpy(primRoot, tmpBase.limbs, NumberSizeBytes);
   }
-  
+
   CopyBigInt(&nbrV[indexBase], &runningExp);
   NumberLength = powSubGroupOrder.nbrLimbs;
   lenBytes = NumberLength * (int)sizeof(limb);
@@ -646,14 +645,6 @@ void DiscreteLogarithm(void)
     (void)memcpy(TestNbr, mod.limbs, lenBytes);
     TestNbr[NumberLength].x = 0;
     GetMontgomeryParms(NumberLength);
-#if 0
-    char *ptrText = textExp;
-    copyStr(&ptrText, "<p>NumberLength (2) = ");
-    int2dec(&ptrText, NumberLength);
-    copyStr(&ptrText, "</p>");
-    DiscreteLogPeriod.sign = SIGN_NEGATIVE;
-    return;
-#endif
     // Convert base and power to Montgomery notation.
     modmult(baseMontg, MontgomeryMultR2, baseMontg);
     modmult(powerMontg, MontgomeryMultR2, powerMontg);
@@ -753,7 +744,11 @@ static void ExchangeMods(void)
   limb *ptrTestNbr;
   limb *ptrTestNbrOther;
   limb *ptrMontgomeryMultR1;
+  limb* ptrMontgomeryMultR2;
+  limb* ptrMontgomeryMultN;
   limb *ptrMontgomeryMultR1Other;
+  limb* ptrMontgomeryMultR2Other;
+  limb* ptrMontgomeryMultNOther;
   int maxNbrLength = NumberLength;
   if (NumberLengthOther > NumberLength)
   {
@@ -762,7 +757,11 @@ static void ExchangeMods(void)
   ptrTestNbr = TestNbr;
   ptrTestNbrOther = TestNbrOther;
   ptrMontgomeryMultR1 = MontgomeryMultR1;
+  ptrMontgomeryMultR2 = MontgomeryMultR2;
+  ptrMontgomeryMultN = MontgomeryMultN;
   ptrMontgomeryMultR1Other = MontgomeryMultR1Other;
+  ptrMontgomeryMultR2Other = MontgomeryMultR2Other;
+  ptrMontgomeryMultNOther = MontgomeryMultNOther;
   for (count = 0; count < maxNbrLength; count++)
   {
     aux.x = ptrTestNbr->x;
@@ -775,12 +774,23 @@ static void ExchangeMods(void)
     ptrMontgomeryMultR1Other->x = aux.x;
     ptrMontgomeryMultR1++;
     ptrMontgomeryMultR1Other++;
+    aux.x = ptrMontgomeryMultR2->x;
+    ptrMontgomeryMultR2->x = ptrMontgomeryMultR2Other->x;
+    ptrMontgomeryMultR2Other->x = aux.x;
+    ptrMontgomeryMultR2++;
+    ptrMontgomeryMultR2Other++;
+    aux.x = ptrMontgomeryMultN->x;
+    ptrMontgomeryMultN->x = ptrMontgomeryMultNOther->x;
+    ptrMontgomeryMultNOther->x = aux.x;
+    ptrMontgomeryMultN++;
+    ptrMontgomeryMultNOther++;
   }
   count = NumberLength;
   NumberLength = NumberLengthOther;
   NumberLengthOther = count;
   TestNbr[NumberLength].x = 0;
   MontgomeryMultR1[NumberLength].x = 0;
+  MontgomeryMultR2[NumberLength].x = 0;
 }
 
 // nbr = (nbr * mult + add) % subGroupOrder

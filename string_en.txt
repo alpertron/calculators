@@ -74,6 +74,7 @@ LITERAL_POWER_POSITIVE "Power must be greater than zero"
 LITERAL_MODULUS_GREATER_THAN1 "Modulus must be greater than one"
 LITERAL_COMPUTE_DISCR_SUBGROUP1 "Computing discrete logarithm in subgroup of $1b$2e elements"
 LITERAL_COMPUTE_DISCR_SUBGROUP2 " modulo $1b"
+LITERAL_CANNOT_COMPUTE_LOG "Cannot compute discrete logarithm: subgroup=$1b, exponent=$2d."
 LITERAL_DISCR_LOG1 "Computing discrete logarithm..."
 LITERAL_DISCR_LOG2 "Find <var>exp</var> such that $1b<sup><var>exp</var></sup> &equiv; $2b (mod $3b)"
 LITERAL_DISCR_LOG3 "There is no such value of <var>exp</var>."
@@ -220,7 +221,7 @@ LITERAL_FACTOR_MODULAR_POLY "List of factors"
 
 output
 LITERAL_SHOW_EQ_NBRS "($1d) and ($2d)"
-LITERAL_COPYRIGHT "Written by Dario Alpern. Last updated on 13 September 2026."
+LITERAL_COPYRIGHT "Written by Dario Alpern. Last updated on 18 October 2026."
 
 pminus1
 LITERAL_PMINUS1_1 "p&minus;1 using bounds B1=$2d and B2=$3l"

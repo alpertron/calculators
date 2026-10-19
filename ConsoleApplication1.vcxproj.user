@@ -8,9 +8,9 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>31619241233</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>3 7 29</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArgumentsHistory>10**38-1040759|5000012000^18+3^18|2**3200-1|99999999999999999900000000000000004011|31619241233|</LocalDebuggerCommandArgumentsHistory>
+    <LocalDebuggerCommandArgumentsHistory>99999999999999999900000000000000004011|31619241233|2 1 48387000193549|2 1 999998999999|3 7 29|</LocalDebuggerCommandArgumentsHistory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerCommandArguments>5**(5*23)-1</LocalDebuggerCommandArguments>
