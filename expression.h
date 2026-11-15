@@ -31,6 +31,8 @@ int stamp(void);
 void databack(const char *data);
 
 #define STACK_OPER_SIZE             100
+#define PAREN_STACK_SIZE           5000
+#define COMPR_STACK_SIZE        1000000
 
 #define ONE_PARM                     (1 * 0x100)
 #define TWO_PARMS                    (2 * 0x100)

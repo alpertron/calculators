@@ -26,16 +26,9 @@
 #include "tsquares.h"
 #include "output.h"
 #include "copyStr.h"
-static BigInteger Base1;
-static BigInteger Base2;
-static BigInteger Base3;
-static BigInteger valueN;
-static BigInteger powerN;
-static BigInteger toProcess;
-static int groupLength;
-static const char* powerStr;
+#include "commonstruc.h"
+
 static void batchSqCubesCallback(char** pptrOutput, int type);
-static int power4;
 static int Exponent = 3;
 static char bigExponText[20];
 
@@ -44,45 +37,45 @@ static bool checkSumOfTwoSquares(const BigInteger *pArgument, int expon)
   int lenBytes;
   int numLimbs;
   int mod8;
-  power4 = 0;
-  (void)BigIntPowerIntExp(&Base3, expon, &powerN);
-  BigIntSubt(pArgument, &powerN, &powerN);
+  common.misc.power4 = 0;
+  (void)BigIntPowerIntExp(&common.misc.Base3, expon, &common.misc.powerN);
+  BigIntSubt(pArgument, &common.misc.powerN, &common.misc.powerN);
   // Test whether powerN is a perfect square.
-  numLimbs = powerN.nbrLimbs;
+  numLimbs = common.misc.powerN.nbrLimbs;
   lenBytes = numLimbs * (int)sizeof(limb);
-  (void)memcpy(Base2.limbs, powerN.limbs, lenBytes);
-  squareRoot(Base2.limbs, Base1.limbs,
-    numLimbs, &Base1.nbrLimbs);
-  multiply(Base1.limbs, Base1.limbs,
-    Base2.limbs, Base1.nbrLimbs, NULL);
-  if (memcmp(Base2.limbs, powerN.limbs, lenBytes) == 0)
+  (void)memcpy(common.misc.Base2.limbs, common.misc.powerN.limbs, lenBytes);
+  squareRoot(common.misc.Base2.limbs, common.misc.Base1.limbs,
+    numLimbs, &common.misc.Base1.nbrLimbs);
+  multiply(common.misc.Base1.limbs, common.misc.Base1.limbs,
+    common.misc.Base2.limbs, common.misc.Base1.nbrLimbs, NULL);
+  if (memcmp(common.misc.Base2.limbs, common.misc.powerN.limbs, lenBytes) == 0)
   {     // powerN can be expressed as a square of Base1.
-    intToBigInteger(&Base2, 0);
+    intToBigInteger(&common.misc.Base2, 0);
     return true;
   }
-  DivideBigNbrByMaxPowerOf4(&power4, powerN.limbs, &powerN.nbrLimbs);
-  mod8 = powerN.limbs[0].x & 7;
+  DivideBigNbrByMaxPowerOf4(&common.misc.power4, common.misc.powerN.limbs, &common.misc.powerN.nbrLimbs);
+  mod8 = common.misc.powerN.limbs[0].x & 7;
   if ((mod8 > 2) && (mod8 != 5))
   {     // If number mod 8 is not 1, 2 or 5,
         // it cannot be expressed as sum of two squares.
     return false;
   }
-  if ((powerN.nbrLimbs == 1) && (powerN.limbs[0].x == 2))
+  if ((common.misc.powerN.nbrLimbs == 1) && (common.misc.powerN.limbs[0].x == 2))
   {
-    intToBigInteger(&Base1, 1);
-    intToBigInteger(&Base2, 1);
+    intToBigInteger(&common.misc.Base1, 1);
+    intToBigInteger(&common.misc.Base2, 1);
     return true;
   }
-  nbrLimbsP = powerN.nbrLimbs;
-  nbrLimbs = nbrLimbsP;
-  (void)memcpy(valueP, powerN.limbs, nbrLimbsP * sizeof(int));
-  FillSieveArray(valueP, sieve);
+  common.misc.nbrLimbsP = common.misc.powerN.nbrLimbs;
+  common.misc.nbrLimbs = common.misc.nbrLimbsP;
+  (void)memcpy(common.misc.valueP, common.misc.powerN.limbs, common.misc.nbrLimbsP * sizeof(limb));
+  FillSieveArray(common.misc.valueP, common.misc.sieve);
   if (!isSumOfTwoSquares())
   {
     return false;
   }
-  CopyBigInt(&Base1, &biMult1);
-  CopyBigInt(&Base2, &biMult2);
+  CopyBigInt(&common.misc.Base1, &common.misc.biMult1);
+  CopyBigInt(&common.misc.Base2, &common.misc.biMult2);
   return true;
 }
 
@@ -94,26 +87,26 @@ static bool checkSumOfTwoSquares(const BigInteger *pArgument, int expon)
 static int tsqcubes(const BigInteger *pArgument, int expon)
 {
   // Compute Base3 <- floor(root(pArgument)).
-  (void)BigIntRoot(pArgument, &Base3, expon);
+  (void)BigIntRoot(pArgument, &common.misc.Base3, expon);
   InitSieveArray();
   while (!checkSumOfTwoSquares(pArgument, expon))
   { // If we cannot express powerN as a sum of two squares,
     // try previous value of Base3.
-    addbigint(&Base3, -1); // Use previous value of Base3.
+    addbigint(&common.misc.Base3, -1); // Use previous value of Base3.
   }
-  Base1.sign = SIGN_POSITIVE;
-  Base2.sign = SIGN_POSITIVE;
-  (void)BigIntMultiplyPower2(&Base1, power4);
-  (void)BigIntMultiplyPower2(&Base2, power4);
+  common.misc.Base1.sign = SIGN_POSITIVE;
+  common.misc.Base2.sign = SIGN_POSITIVE;
+  (void)BigIntMultiplyPower2(&common.misc.Base1, common.misc.power4);
+  (void)BigIntMultiplyPower2(&common.misc.Base2, common.misc.power4);
 
   // Validate
 
-  (void)BigIntMultiply(&Base1, &Base1, &valueN);
-  (void)BigIntMultiply(&Base2, &Base2, &powerN);
-  BigIntAdd(&powerN, &valueN, &valueN);
-  (void)BigIntPowerIntExp(&Base3, expon, &powerN);
-  BigIntAdd(&powerN, &valueN, &valueN);
-  if (!TestBigNbrEqual(&valueN, pArgument))
+  (void)BigIntMultiply(&common.misc.Base1, &common.misc.Base1, &common.misc.valueN);
+  (void)BigIntMultiply(&common.misc.Base2, &common.misc.Base2, &common.misc.powerN);
+  BigIntAdd(&common.misc.powerN, &common.misc.valueN, &common.misc.valueN);
+  (void)BigIntPowerIntExp(&common.misc.Base3, expon, &common.misc.powerN);
+  BigIntAdd(&common.misc.powerN, &common.misc.valueN, &common.misc.valueN);
+  if (!TestBigNbrEqual(&common.misc.valueN, pArgument))
   {
     return 1;       // Result does not validate.
   }
@@ -125,7 +118,7 @@ void tsqcubesText(char *input, int grpLen, int expon)
   char *ptrOutput;
   if (valuesProcessed == 0)
   {
-    groupLength = grpLen;
+    common.misc.groupLength = grpLen;
   }
   if (expon > 0)
   {
@@ -133,7 +126,7 @@ void tsqcubesText(char *input, int grpLen, int expon)
   }
   if (Exponent == 3)
   {
-    powerStr = "<span class=\"bigger\">³</span>";
+    common.misc.powerStr = "<span class=\"bigger\">³</span>";
   }
   else
   {
@@ -142,9 +135,9 @@ void tsqcubesText(char *input, int grpLen, int expon)
     int2dec(&ptrBigExponText, Exponent);
     copyStr(&ptrBigExponText, "</sup>");
     *ptrBigExponText = 0;
-    powerStr = bigExponText;
+    common.misc.powerStr = bigExponText;
   }
-  (void)BatchProcessing(input, &toProcess, &ptrOutput, NULL, batchSqCubesCallback);
+  (void)BatchProcessing(input, &common.misc.toProcess, &ptrOutput, NULL, batchSqCubesCallback);
   showElapsedTime(&ptrOutput);
   copyStr(&ptrOutput, "<p>");
   showCopyright(&ptrOutput);
@@ -162,11 +155,11 @@ static void showTerm(char** pptrOutput, const BigInteger* pBase, const char *exp
   }
   if (hexadecimal)
   {
-    BigInteger2Hex(&ptrOutput, pBase, groupLength);
+    BigInteger2Hex(&ptrOutput, pBase, common.misc.groupLength);
   }
   else
   {
-    BigInteger2Dec(&ptrOutput, pBase, groupLength);
+    BigInteger2Dec(&ptrOutput, pBase, common.misc.groupLength);
   }
   if (pBase->sign == SIGN_NEGATIVE)
   {
@@ -185,28 +178,28 @@ static void batchSqCubesCallback(char **pptrOutput, int type)
   {         // Do not compute sum of squares.
     if (hexadecimal)
     {
-      BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
+      BigInteger2Hex(&ptrOutput, &common.misc.toProcess, common.misc.groupLength);
     }
     else
     {
-      BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+      BigInteger2Dec(&ptrOutput, &common.misc.toProcess, common.misc.groupLength);
     }
     *pptrOutput = ptrOutput;
     return;
   }
-  NumberLength = toProcess.nbrLimbs;
-  result = tsqcubes(&toProcess, Exponent);
+  NumberLength = common.misc.toProcess.nbrLimbs;
+  result = tsqcubes(&common.misc.toProcess, Exponent);
   // Show the number to be decomposed into sum of cubes.
   if (type == BATCH_NO_QUOTE)
   {
     copyStr(&ptrOutput, "<p>");
     if (hexadecimal)
     {
-      BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
+      BigInteger2Hex(&ptrOutput, &common.misc.toProcess, common.misc.groupLength);
     }
     else
     {
-      BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+      BigInteger2Dec(&ptrOutput, &common.misc.toProcess, common.misc.groupLength);
     }
   }
   if (result == 1)
@@ -218,34 +211,34 @@ static void batchSqCubesCallback(char **pptrOutput, int type)
     return;
   }
   // Use powerN as a temporary variable.
-  BigIntSubt(&Base1, &Base2, &powerN);
-  if (powerN.sign == SIGN_NEGATIVE)
+  BigIntSubt(&common.misc.Base1, &common.misc.Base2, &common.misc.powerN);
+  if (common.misc.powerN.sign == SIGN_NEGATIVE)
   {    // Swap Base1 and Base2 so the first is always greater than the second.
-    CopyBigInt(&powerN, &Base1);
-    CopyBigInt(&Base1, &Base2);
-    CopyBigInt(&Base2, &powerN);
+    CopyBigInt(&common.misc.powerN, &common.misc.Base1);
+    CopyBigInt(&common.misc.Base1, &common.misc.Base2);
+    CopyBigInt(&common.misc.Base2, &common.misc.powerN);
   }
   // Show decomposition in sum of up to two squares and a cube.
   if (type == BATCH_NO_QUOTE)
   {
     copyStr(&ptrOutput, " = ");
   }
-  if (BigIntIsZero(&Base2) && BigIntIsZero(&Base1))
+  if (BigIntIsZero(&common.misc.Base2) && BigIntIsZero(&common.misc.Base1))
   {
-    showTerm(&ptrOutput, &Base3, powerStr);
+    showTerm(&ptrOutput, &common.misc.Base3, common.misc.powerStr);
   }
   else
   {
-    showTerm(&ptrOutput, &Base1, square);
-    if (!BigIntIsZero(&Base2))
+    showTerm(&ptrOutput, &common.misc.Base1, square);
+    if (!BigIntIsZero(&common.misc.Base2))
     {
       copyStr(&ptrOutput, " + ");
-      showTerm(&ptrOutput, &Base2, square);
+      showTerm(&ptrOutput, &common.misc.Base2, square);
     }
-    if (!BigIntIsZero(&Base3))
+    if (!BigIntIsZero(&common.misc.Base3))
     {
       copyStr(&ptrOutput, " + ");
-      showTerm(&ptrOutput, &Base3, powerStr);
+      showTerm(&ptrOutput, &common.misc.Base3, common.misc.powerStr);
     }
   }
   if (type == BATCH_NO_QUOTE)

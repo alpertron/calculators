@@ -27,6 +27,7 @@
 #include "showtime.h"
 #include "rootseq.h"
 #include "copyStr.h"
+#include "linkedbignbr.h"
 #ifdef FACTORIZATION_APP
 #include "factor.h"
 #endif
@@ -136,6 +137,7 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
   enum eExprErr rc;
   int expon = 0;
   bool isFraction;
+  initLinkedBigInt();
   grpLen = groupLength;
   eqNbr = 0;
   rc = ComputeExpression(modText, &powerMod);

@@ -26,28 +26,13 @@
 #include "batch.h"
 #include "copyStr.h"
 #include "output.h"
+#include "commonstruc.h"
+
+#ifndef __ANDROID__
+union uCommon common;
+#endif
+
 extern bool hexadecimal;
-static BigInteger value;
-static BigInteger Base1;
-static BigInteger Base2;
-static BigInteger Base3;
-static BigInteger Base4;
-static BigInteger P;
-static BigInteger Q;
-static BigInteger R;
-static BigInteger S;
-static BigInteger a;
-static BigInteger b;
-static BigInteger P1;
-static BigInteger Q1;
-static BigInteger R1;
-static BigInteger S1;
-static BigInteger tmpP1;
-static BigInteger tmpQ1;
-static BigInteger tmpR1;
-static BigInteger tmpS1;
-static BigInteger toProcess;
-static int groupLength;
 static const char *cube = "<span class=\"bigger\">³</span>";
 static void batchCubesCallback(char** pptrOutput, int type);
 static int sums[] =
@@ -82,20 +67,20 @@ static int sums[] =
    // Use tmpQ1 as temporary variable.
 static void getSumOfCubes(void)
 {
-  (void)BigIntMultiply(&Base1, &Base1, &tmpQ1);
-  (void)BigIntMultiply(&tmpQ1, &Base1, &tmpP1);
+  (void)BigIntMultiply(&common.misc.Base1, &common.misc.Base1, &common.misc.tmpQ1);
+  (void)BigIntMultiply(&common.misc.tmpQ1, &common.misc.Base1, &common.misc.tmpP1);
 
-  (void)BigIntMultiply(&Base2, &Base2, &tmpQ1);
-  (void)BigIntMultiply(&tmpQ1, &Base2, &tmpQ1);
-  BigIntAdd(&tmpP1, &tmpQ1, &tmpP1);
+  (void)BigIntMultiply(&common.misc.Base2, &common.misc.Base2, &common.misc.tmpQ1);
+  (void)BigIntMultiply(&common.misc.tmpQ1, &common.misc.Base2, &common.misc.tmpQ1);
+  BigIntAdd(&common.misc.tmpP1, &common.misc.tmpQ1, &common.misc.tmpP1);
 
-  (void)BigIntMultiply(&Base3, &Base3, &tmpQ1);
-  (void)BigIntMultiply(&tmpQ1, &Base3, &tmpQ1);
-  BigIntAdd(&tmpP1, &tmpQ1, &tmpP1);
+  (void)BigIntMultiply(&common.misc.Base3, &common.misc.Base3, &common.misc.tmpQ1);
+  (void)BigIntMultiply(&common.misc.tmpQ1, &common.misc.Base3, &common.misc.tmpQ1);
+  BigIntAdd(&common.misc.tmpP1, &common.misc.tmpQ1, &common.misc.tmpP1);
 
-  (void)BigIntMultiply(&Base4, &Base4, &tmpQ1);
-  (void)BigIntMultiply(&tmpQ1, &Base4, &tmpQ1);
-  BigIntAdd(&tmpP1, &tmpQ1, &tmpP1);
+  (void)BigIntMultiply(&common.misc.Base4, &common.misc.Base4, &common.misc.tmpQ1);
+  (void)BigIntMultiply(&common.misc.tmpQ1, &common.misc.Base4, &common.misc.tmpQ1);
+  BigIntAdd(&common.misc.tmpP1, &common.misc.tmpQ1, &common.misc.tmpP1);
 }
 
  // If |value1| < |value2|, exchange both numbers.
@@ -176,21 +161,21 @@ static void Demjanenko(void)
   int pow;
   int exp;
   int mask;
-  P.limbs[1].x = 52;
-  P.limbs[0].x = 819632865;
-  Q.limbs[1].x = 3063;
-  Q.limbs[0].x = 687764496;
-  Q.nbrLimbs = 2;
-  P.nbrLimbs = 2;
-  Q.sign = SIGN_NEGATIVE;
-  P.sign = SIGN_NEGATIVE;
-  CopyBigInt(&S, &P);
-  intToBigInteger(&R, -1923517596);
-  intToBigInteger(&P1, 1);
-  intToBigInteger(&Q1, 0);
-  intToBigInteger(&R1, 0);
-  intToBigInteger(&S1, 1);
-  mod83 = getRemainder(&value, 83);
+  common.misc.P.limbs[1].x = 52;
+  common.misc.P.limbs[0].x = 819632865;
+  common.misc.Q.limbs[1].x = 3063;
+  common.misc.Q.limbs[0].x = 687764496;
+  common.misc.Q.nbrLimbs = 2;
+  common.misc.P.nbrLimbs = 2;
+  common.misc.Q.sign = SIGN_NEGATIVE;
+  common.misc.P.sign = SIGN_NEGATIVE;
+  CopyBigInt(&common.misc.S, &common.misc.P);
+  intToBigInteger(&common.misc.R, -1923517596);
+  intToBigInteger(&common.misc.P1, 1);
+  intToBigInteger(&common.misc.Q1, 0);
+  intToBigInteger(&common.misc.R1, 0);
+  intToBigInteger(&common.misc.S1, 1);
+  mod83 = getRemainder(&common.misc.value, 83);
   pow = 71;
   exp = 0;
   while (pow != mod83)
@@ -201,8 +186,8 @@ static void Demjanenko(void)
   if (exp > (82 / 2))
   {
     exp = 82 - exp;
-    Q.sign = SIGN_POSITIVE;
-    R.sign = SIGN_POSITIVE;
+    common.misc.Q.sign = SIGN_POSITIVE;
+    common.misc.R.sign = SIGN_POSITIVE;
   }  // Now exp is in range 0-41.
   mask = 32;
   while (mask > 0)
@@ -215,14 +200,14 @@ static void Demjanenko(void)
     // Compute Q1 as tmpQ1
     // Compute R1 as tmpR1
     // Compute S1 as tmpS1
-    (void)BigIntMultiply(&P1, &P1, &tmpP1);
-    (void)BigIntMultiply(&Q1, &R1, &tmpQ1);
-    (void)BigIntMultiply(&S1, &S1, &tmpS1);
-    BigIntAdd(&P1, &S1, &tmpR1);
-    BigIntAdd(&tmpP1, &tmpQ1, &P1);
-    BigIntAdd(&tmpS1, &tmpQ1, &S1);
-    (void)BigIntMultiply(&tmpR1, &Q1, &Q1);
-    (void)BigIntMultiply(&tmpR1, &R1, &R1);
+    (void)BigIntMultiply(&common.misc.P1, &common.misc.P1, &common.misc.tmpP1);
+    (void)BigIntMultiply(&common.misc.Q1, &common.misc.R1, &common.misc.tmpQ1);
+    (void)BigIntMultiply(&common.misc.S1, &common.misc.S1, &common.misc.tmpS1);
+    BigIntAdd(&common.misc.P1, &common.misc.S1, &common.misc.tmpR1);
+    BigIntAdd(&common.misc.tmpP1, &common.misc.tmpQ1, &common.misc.P1);
+    BigIntAdd(&common.misc.tmpS1, &common.misc.tmpQ1, &common.misc.S1);
+    (void)BigIntMultiply(&common.misc.tmpR1, &common.misc.Q1, &common.misc.Q1);
+    (void)BigIntMultiply(&common.misc.tmpR1, &common.misc.R1, &common.misc.R1);
     if ((exp & mask) != 0)
     {
       // Compute tmpP1 as P*P1 + Q*R1
@@ -233,39 +218,39 @@ static void Demjanenko(void)
       // Compute Q1 as tmpQ1
       // Compute R1 as tmpR1
       // Compute S1 as tmpS1
-      (void)BigIntMultiply(&P, &P1, &tmpP1);
-      (void)BigIntMultiply(&Q, &R1, &tmpQ1);
-      (void)BigIntMultiply(&R, &P1, &tmpR1);
-      (void)BigIntMultiply(&S, &R1, &tmpS1);
-      BigIntAdd(&tmpP1, &tmpQ1, &P1);
-      BigIntAdd(&tmpR1, &tmpS1, &R1);
-      (void)BigIntMultiply(&P, &Q1, &tmpP1);
-      (void)BigIntMultiply(&Q, &S1, &tmpQ1);
-      (void)BigIntMultiply(&R, &Q1, &tmpR1);
-      (void)BigIntMultiply(&S, &S1, &tmpS1);
-      BigIntAdd(&tmpP1, &tmpQ1, &Q1);
-      BigIntAdd(&tmpR1, &tmpS1, &S1);
+      (void)BigIntMultiply(&common.misc.P, &common.misc.P1, &common.misc.tmpP1);
+      (void)BigIntMultiply(&common.misc.Q, &common.misc.R1, &common.misc.tmpQ1);
+      (void)BigIntMultiply(&common.misc.R, &common.misc.P1, &common.misc.tmpR1);
+      (void)BigIntMultiply(&common.misc.S, &common.misc.R1, &common.misc.tmpS1);
+      BigIntAdd(&common.misc.tmpP1, &common.misc.tmpQ1, &common.misc.P1);
+      BigIntAdd(&common.misc.tmpR1, &common.misc.tmpS1, &common.misc.R1);
+      (void)BigIntMultiply(&common.misc.P, &common.misc.Q1, &common.misc.tmpP1);
+      (void)BigIntMultiply(&common.misc.Q, &common.misc.S1, &common.misc.tmpQ1);
+      (void)BigIntMultiply(&common.misc.R, &common.misc.Q1, &common.misc.tmpR1);
+      (void)BigIntMultiply(&common.misc.S, &common.misc.S1, &common.misc.tmpS1);
+      BigIntAdd(&common.misc.tmpP1, &common.misc.tmpQ1, &common.misc.Q1);
+      BigIntAdd(&common.misc.tmpR1, &common.misc.tmpS1, &common.misc.S1);
     }
     mask >>= 1;
   }
-  addmult(&a, &P1, -3041, &Q1, -52);   // a <- -3041*P1 - 52*Q1
-  addmult(&b, &R1, -3041, &S1, -52);   // b <- -3041*R1 - 52*S1
-  addmult(&Base1, &a, 27, &b, -928);   // Base1 <- 27*a - 928*b
-  addmult(&Base2, &a, -9, &b, -602);   // Base2 <- -9*a - 602*b
-  addmult(&Base3, &a, 25, &b, -2937);  // Base3 <- 25*a - 2937*b
-  addmult(&Base4, &a, -19, &b, 2746);  // Base4 <- -19*a - 2746*b
+  addmult(&common.misc.a, &common.misc.P1, -3041, &common.misc.Q1, -52);   // a <- -3041*P1 - 52*Q1
+  addmult(&common.misc.b, &common.misc.R1, -3041, &common.misc.S1, -52);   // b <- -3041*R1 - 52*S1
+  addmult(&common.misc.Base1, &common.misc.a, 27, &common.misc.b, -928);   // Base1 <- 27*a - 928*b
+  addmult(&common.misc.Base2, &common.misc.a, -9, &common.misc.b, -602);   // Base2 <- -9*a - 602*b
+  addmult(&common.misc.Base3, &common.misc.a, 25, &common.misc.b, -2937);  // Base3 <- 25*a - 2937*b
+  addmult(&common.misc.Base4, &common.misc.a, -19, &common.misc.b, 2746);  // Base4 <- -19*a - 2746*b
   // a <- (value - Base1^3 - Base2^3 - Base3^3 - Base4^3)/(18*83)
   getSumOfCubes();  // tmpP1 = Base1^3 + Base2^3 + Base3^3 + Base4^3
-  BigIntSubt(&value, &tmpP1, &a);
-  subtractdivide(&a, 0, 18 * 83);      // Divide a by 18*83.
-  multint(&tmpP1, &a, 10);             // Base1 <- Base1 + 10*a
-  BigIntAdd(&tmpP1, &Base1, &Base1);
-  multint(&tmpP1, &a, -19);            // Base2 <- Base2 - 19*a
-  BigIntAdd(&tmpP1, &Base2, &Base2);
-  multint(&tmpP1, &a, -24);            // Base3 <- Base3 - 24*a
-  BigIntAdd(&tmpP1, &Base3, &Base3);
-  multint(&tmpP1, &a, 27);             // Base4 <- Base4 + 27*a
-  BigIntAdd(&tmpP1, &Base4, &Base4);
+  BigIntSubt(&common.misc.value, &common.misc.tmpP1, &common.misc.a);
+  subtractdivide(&common.misc.a, 0, 18 * 83);      // Divide a by 18*83.
+  multint(&common.misc.tmpP1, &common.misc.a, 10);             // Base1 <- Base1 + 10*a
+  BigIntAdd(&common.misc.tmpP1, &common.misc.Base1, &common.misc.Base1);
+  multint(&common.misc.tmpP1, &common.misc.a, -19);            // Base2 <- Base2 - 19*a
+  BigIntAdd(&common.misc.tmpP1, &common.misc.Base2, &common.misc.Base2);
+  multint(&common.misc.tmpP1, &common.misc.a, -24);            // Base3 <- Base3 - 24*a
+  BigIntAdd(&common.misc.tmpP1, &common.misc.Base3, &common.misc.Base3);
+  multint(&common.misc.tmpP1, &common.misc.a, 27);             // Base4 <- Base4 + 27*a
+  BigIntAdd(&common.misc.tmpP1, &common.misc.Base4, &common.misc.Base4);
 }
 
 static void showLinear(char **pptrOutput, int linear, int indep)
@@ -350,7 +335,7 @@ static int fcubes(char **pptrOutput, const BigInteger *pArgument)
   int mod18;
   int i;
   bool converted = false;
-  CopyBigInt(&value, pArgument);
+  CopyBigInt(&common.misc.value, pArgument);
   // Compute argument mod 18.
   mod18 = getRemainder(pArgument, 18);
   if ((mod18 == 4) || (mod18 == 5) || (mod18 == 13) || (mod18 == 14))
@@ -360,18 +345,18 @@ static int fcubes(char **pptrOutput, const BigInteger *pArgument)
   if (mod18 == 16)
   {             // Change sign.
     converted = true;
-    BigIntNegate(&value, &value);
+    BigIntNegate(&common.misc.value, &common.misc.value);
   }
   for (i = ((int)sizeof(sums) / (int)sizeof(sums[0]))-10; i>=0; i -= 10)
   {
     int modulus = sums[i];
-    if (((getRemainder(&value, modulus) + modulus)% modulus) == sums[i + 1])
+    if (((getRemainder(&common.misc.value, modulus) + modulus)% modulus) == sums[i + 1])
     {
-      subtractdivide(&value, sums[i + 1], modulus);      // value <- (value-sums[i+1])/modulus
-      multadd(&Base1, sums[i + 2], &value, sums[i + 3]); // Base1 <- sums[i+2]*value+sums[i+3]
-      multadd(&Base2, sums[i + 4], &value, sums[i + 5]); // Base2 <- sums[i+4]*value+sums[i+5]
-      multadd(&Base3, sums[i + 6], &value, sums[i + 7]); // Base3 <- sums[i+6]*value+sums[i+7]
-      multadd(&Base4, sums[i + 8], &value, sums[i + 9]); // Base4 <- sums[i+8]*value+sums[i+9]
+      subtractdivide(&common.misc.value, sums[i + 1], modulus);      // value <- (value-sums[i+1])/modulus
+      multadd(&common.misc.Base1, sums[i + 2], &common.misc.value, sums[i + 3]); // Base1 <- sums[i+2]*value+sums[i+3]
+      multadd(&common.misc.Base2, sums[i + 4], &common.misc.value, sums[i + 5]); // Base2 <- sums[i+4]*value+sums[i+5]
+      multadd(&common.misc.Base3, sums[i + 6], &common.misc.value, sums[i + 7]); // Base3 <- sums[i+6]*value+sums[i+7]
+      multadd(&common.misc.Base4, sums[i + 8], &common.misc.value, sums[i + 9]); // Base4 <- sums[i+8]*value+sums[i+9]
       formatString(pptrOutput, "<p>$1s ", LITERAL_FCUBES1);  // Using the formula
       showLinear(pptrOutput, modulus, sums[i + 1]);
       copyStr(pptrOutput, " = ");
@@ -388,13 +373,13 @@ static int fcubes(char **pptrOutput, const BigInteger *pArgument)
   }
   if (i < 0)
   {
-    if (getRemainder(&value, 54) == 2)
+    if (getRemainder(&common.misc.value, 54) == 2)
     {           // If value == 2 (mod 54)...
-      subtractdivide(&value, 2, 54);   // value <- (value-2)/54
-      EvaluateQuadraticPoly(&Base1, &value, 29484, 2211, 43);
-      EvaluateQuadraticPoly(&Base2, &value, -29484, -2157, -41);
-      EvaluateQuadraticPoly(&Base3, &value, 9828, 485, 4);
-      EvaluateQuadraticPoly(&Base4, &value, -9828, -971, -22);
+      subtractdivide(&common.misc.value, 2, 54);   // value <- (value-2)/54
+      EvaluateQuadraticPoly(&common.misc.Base1, &common.misc.value, 29484, 2211, 43);
+      EvaluateQuadraticPoly(&common.misc.Base2, &common.misc.value, -29484, -2157, -41);
+      EvaluateQuadraticPoly(&common.misc.Base3, &common.misc.value, 9828, 485, 4);
+      EvaluateQuadraticPoly(&common.misc.Base4, &common.misc.value, -9828, -971, -22);
       copyStr(pptrOutput, LITERAL_FCUBES1);
       copyStr(pptrOutput, " ");
       showLinear(pptrOutput, 54, 2);
@@ -408,13 +393,13 @@ static int fcubes(char **pptrOutput, const BigInteger *pArgument)
       showCubeOfQuadratic(pptrOutput, -9828, -971, -22);
       copyStr(pptrOutput, ":</p>");
     }
-    else if (getRemainder(&value, 83 * 108) == (83 * 46))
+    else if (getRemainder(&common.misc.value, 83 * 108) == (83 * 46))
     {           // If value == 83*46 (mod 83*108)...
-      subtractdivide(&value, 83 * 46, (83 * 108)); // value <-(value - (83*46)) / (83*108)
-      EvaluateQuadraticPoly(&Base1, &value, 29484, 25143, 5371);
-      EvaluateQuadraticPoly(&Base2, &value, -29484, -25089, -5348);
-      EvaluateQuadraticPoly(&Base3, &value, 9828, 8129, 1682);
-      EvaluateQuadraticPoly(&Base4, &value, -9828, -8615, -1889);
+      subtractdivide(&common.misc.value, 83 * 46, (83 * 108)); // value <-(value - (83*46)) / (83*108)
+      EvaluateQuadraticPoly(&common.misc.Base1, &common.misc.value, 29484, 25143, 5371);
+      EvaluateQuadraticPoly(&common.misc.Base2, &common.misc.value, -29484, -25089, -5348);
+      EvaluateQuadraticPoly(&common.misc.Base3, &common.misc.value, 9828, 8129, 1682);
+      EvaluateQuadraticPoly(&common.misc.Base4, &common.misc.value, -9828, -8615, -1889);
       copyStr(pptrOutput, LITERAL_FCUBES1);
       copyStr(pptrOutput, " ");
       showLinear(pptrOutput, 83*108, 83*46);
@@ -436,19 +421,19 @@ static int fcubes(char **pptrOutput, const BigInteger *pArgument)
   }
   if (converted)
   {
-    BigIntNegate(&Base1, &Base1);
-    BigIntNegate(&Base2, &Base2);
-    BigIntNegate(&Base3, &Base3);
-    BigIntNegate(&Base4, &Base4);
+    BigIntNegate(&common.misc.Base1, &common.misc.Base1);
+    BigIntNegate(&common.misc.Base2, &common.misc.Base2);
+    BigIntNegate(&common.misc.Base3, &common.misc.Base3);
+    BigIntNegate(&common.misc.Base4, &common.misc.Base4);
   }
 
       // Sort cubes
-  SortBigIntegers(&Base1, &Base2);
-  SortBigIntegers(&Base1, &Base3);
-  SortBigIntegers(&Base1, &Base4);
-  SortBigIntegers(&Base2, &Base3);
-  SortBigIntegers(&Base2, &Base4);
-  SortBigIntegers(&Base3, &Base4);
+  SortBigIntegers(&common.misc.Base1, &common.misc.Base2);
+  SortBigIntegers(&common.misc.Base1, &common.misc.Base3);
+  SortBigIntegers(&common.misc.Base1, &common.misc.Base4);
+  SortBigIntegers(&common.misc.Base2, &common.misc.Base3);
+  SortBigIntegers(&common.misc.Base2, &common.misc.Base4);
+  SortBigIntegers(&common.misc.Base3, &common.misc.Base4);
   return 0;
 }
 
@@ -457,9 +442,9 @@ void fcubesText(char *input, int grpLen)
   char *ptrOutput;
   if (valuesProcessed == 0)
   {
-    groupLength = grpLen;
+    common.misc.groupLength = grpLen;
   }
-  (void)BatchProcessing(input, &toProcess, &ptrOutput, NULL, batchCubesCallback);
+  (void)BatchProcessing(input, &common.misc.toProcess, &ptrOutput, NULL, batchCubesCallback);
 #ifdef __EMSCRIPTEN__
   int elapsedTime = (int)(tenths() - originalTenthSecond);
   copyStr(&ptrOutput, "<p>");
@@ -482,11 +467,11 @@ static void showCube(char** pptrOutput, const BigInteger* pBase)
   }
   if (hexadecimal)
   {
-    BigInteger2Hex(&ptrOutput, pBase, groupLength);
+    BigInteger2Hex(&ptrOutput, pBase, common.misc.groupLength);
   }
   else
   {
-    BigInteger2Dec(&ptrOutput, pBase, groupLength);
+    BigInteger2Dec(&ptrOutput, pBase, common.misc.groupLength);
   }
   if (pBase->sign == SIGN_NEGATIVE)
   {
@@ -501,32 +486,32 @@ static void batchCubesCallback(char **pptrOutput, int type)
 {
   int result;
   char *ptrOutput = *pptrOutput;
-  NumberLength = toProcess.nbrLimbs;
+  NumberLength = common.misc.toProcess.nbrLimbs;
   if ((type == BATCH_NO_PROCESS_DEC) || (type == BATCH_NO_PROCESS_HEX))
   {         // Do not compute sum of cubes.
     if (hexadecimal)
     {
-      BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
+      BigInteger2Hex(&ptrOutput, &common.misc.toProcess, common.misc.groupLength);
     }
     else
     {
-      BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+      BigInteger2Dec(&ptrOutput, &common.misc.toProcess, common.misc.groupLength);
     }
     *pptrOutput = ptrOutput;
     return;
   }
-  result = fcubes(&ptrOutput, &toProcess);
+  result = fcubes(&ptrOutput, &common.misc.toProcess);
   // Show the number to be decomposed into sum of cubes.
   if (type == BATCH_NO_QUOTE)
   {
     copyStr(&ptrOutput, "<p>");
     if (hexadecimal)
     {
-      BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
+      BigInteger2Hex(&ptrOutput, &common.misc.toProcess, common.misc.groupLength);
     }
     else
     {
-      BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+      BigInteger2Dec(&ptrOutput, &common.misc.toProcess, common.misc.groupLength);
     }
   }
   if ((type == BATCH_NO_QUOTE) && (result != 0))
@@ -561,21 +546,21 @@ static void batchCubesCallback(char **pptrOutput, int type)
   {
     copyStr(&ptrOutput, " = ");
   }
-  showCube(&ptrOutput, &Base1);
-  if (!BigIntIsZero(&Base2))
+  showCube(&ptrOutput, &common.misc.Base1);
+  if (!BigIntIsZero(&common.misc.Base2))
   {
     copyStr(&ptrOutput, " + ");
-    showCube(&ptrOutput, &Base2);
+    showCube(&ptrOutput, &common.misc.Base2);
   }
-  if (!BigIntIsZero(&Base3))
+  if (!BigIntIsZero(&common.misc.Base3))
   {
     copyStr(&ptrOutput, " + ");
-    showCube(&ptrOutput, &Base3);
+    showCube(&ptrOutput, &common.misc.Base3);
   }
-  if (!BigIntIsZero(&Base4))
+  if (!BigIntIsZero(&common.misc.Base4))
   {
     copyStr(&ptrOutput, " + ");
-    showCube(&ptrOutput, &Base4);
+    showCube(&ptrOutput, &common.misc.Base4);
   }
   if (type == BATCH_NO_QUOTE)
   {

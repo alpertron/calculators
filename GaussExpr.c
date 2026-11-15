@@ -23,9 +23,7 @@
 #include "bignbr.h"
 #include "factor.h"
 #include "expression.h"
-
-#define PAREN_STACK_SIZE           5000
-#define COMPR_STACK_SIZE        1000000
+#include "commonstruc.h"
 
 #define TOKEN_PRIMORIAL  39
 #define TOKEN_GCD        40
@@ -78,9 +76,9 @@ struct sFuncOperExpr stFuncOperGaussianExpr[] =
   {NULL, 0, 0},
 };
 
-static int comprStackValues[COMPR_STACK_SIZE];
-static int comprStackOffset[PAREN_STACK_SIZE];
-static int stackIndex;
+extern int comprStackValues[COMPR_STACK_SIZE];
+extern int comprStackOffset[PAREN_STACK_SIZE];
+extern int stackIndex;
 #ifdef __ANDROID__
   extern limb Mult1[MAX_LEN];
   extern limb Mult3[MAX_LEN];
@@ -109,22 +107,6 @@ static enum eExprErr ComputePower(BigInteger* Re1, const BigInteger* Re2,
 static enum eExprErr ModInv(const BigInteger* RealNbr, const BigInteger* ImagNbr,
   const BigInteger* RealMod, const BigInteger* ImagMod,
   BigInteger* Result);
-static BigInteger curStackRe;
-static BigInteger curStackIm;
-static BigInteger curStack2Re;
-static BigInteger curStack2Im;
-static BigInteger curStack3Re;
-static BigInteger curStack3Im;
-static BigInteger curStackReBak;
-static BigInteger curStackImBak;
-static BigInteger curStack2ReBak;
-static BigInteger curStack2ImBak;
-static BigInteger curTmp;
-static BigInteger norm;
-static BigInteger Result[2];
-static BigInteger LastAnswerRe;
-static BigInteger LastAnswerIm;
-
 
 static int numLimbs(const int* pLen)
 {
@@ -223,21 +205,21 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_ANS:    // Get last answer.
-      if (LastAnswerRe.nbrLimbs == 0)
+      if (common.gaussian.LastAnswerRe.nbrLimbs == 0)
       {
-        intToBigInteger(&curStackRe, 0);
+        intToBigInteger(&common.gaussian.curStackRe, 0);
       }
       else
       {
-        CopyBigInt(&curStackRe, &LastAnswerRe);
+        CopyBigInt(&common.gaussian.curStackRe, &common.gaussian.LastAnswerRe);
       }
-      if (LastAnswerIm.nbrLimbs == 0)
+      if (common.gaussian.LastAnswerIm.nbrLimbs == 0)
       {
-        intToBigInteger(&curStackIm, 0);
+        intToBigInteger(&common.gaussian.curStackIm, 0);
       }
       else
       {
-        CopyBigInt(&curStackIm, &LastAnswerIm);
+        CopyBigInt(&common.gaussian.curStackIm, &common.gaussian.LastAnswerIm);
       }
       stackIndex++;
       break;
@@ -247,8 +229,8 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       {
         return EXPR_INTERNAL_ERROR;
       }
-      getCurrentStackValue(&curStackRe, &curStackIm);
-      intToBigInteger(&curStackIm, 0);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
+      intToBigInteger(&common.gaussian.curStackIm, 0);
       break;
 
     case TOKEN_IM:
@@ -256,8 +238,8 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       {
         return EXPR_INTERNAL_ERROR;
       }
-      getCurrentStackValue(&curStackIm, &curStackRe);
-      intToBigInteger(&curStackIm, 0);
+      getCurrentStackValue(&common.gaussian.curStackIm, &common.gaussian.curStackRe);
+      intToBigInteger(&common.gaussian.curStackIm, 0);
       break;
 
     case TOKEN_NORM:
@@ -266,29 +248,31 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
         return EXPR_INTERNAL_ERROR;
       }
       // norm = Re^2 + Im^2
-      getCurrentStackValue(&curStackRe, &curStackIm);
-      retcode = BigIntMultiply(&curStackRe, &curStackRe, &curStack2Re);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
+      retcode = BigIntMultiply(&common.gaussian.curStackRe, &common.gaussian.curStackRe,
+                               &common.gaussian.curStack2Re);
       if (retcode != EXPR_OK)
       {
         return retcode;
       }
-      retcode = BigIntMultiply(&curStackIm, &curStackIm, &curStack2Im);
+      retcode = BigIntMultiply(&common.gaussian.curStackIm, &common.gaussian.curStackIm,
+                               &common.gaussian.curStack2Im);
       if (retcode != EXPR_OK)
       {
         return retcode;
       }
-      BigIntAdd(&curStack2Re, &curStack2Im, &curStackRe);
-      intToBigInteger(&curStackIm, 0);
+      BigIntAdd(&common.gaussian.curStack2Re, &common.gaussian.curStack2Im, &common.gaussian.curStackRe);
+      intToBigInteger(&common.gaussian.curStackIm, 0);
       break;
 
     case TOKEN_GCD:
       ptrRPNbuffer++;
       nbrParameters = (int)(unsigned char)*ptrRPNbuffer;
-      getCurrentStackValue(&curStackRe, &curStackIm);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
       for (int parmNbr = 1; parmNbr < nbrParameters; parmNbr++)
       {
         stackIndex--;
-        getCurrentStackValue(&curStack2Re, &curStack2Im);
+        getCurrentStackValue(&common.gaussian.curStack2Re, &common.gaussian.curStack2Im);
         ComputeGCD();
       }
       break;
@@ -296,11 +280,11 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
     case TOKEN_LCM:
       ptrRPNbuffer++;
       nbrParameters = (int)(unsigned char)*ptrRPNbuffer;
-      getCurrentStackValue(&curStackRe, &curStackIm);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
       for (int parmNbr = 1; parmNbr < nbrParameters; parmNbr++)
       {
         stackIndex--;
-        getCurrentStackValue(&curStack2Re, &curStack2Im);
+        getCurrentStackValue(&common.gaussian.curStack2Re, &common.gaussian.curStack2Im);
         retcode = ComputeLCM();
         if (retcode != EXPR_OK)
         {
@@ -310,11 +294,11 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_MODPOW:
-      getCurrentStackValue(&curStack3Re, &curStack3Im);
+      getCurrentStackValue(&common.gaussian.curStack3Re, &common.gaussian.curStack3Im);
       stackIndex--;
-      getCurrentStackValue(&curStack2Re, &curStack2Im);
+      getCurrentStackValue(&common.gaussian.curStack2Re, &common.gaussian.curStack2Im);
       stackIndex--;
-      getCurrentStackValue(&curStackRe, &curStackIm);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
       retcode = ComputeModPow();
       if (retcode != EXPR_OK)
       {
@@ -323,9 +307,9 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_MODINV:
-      getCurrentStackValue(&curStack2Re, &curStack2Im);
+      getCurrentStackValue(&common.gaussian.curStack2Re, &common.gaussian.curStack2Im);
       stackIndex--;
-      getCurrentStackValue(&curStackRe, &curStackIm);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
       retcode = ComputeModInv();
       if (retcode != EXPR_OK)
       {
@@ -334,7 +318,7 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_ISPRIME:
-      getCurrentStackValue(&curStackRe, &curStackIm);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
       retcode = isPrime();
       if (retcode != EXPR_OK)
       {
@@ -343,12 +327,12 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_F:
-      getCurrentStackValue(&curStackRe, &curStackIm);
-      if (!BigIntIsZero(&curStackIm))
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
+      if (!BigIntIsZero(&common.gaussian.curStackIm))
       {     // Imaginary part of argument must be zero.
         return EXPR_INVALID_PARAM;
       }
-      retcode = ComputeFibLucas(0, &curStackRe);
+      retcode = ComputeFibLucas(0, &common.gaussian.curStackRe);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -356,12 +340,12 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_L:
-      getCurrentStackValue(&curStackRe, &curStackIm);
-      if (!BigIntIsZero(&curStackIm))
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
+      if (!BigIntIsZero(&common.gaussian.curStackIm))
       {     // Imaginary part of argument must be zero.
         return EXPR_INVALID_PARAM;
       }
-      retcode = ComputeFibLucas(2, &curStackRe);
+      retcode = ComputeFibLucas(2, &common.gaussian.curStackRe);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -369,12 +353,12 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_N:
-      getCurrentStackValue(&curStackRe, &curStackIm);
-      if (!BigIntIsZero(&curStackIm))
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
+      if (!BigIntIsZero(&common.gaussian.curStackIm))
       {     // Imaginary part of argument must be zero.
         return EXPR_INVALID_PARAM;
       }
-      retcode = ComputeNext(&curStackRe);
+      retcode = ComputeNext(&common.gaussian.curStackRe);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -382,12 +366,12 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_B:
-      getCurrentStackValue(&curStackRe, &curStackIm);
-      if (!BigIntIsZero(&curStackIm))
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
+      if (!BigIntIsZero(&common.gaussian.curStackIm))
       {     // Imaginary part of argument must be zero.
         return EXPR_INVALID_PARAM;
       }
-      retcode = ComputeBack(&curStackRe);
+      retcode = ComputeBack(&common.gaussian.curStackRe);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -395,7 +379,7 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_P:
-      getCurrentStackValue(&curStackRe, &curStackIm);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
       retcode = ComputePartition();
       if (retcode != EXPR_OK)
       {
@@ -404,22 +388,23 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_RANDOM:
-      getCurrentStackValue(&curStack2Re, &curStack2Im);
+      getCurrentStackValue(&common.gaussian.curStack2Re, &common.gaussian.curStack2Im);
       stackIndex--;
-      getCurrentStackValue(&curStackRe, &curStackIm);
-      BigIntRandom(&curStackRe, &curStack2Re, &curStackRe);
-      BigIntRandom(&curStackIm, &curStack2Im, &curStackIm);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
+      BigIntRandom(&common.gaussian.curStackRe, &common.gaussian.curStack2Re, &common.gaussian.curStackRe);
+      BigIntRandom(&common.gaussian.curStackIm, &common.gaussian.curStack2Im, &common.gaussian.curStackIm);
       break;
 
     case TOKEN_FACTORIAL:
-      getCurrentStackValue(&curStack2Re, &curStack2Im);
+      getCurrentStackValue(&common.gaussian.curStack2Re, &common.gaussian.curStack2Im);
       stackIndex--;
-      getCurrentStackValue(&curStackRe, &curStackIm);
-      if (!BigIntIsZero(&curStackIm) || (curStackRe.sign == SIGN_NEGATIVE))
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
+      if (!BigIntIsZero(&common.gaussian.curStackIm) || (common.gaussian.curStackRe.sign == SIGN_NEGATIVE))
       {         // Imaginary part must be zero.
         return EXPR_INVALID_PARAM;
       }
-      retcode = factorial(&curStackRe, curStackRe.limbs[0].x, curStack2Re.limbs[0].x);
+      retcode = factorial(&common.gaussian.curStackRe, common.gaussian.curStackRe.limbs[0].x,
+                          common.gaussian.curStack2Re.limbs[0].x);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -427,16 +412,16 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_PRIMORIAL:
-      getCurrentStackValue(&curStackRe, &curStackIm);
-      if (!BigIntIsZero(&curStackIm) || (curStackRe.sign == SIGN_NEGATIVE))
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
+      if (!BigIntIsZero(&common.gaussian.curStackIm) || (common.gaussian.curStackRe.sign == SIGN_NEGATIVE))
       {         // Imaginary part must be zero.
         return EXPR_INVALID_PARAM;
       }
-      if ((curStackRe.nbrLimbs > 1) || (curStackRe.limbs[0].x > 46049))
+      if ((common.gaussian.curStackRe.nbrLimbs > 1) || (common.gaussian.curStackRe.limbs[0].x > 46049))
       {
         return EXPR_INTERM_TOO_HIGH;
       }
-      retcode = primorial(&curStackRe, curStackRe.limbs[0].x);
+      retcode = primorial(&common.gaussian.curStackRe, common.gaussian.curStackRe.limbs[0].x);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -444,31 +429,31 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case OPER_ADD:
-      getCurrentStackValue(&curStack2Re, &curStack2Im);
+      getCurrentStackValue(&common.gaussian.curStack2Re, &common.gaussian.curStack2Im);
       stackIndex--;
-      getCurrentStackValue(&curStackRe, &curStackIm);
-      BigIntAdd(&curStackRe, &curStack2Re, &curStackRe);
-      BigIntAdd(&curStackIm, &curStack2Im, &curStackIm);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
+      BigIntAdd(&common.gaussian.curStackRe, &common.gaussian.curStack2Re, &common.gaussian.curStackRe);
+      BigIntAdd(&common.gaussian.curStackIm, &common.gaussian.curStack2Im, &common.gaussian.curStackIm);
       break;
 
     case OPER_SUBT:
-      getCurrentStackValue(&curStack2Re, &curStack2Im);
+      getCurrentStackValue(&common.gaussian.curStack2Re, &common.gaussian.curStack2Im);
       stackIndex--;
-      getCurrentStackValue(&curStackRe, &curStackIm);
-      BigIntSubt(&curStackRe, &curStack2Re, &curStackRe);
-      BigIntSubt(&curStackIm, &curStack2Im, &curStackIm);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
+      BigIntSubt(&common.gaussian.curStackRe, &common.gaussian.curStack2Re, &common.gaussian.curStackRe);
+      BigIntSubt(&common.gaussian.curStackIm, &common.gaussian.curStack2Im, &common.gaussian.curStackIm);
       break;
 
     case OPER_UNARY_MINUS:
-      getCurrentStackValue(&curStackRe, &curStackIm);
-      BigIntChSign(&curStackRe);
-      BigIntChSign(&curStackIm);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
+      BigIntChSign(&common.gaussian.curStackRe);
+      BigIntChSign(&common.gaussian.curStackIm);
       break;
 
     case OPER_MULTIPLY:
-      getCurrentStackValue(&curStack2Re, &curStack2Im);
+      getCurrentStackValue(&common.gaussian.curStack2Re, &common.gaussian.curStack2Im);
       stackIndex--;
-      getCurrentStackValue(&curStackRe, &curStackIm);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
       retcode = GaussianMultiply();
       if (retcode != EXPR_OK)
       {
@@ -477,9 +462,9 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case OPER_DIVIDE:
-      getCurrentStackValue(&curStack2Re, &curStack2Im);
+      getCurrentStackValue(&common.gaussian.curStack2Re, &common.gaussian.curStack2Im);
       stackIndex--;
-      getCurrentStackValue(&curStackRe, &curStackIm);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
       retcode = GaussianDivide();
       if (retcode != EXPR_OK)
       {
@@ -488,23 +473,25 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case OPER_REMAINDER:
-      getCurrentStackValue(&curStack2Re, &curStack2Im);
+      getCurrentStackValue(&common.gaussian.curStack2Re, &common.gaussian.curStack2Im);
       stackIndex--;
-      getCurrentStackValue(&curStackRe, &curStackIm);
-      retcode = Modulo(&curStackRe, &curStackIm, &curStack2Re, &curStack2Im, Result);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
+      retcode = Modulo(&common.gaussian.curStackRe, &common.gaussian.curStackIm,
+        &common.gaussian.curStack2Re, &common.gaussian.curStack2Im, common.gaussian.Result);
       if (retcode != EXPR_OK)
       {
         return retcode;
       }
-      CopyBigInt(&curStackRe, &Result[0]);
-      CopyBigInt(&curStackIm, &Result[1]);
+      CopyBigInt(&common.gaussian.curStackRe, &common.gaussian.Result[0]);
+      CopyBigInt(&common.gaussian.curStackIm, &common.gaussian.Result[1]);
       break;
 
     case TOKEN_END_EXPON:
-      getCurrentStackValue(&curStack2Re, &curStack2Im);
+      getCurrentStackValue(&common.gaussian.curStack2Re, &common.gaussian.curStack2Im);
       stackIndex--;
-      getCurrentStackValue(&curStackRe, &curStackIm);
-      retcode = ComputePower(&curStackRe, &curStack2Re, &curStackIm, &curStack2Im);
+      getCurrentStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
+      retcode = ComputePower(&common.gaussian.curStackRe, &common.gaussian.curStack2Re,
+        &common.gaussian.curStackIm, &common.gaussian.curStack2Im);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -518,7 +505,7 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
     {
       if (c != TOKEN_START_EXPON)
       {
-        retcode = setStackValue(&curStackRe, &curStackIm);
+        retcode = setStackValue(&common.gaussian.curStackRe, &common.gaussian.curStackIm);
         if (retcode != EXPR_OK)
         {
           return retcode;
@@ -533,61 +520,63 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
   {
     return EXPR_NUMBER_TOO_HIGH;
   }
-  CopyBigInt(&LastAnswerRe, ExpressionResult);
-  CopyBigInt(&LastAnswerIm, ExpressionResult + 1);
+  CopyBigInt(&common.gaussian.LastAnswerRe, ExpressionResult);
+  CopyBigInt(&common.gaussian.LastAnswerIm, ExpressionResult + 1);
   return EXPR_OK;
 }
 
 static enum eExprErr isPrime(void)
 {
-  if (BigIntIsZero(&curStackRe))
+  if (BigIntIsZero(&common.gaussian.curStackRe))
   {
-    if ((curStackIm.limbs[0].x % 4) != 3)
+    if ((common.gaussian.curStackIm.limbs[0].x % 4) != 3)
     {
-      intToBigInteger(&curStackRe, 0);    // Number not prime.
-      intToBigInteger(&curStackIm, 0);
+      intToBigInteger(&common.gaussian.curStackRe, 0);    // Number not prime.
+      intToBigInteger(&common.gaussian.curStackIm, 0);
       return EXPR_OK;
     }
-    CopyBigInt(&curStack2Re, &curStackIm);
+    CopyBigInt(&common.gaussian.curStack2Re, &common.gaussian.curStackIm);
   }
-  else if (BigIntIsZero(&curStackIm))
+  else if (BigIntIsZero(&common.gaussian.curStackIm))
   {
-    if ((curStackRe.limbs[0].x % 4) != 3)
+    if ((common.gaussian.curStackRe.limbs[0].x % 4) != 3)
     {
-      intToBigInteger(&curStackRe, 0);    // Number not prime.
-      intToBigInteger(&curStackIm, 0);
+      intToBigInteger(&common.gaussian.curStackRe, 0);    // Number not prime.
+      intToBigInteger(&common.gaussian.curStackIm, 0);
       return EXPR_OK;
     }
-    CopyBigInt(&curStack2Re, &curStackRe);
+    CopyBigInt(&common.gaussian.curStack2Re, &common.gaussian.curStackRe);
   }
   else
   {
     enum eExprErr retcode;
-    retcode = BigIntMultiply(&curStackRe, &curStackRe, &curStack2Re);
+    retcode = BigIntMultiply(&common.gaussian.curStackRe, &common.gaussian.curStackRe,
+                             &common.gaussian.curStack2Re);
     if (retcode != EXPR_OK)
     {
       return retcode;
     }
-    retcode = BigIntMultiply(&curStackIm, &curStackIm, &curStack2Im);
+    retcode = BigIntMultiply(&common.gaussian.curStackIm, &common.gaussian.curStackIm,
+                             &common.gaussian.curStack2Im);
     if (retcode != EXPR_OK)
     {
       return retcode;
     }
-    BigIntAdd(&curStack2Re, &curStack2Im, &curStack2Re);
+    BigIntAdd(&common.gaussian.curStack2Re, &common.gaussian.curStack2Im, &common.gaussian.curStack2Re);
   }
 #ifdef FACTORIZATION_APP
-  if (BpswPrimalityTest(&curStack2Re, NULL) == 0)
+  if (BpswPrimalityTest(&common.gaussian.curStack2Re, NULL) == 0)
 #else
-  if (BpswPrimalityTest(&curStack2Re) == 0)
+  if (BpswPrimalityTest(&common.gaussian.curStack2Re) == 0)
 #endif
   {    // Argument is a probable prime.
-    intToBigInteger(&curStackRe, -1);
+    intToBigInteger(&common.gaussian.curStackRe, -1);
   }
   else
   {    // Argument is not a probable prime.
-    intToBigInteger(&curStackRe, 0);
+    intToBigInteger(&common.gaussian.curStackRe, 0);
   }
-  intToBigInteger(&curStackIm, 0);
+  intToBigInteger(&common.gaussian.curStackIm, 0);
   return EXPR_OK;
 }
 
@@ -595,24 +584,24 @@ static enum eExprErr ComputePartition(void)
 {
   int val;
 
-  if (!BigIntIsZero(&curStackIm))
+  if (!BigIntIsZero(&common.gaussian.curStackIm))
   {         // Imaginary part must be zero.
     return EXPR_INVALID_PARAM;
   }
-  if (curStackRe.sign == SIGN_NEGATIVE)
+  if (common.gaussian.curStackRe.sign == SIGN_NEGATIVE)
   {
     return EXPR_INVALID_PARAM;
   }
-  if (curStackRe.nbrLimbs > 1)
+  if (common.gaussian.curStackRe.nbrLimbs > 1)
   {
     return EXPR_INTERM_TOO_HIGH;
   }
-  val = curStackRe.limbs[0].x;
+  val = common.gaussian.curStackRe.limbs[0].x;
   if (val > 100000)
   {
     return EXPR_INVALID_PARAM;
   }
-  partition(val, &curStackRe);
+  partition(val, &common.gaussian.curStackRe);
   return EXPR_OK;
 }
 
@@ -668,47 +657,48 @@ static void ComputeGCD(void)
 {
   BigInteger ReTmp;
   BigInteger ImTmp;
-  GaussianGCD(&curStackRe, &curStackIm, &curStack2Re, &curStack2Im,
-    &curStack3Re, &curStack3Im, &ReTmp, &ImTmp);
-  CopyBigInt(&curStackRe, &curStack3Re);
-  CopyBigInt(&curStackIm, &curStack3Im);
-  while ((curStackRe.sign == SIGN_NEGATIVE) || (curStackIm.sign == SIGN_NEGATIVE))
+  GaussianGCD(&common.gaussian.curStackRe, &common.gaussian.curStackIm,
+    &common.gaussian.curStack2Re, &common.gaussian.curStack2Im,
+    &common.gaussian.curStack3Re, &common.gaussian.curStack3Im, &ReTmp, &ImTmp);
+  CopyBigInt(&common.gaussian.curStackRe, &common.gaussian.curStack3Re);
+  CopyBigInt(&common.gaussian.curStackIm, &common.gaussian.curStack3Im);
+  while ((common.gaussian.curStackRe.sign == SIGN_NEGATIVE) || (common.gaussian.curStackIm.sign == SIGN_NEGATIVE))
   {    // Multiply by i until number is in first quadrant.
-    CopyBigInt(&curStack3Re, &curStackRe);
-    BigIntNegate(&curStackIm, &curStackRe);
-    CopyBigInt(&curStackIm, &curStack3Re);
+    CopyBigInt(&common.gaussian.curStack3Re, &common.gaussian.curStackRe);
+    BigIntNegate(&common.gaussian.curStackIm, &common.gaussian.curStackRe);
+    CopyBigInt(&common.gaussian.curStackIm, &common.gaussian.curStack3Re);
   }
 }
 
 static enum eExprErr ComputeLCM(void)
 {
   enum eExprErr retcode;
-  if ((BigIntIsZero(&curStackRe) && BigIntIsZero(&curStackIm)) ||
-    (BigIntIsZero(&curStack2Re) && BigIntIsZero(&curStack2Im)))
+  if ((BigIntIsZero(&common.gaussian.curStackRe) && BigIntIsZero(&common.gaussian.curStackIm)) ||
+    (BigIntIsZero(&common.gaussian.curStack2Re) && BigIntIsZero(&common.gaussian.curStack2Im)))
   {    // If any of the arguments is zero, the LCM is zero.
-    intToBigInteger(&curStackRe, 0);
-    intToBigInteger(&curStackIm, 0);
+    intToBigInteger(&common.gaussian.curStackRe, 0);
+    intToBigInteger(&common.gaussian.curStackIm, 0);
     return EXPR_OK;
   }
   // Save both parameters because ComputeGCD will overwrite them.
-  CopyBigInt(&curStackReBak, &curStackRe);
-  CopyBigInt(&curStackImBak, &curStackIm);
-  CopyBigInt(&curStack2ReBak, &curStack2Re);
-  CopyBigInt(&curStack2ImBak, &curStack2Im);
+  CopyBigInt(&common.gaussian.curStackReBak, &common.gaussian.curStackRe);
+  CopyBigInt(&common.gaussian.curStackImBak, &common.gaussian.curStackIm);
+  CopyBigInt(&common.gaussian.curStack2ReBak, &common.gaussian.curStack2Re);
+  CopyBigInt(&common.gaussian.curStack2ImBak, &common.gaussian.curStack2Im);
   ComputeGCD();   // curStackRe + i*curStackIm = GCD.
   // Divide first parameter by GCD.
-  CopyBigInt(&curStack2Re, &curStackRe);    // Divisor
-  CopyBigInt(&curStack2Im, &curStackIm);
-  CopyBigInt(&curStackRe, &curStackReBak);  // Dividend
-  CopyBigInt(&curStackIm, &curStackImBak);
+  CopyBigInt(&common.gaussian.curStack2Re, &common.gaussian.curStackRe);    // Divisor
+  CopyBigInt(&common.gaussian.curStack2Im, &common.gaussian.curStackIm);
+  CopyBigInt(&common.gaussian.curStackRe, &common.gaussian.curStackReBak);  // Dividend
+  CopyBigInt(&common.gaussian.curStackIm, &common.gaussian.curStackImBak);
   retcode = GaussianDivide();
   if (retcode != EXPR_OK)
   {
     return retcode;
   }
   // Multiply the quotient by the second parameter.
-  CopyBigInt(&curStack2Re, &curStack2ReBak);
-  CopyBigInt(&curStack2Im, &curStack2ImBak);
+  CopyBigInt(&common.gaussian.curStack2Re, &common.gaussian.curStack2ReBak);
+  CopyBigInt(&common.gaussian.curStack2Im, &common.gaussian.curStack2ImBak);
   return GaussianMultiply();
 }
 
@@ -738,8 +728,8 @@ static int ComputePower(BigInteger *Re1, const BigInteger *Re2,
   }
   (void)BigIntMultiply(Re1, Re1, &ReTmp);
   (void)BigIntMultiply(Im1, Im1, &ImTmp);
-  BigIntAdd(&ReTmp, &ImTmp, &norm);  // norm <- re1^2 + im1^2.
-  logNorm = logLimbs(norm.limbs, norm.nbrLimbs);  // Get logarithm of norm.
+  BigIntAdd(&ReTmp, &ImTmp, &common.gaussian.norm);  // norm <- re1^2 + im1^2.
+  logNorm = logLimbs(common.gaussian.norm.limbs, common.gaussian.norm.nbrLimbs);  // Get logarithm of norm.
   if (logNorm*(double)expon > 23026.0)
   {   // More than 20000 digits. 23026 = log(10^10000) (norm is already squared).
     return EXPR_INTERM_TOO_HIGH;
@@ -769,11 +759,11 @@ static int ComputePower(BigInteger *Re1, const BigInteger *Re2,
       {
         (void)BigIntMultiply(Re1, &Re, &ReTmp);       // Re2 <- re1*re - im1*im.
         (void)BigIntMultiply(Im1, &Im, &ImTmp);
-        BigIntSubt(&ReTmp, &ImTmp, &curTmp);
+        BigIntSubt(&ReTmp, &ImTmp, &common.gaussian.curTmp);
         (void)BigIntMultiply(Re1, &Im, &ReTmp);       // Im <- re1*im + im1*re.
         (void)BigIntMultiply(Im1, &Re, &ImTmp);
         BigIntAdd(&ReTmp, &ImTmp, &Im);
-        CopyBigInt(&Re, &curTmp);
+        CopyBigInt(&Re, &common.gaussian.curTmp);
       }
     }
   }
@@ -784,93 +774,88 @@ static int ComputePower(BigInteger *Re1, const BigInteger *Re2,
 
 static enum eExprErr ComputeModPow(void)
 {
-  static BigInteger ReTmp;
-  static BigInteger ImTmp;
-  static BigInteger ReBase;
-  static BigInteger ImBase;
-  static BigInteger ReExp;
-  static BigInteger ImExp;
-  static BigInteger ReMod;
-  static BigInteger ImMod;
-  static BigInteger Re;
-  static BigInteger Im;
-  CopyBigInt(&ReBase, &curStackRe);
-  CopyBigInt(&ImBase, &curStackIm);
-  CopyBigInt(&ReExp, &curStack2Re);
-  CopyBigInt(&ImExp, &curStack2Im);
-  CopyBigInt(&ReMod, &curStack3Re);
-  CopyBigInt(&ImMod, &curStack3Im);
+  CopyBigInt(&common.gaussian.ReBase, &common.gaussian.curStackRe);
+  CopyBigInt(&common.gaussian.ImBase, &common.gaussian.curStackIm);
+  CopyBigInt(&common.gaussian.ReExp, &common.gaussian.curStack2Re);
+  CopyBigInt(&common.gaussian.ImExp, &common.gaussian.curStack2Im);
+  CopyBigInt(&common.gaussian.ReMod, &common.gaussian.curStack3Re);
+  CopyBigInt(&common.gaussian.ImMod, &common.gaussian.curStack3Im);
 
-  if (!BigIntIsZero(&ImExp))
+  if (!BigIntIsZero(&common.gaussian.ImExp))
   {         // Imaginary part must be zero.
     return EXPR_INVALID_PARAM;
   }
-  if (ReExp.sign == SIGN_NEGATIVE)
+  if (common.gaussian.ReExp.sign == SIGN_NEGATIVE)
   {
     enum eExprErr retcode;
-    BigIntNegate(&ReExp, &ReExp);
-    retcode = ModInv(&ReBase, &ImBase, &ReMod, &ImMod, Result);
+    BigIntNegate(&common.gaussian.ReExp, &common.gaussian.ReExp);
+    retcode = ModInv(&common.gaussian.ReBase, &common.gaussian.ImBase,
+                     &common.gaussian.ReMod, &common.gaussian.ImMod, common.gaussian.Result);
     if (retcode != EXPR_OK)
     {
       return retcode;
     }
-    ReBase = Result[0];
-    ImBase = Result[1];
+    common.gaussian.ReBase = common.gaussian.Result[0];
+    common.gaussian.ImBase = common.gaussian.Result[1];
   }
   // Re <- 1, Im <- 0
-  Re.limbs[0].x = 1;
-  Im.limbs[0].x = 0;
-  Re.nbrLimbs = 1;
-  Im.nbrLimbs = 1;
-  Re.sign = SIGN_POSITIVE; 
-  Im.sign = SIGN_POSITIVE;
-  if (BigIntIsZero(&ReMod) && BigIntIsZero(&ImMod))
+  common.gaussian.Re.limbs[0].x = 1;
+  common.gaussian.Im.limbs[0].x = 0;
+  common.gaussian.Re.nbrLimbs = 1;
+  common.gaussian.Im.nbrLimbs = 1;
+  common.gaussian.Re.sign = SIGN_POSITIVE;
+  common.gaussian.Im.sign = SIGN_POSITIVE;
+  if (BigIntIsZero(&common.gaussian.ReMod) && BigIntIsZero(&common.gaussian.ImMod))
   {   /* Modulus is zero */
-    (void)ComputePower(&ReBase, &ReExp, &ImBase, &ImExp);
-    CopyBigInt(&curStackRe, &ReBase);
-    CopyBigInt(&curStackIm, &ImBase);
+    (void)ComputePower(&common.gaussian.ReBase, &common.gaussian.ReExp,
+                       &common.gaussian.ImBase, &common.gaussian.ImExp);
+    CopyBigInt(&common.gaussian.curStackRe, &common.gaussian.ReBase);
+    CopyBigInt(&common.gaussian.curStackIm, &common.gaussian.ImBase);
   }
   else
   {                            /* Modulus is not zero */
-    (void)BigIntMultiply(&ReMod, &ReMod, &ReTmp);
-    (void)BigIntMultiply(&ImMod, &ImMod, &ImTmp);
-    BigIntAdd(&ReTmp, &ImTmp, &norm);
-    for (int index = ReExp.nbrLimbs - 1; index >= 0; index--)
+    (void)BigIntMultiply(&common.gaussian.ReMod, &common.gaussian.ReMod, &common.gaussian.ReTmp);
+    (void)BigIntMultiply(&common.gaussian.ImMod, &common.gaussian.ImMod, &common.gaussian.ImTmp);
+    BigIntAdd(&common.gaussian.ReTmp, &common.gaussian.ImTmp, &common.gaussian.norm);
+    for (int index = common.gaussian.ReExp.nbrLimbs - 1; index >= 0; index--)
     {
-      int groupExp = ReExp.limbs[index].x;
+      int groupExp = common.gaussian.ReExp.limbs[index].x;
       for (unsigned int mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
       {
         // Compute Re + i*Im as (Re + i*Im)^2
-        (void)BigIntMultiply(&Re, &Re, &ReTmp);
-        (void)BigIntMultiply(&Im, &Im, &ImTmp);
-        BigIntSubt(&ReTmp, &ImTmp, &ReTmp);
-        (void)BigIntMultiply(&Re, &Im, &ImTmp);
-        BigIntAdd(&ImTmp, &ImTmp, &Im);
-        CopyBigInt(&Re, &ReTmp);
+        (void)BigIntMultiply(&common.gaussian.Re, &common.gaussian.Re, &common.gaussian.ReTmp);
+        (void)BigIntMultiply(&common.gaussian.Im, &common.gaussian.Im, &common.gaussian.ImTmp);
+        BigIntSubt(&common.gaussian.ReTmp, &common.gaussian.ImTmp, &common.gaussian.ReTmp);
+        (void)BigIntMultiply(&common.gaussian.Re, &common.gaussian.Im, &common.gaussian.ImTmp);
+        BigIntAdd(&common.gaussian.ImTmp, &common.gaussian.ImTmp, &common.gaussian.Im);
+        CopyBigInt(&common.gaussian.Re, &common.gaussian.ReTmp);
         // Replace (Re + i*Im) by the remainder of
         // (ReTmp + i*ImTmp) / (ReMod + i*ImMod)
         // ReTmp and ImTmp are used as temporary values.
-        GetRemainder(&norm, &Re, &Im, &ReMod, &ImMod, &ReTmp, &ImTmp);
+        GetRemainder(&common.gaussian.norm, &common.gaussian.Re, &common.gaussian.Im, &common.gaussian.ReMod,
+                     &common.gaussian.ImMod, &common.gaussian.ReTmp, &common.gaussian.ImTmp);
         if (((unsigned int)groupExp & mask) != 0U)
         {
           // Compute Re + i*Im as (Re + i*Im)*(ReBase + i*ImBase)
-          (void)BigIntMultiply(&ReBase, &Re, &ReTmp);
-          (void)BigIntMultiply(&ImBase, &Im, &ImTmp);
-          BigIntSubt(&ReTmp, &ImTmp, &ReTmp);
-          (void)BigIntMultiply(&ImBase, &Re, &ImTmp);
-          (void)BigIntMultiply(&ReBase, &Im, &Re);
-          BigIntAdd(&Re, &ImTmp, &Im);
-          CopyBigInt(&Re, &ReTmp);
+          (void)BigIntMultiply(&common.gaussian.ReBase, &common.gaussian.Re, &common.gaussian.ReTmp);
+          (void)BigIntMultiply(&common.gaussian.ImBase, &common.gaussian.Im, &common.gaussian.ImTmp);
+          BigIntSubt(&common.gaussian.ReTmp, &common.gaussian.ImTmp, &common.gaussian.ReTmp);
+          (void)BigIntMultiply(&common.gaussian.ImBase, &common.gaussian.Re, &common.gaussian.ImTmp);
+          (void)BigIntMultiply(&common.gaussian.ReBase, &common.gaussian.Im, &common.gaussian.Re);
+          BigIntAdd(&common.gaussian.Re, &common.gaussian.ImTmp, &common.gaussian.Im);
+          CopyBigInt(&common.gaussian.Re, &common.gaussian.ReTmp);
           // Replace (Re + i*Im) by the remainder of
           // (ReTmp + i*ImTmp) / (ReMod + i*ImMod)
           // ReTmp and ImTmp are used as temporary values.
-          GetRemainder(&norm, &Re, &Im, &ReMod, &ImMod, &ReTmp, &ImTmp);
+          GetRemainder(&common.gaussian.norm, &common.gaussian.Re, &common.gaussian.Im,
+            &common.gaussian.ReMod, &common.gaussian.ImMod, &common.gaussian.ReTmp, &common.gaussian.ImTmp);
         }
       }
     }
-    (void)Modulo(&Re, &Im, &ReMod, &ImMod, Result);
-    CopyBigInt(&curStackRe, &Result[0]);
-    CopyBigInt(&curStackIm, &Result[1]);
+    (void)Modulo(&common.gaussian.Re, &common.gaussian.Im, &common.gaussian.ReMod,
+                 &common.gaussian.ImMod, common.gaussian.Result);
+    CopyBigInt(&common.gaussian.curStackRe, &common.gaussian.Result[0]);
+    CopyBigInt(&common.gaussian.curStackIm, &common.gaussian.Result[1]);
     return EXPR_OK;
   }
   return EXPR_OK;
@@ -878,14 +863,14 @@ static enum eExprErr ComputeModPow(void)
 
 static enum eExprErr ComputeModInv(void)
 {
-  enum eExprErr retcode = ModInv(&curStackRe, &curStackIm,
-    &curStack2Re, &curStack2Im, Result);
+  enum eExprErr retcode = ModInv(&common.gaussian.curStackRe, &common.gaussian.curStackIm,
+    &common.gaussian.curStack2Re, &common.gaussian.curStack2Im, common.gaussian.Result);
   if (retcode != EXPR_OK)
   {
     return retcode;
   }
-  CopyBigInt(&curStackRe, &Result[0]);
-  CopyBigInt(&curStackIm, &Result[1]);
+  CopyBigInt(&common.gaussian.curStackRe, &common.gaussian.Result[0]);
+  CopyBigInt(&common.gaussian.curStackIm, &common.gaussian.Result[1]);
   return EXPR_OK;
 }
 
@@ -893,92 +878,82 @@ static enum eExprErr ModInv(const BigInteger *RealNbr, const BigInteger *ImagNbr
                   const BigInteger *RealMod, const BigInteger *ImagMod,
                   BigInteger *result)
 {
-  static BigInteger ReG0;
-  static BigInteger ReG1;
-  static BigInteger ImG0;
-  static BigInteger ImG1;
-  static BigInteger ReU0;
-  static BigInteger ReU1;
-  static BigInteger ImU0;
-  static BigInteger ImU1;
-  static BigInteger Re;
-  static BigInteger Im;
-  static BigInteger Tmp;
-
   if (BigIntIsZero(RealMod) && BigIntIsZero(ImagMod))
   {          // Argument is zero.
     return EXPR_INVALID_PARAM;
   }
-  CopyBigInt(&ReG0, RealNbr);
-  CopyBigInt(&ImG0, ImagNbr);
-  CopyBigInt(&ReG1, RealMod);
-  CopyBigInt(&ImG1, ImagMod);
+  CopyBigInt(&common.gaussian.ReG0, RealNbr);
+  CopyBigInt(&common.gaussian.ImG0, ImagNbr);
+  CopyBigInt(&common.gaussian.ReG1, RealMod);
+  CopyBigInt(&common.gaussian.ImG1, ImagMod);
    // Initialize U0 <- 1, U1 <- 0.
-  ReU0.limbs[0].x = 1;
-  ReU0.nbrLimbs = 1;
-  ReU0.sign = SIGN_POSITIVE;
-  ReU1.limbs[0].x = 0; 
-  ImU0.limbs[0].x = 0; 
-  ImU1.limbs[0].x = 0;
-  ReU1.nbrLimbs = 1; 
-  ImU0.nbrLimbs = 1; 
-  ImU1.nbrLimbs = 1;
-  ReU1.sign = SIGN_POSITIVE; 
-  ImU0.sign = SIGN_POSITIVE; 
-  ImU1.sign = SIGN_POSITIVE;
-  while (!BigIntIsZero(&ReG1) || !BigIntIsZero(&ImG1))
+  common.gaussian.ReU0.limbs[0].x = 1;
+  common.gaussian.ReU0.nbrLimbs = 1;
+  common.gaussian.ReU0.sign = SIGN_POSITIVE;
+  common.gaussian.ReU1.limbs[0].x = 0;
+  common.gaussian.ImU0.limbs[0].x = 0;
+  common.gaussian.ImU1.limbs[0].x = 0;
+  common.gaussian.ReU1.nbrLimbs = 1;
+  common.gaussian.ImU0.nbrLimbs = 1;
+  common.gaussian.ImU1.nbrLimbs = 1;
+  common.gaussian.ReU1.sign = SIGN_POSITIVE;
+  common.gaussian.ImU0.sign = SIGN_POSITIVE;
+  common.gaussian.ImU1.sign = SIGN_POSITIVE;
+  while (!BigIntIsZero(&common.gaussian.ReG1) || !BigIntIsZero(&common.gaussian.ImG1))
   {            // G1 is not zero.
-    (void)BigIntMultiply(&ReG1, &ReG1, &Re);
-    (void)BigIntMultiply(&ImG1, &ImG1, &Im);
-    BigIntAdd(&Re, &Im, &norm);
+    (void)BigIntMultiply(&common.gaussian.ReG1, &common.gaussian.ReG1, &common.gaussian.Re);
+    (void)BigIntMultiply(&common.gaussian.ImG1, &common.gaussian.ImG1, &common.gaussian.Im);
+    BigIntAdd(&common.gaussian.Re, &common.gaussian.Im, &common.gaussian.norm);
     // Replace G0 by the remainder of G0/G1.
-    GetRemainder(&norm, &ReG0, &ImG0, &ReG1, &ImG1, &Re, &Im);
+    GetRemainder(&common.gaussian.norm, &common.gaussian.ReG0, &common.gaussian.ImG0, &common.gaussian.ReG1,
+      &common.gaussian.ImG1, &common.gaussian.Re, &common.gaussian.Im);
     // Exchange G0 and G1.
-    CopyBigInt(&Tmp, &ReG0);
-    CopyBigInt(&ReG0, &ReG1);
-    CopyBigInt(&ReG1, &Tmp);
-    CopyBigInt(&Tmp, &ImG0);
-    CopyBigInt(&ImG0, &ImG1);
-    CopyBigInt(&ImG1, &Tmp);
-    (void)BigIntMultiply(&Re, &ReU1, &Tmp);
-    BigIntSubt(&ReU0, &Tmp, &ReU0);
-    (void)BigIntMultiply(&Im, &ImU1, &Tmp);
-    BigIntAdd(&ReU0, &Tmp, &ReU0);
-    (void)BigIntMultiply(&Im, &ReU1, &Tmp);
-    BigIntSubt(&ImU0, &Tmp, &ImU0);
-    (void)BigIntMultiply(&Re, &ImU1, &Tmp);
-    BigIntSubt(&ImU0, &Tmp, &ImU0);
+    CopyBigInt(&common.gaussian.Tmp, &common.gaussian.ReG0);
+    CopyBigInt(&common.gaussian.ReG0, &common.gaussian.ReG1);
+    CopyBigInt(&common.gaussian.ReG1, &common.gaussian.Tmp);
+    CopyBigInt(&common.gaussian.Tmp, &common.gaussian.ImG0);
+    CopyBigInt(&common.gaussian.ImG0, &common.gaussian.ImG1);
+    CopyBigInt(&common.gaussian.ImG1, &common.gaussian.Tmp);
+    (void)BigIntMultiply(&common.gaussian.Re, &common.gaussian.ReU1, &common.gaussian.Tmp);
+    BigIntSubt(&common.gaussian.ReU0, &common.gaussian.Tmp, &common.gaussian.ReU0);
+    (void)BigIntMultiply(&common.gaussian.Im, &common.gaussian.ImU1, &common.gaussian.Tmp);
+    BigIntAdd(&common.gaussian.ReU0, &common.gaussian.Tmp, &common.gaussian.ReU0);
+    (void)BigIntMultiply(&common.gaussian.Im, &common.gaussian.ReU1, &common.gaussian.Tmp);
+    BigIntSubt(&common.gaussian.ImU0, &common.gaussian.Tmp, &common.gaussian.ImU0);
+    (void)BigIntMultiply(&common.gaussian.Re, &common.gaussian.ImU1, &common.gaussian.Tmp);
+    BigIntSubt(&common.gaussian.ImU0, &common.gaussian.Tmp, &common.gaussian.ImU0);
     // Exchange U0 and U1.
-    CopyBigInt(&Tmp, &ReU0);
-    CopyBigInt(&ReU0, &ReU1);
-    CopyBigInt(&ReU1, &Tmp);
-    CopyBigInt(&Tmp, &ImU0);
-    CopyBigInt(&ImU0, &ImU1);
-    CopyBigInt(&ImU1, &Tmp);
+    CopyBigInt(&common.gaussian.Tmp, &common.gaussian.ReU0);
+    CopyBigInt(&common.gaussian.ReU0, &common.gaussian.ReU1);
+    CopyBigInt(&common.gaussian.ReU1, &common.gaussian.Tmp);
+    CopyBigInt(&common.gaussian.Tmp, &common.gaussian.ImU0);
+    CopyBigInt(&common.gaussian.ImU0, &common.gaussian.ImU1);
+    CopyBigInt(&common.gaussian.ImU1, &common.gaussian.Tmp);
   }
 
   for (;;)
   {
-    CopyBigInt(&Tmp, &ImG0);
-    Tmp.sign = SIGN_POSITIVE;   // Tmp <- abs(Tmp)
-    BigIntSubt(&ReG0, &Tmp, &Tmp);
-    if (Tmp.sign == SIGN_POSITIVE)
+    CopyBigInt(&common.gaussian.Tmp, &common.gaussian.ImG0);
+    common.gaussian.Tmp.sign = SIGN_POSITIVE;   // Tmp <- abs(Tmp)
+    BigIntSubt(&common.gaussian.ReG0, &common.gaussian.Tmp, &common.gaussian.Tmp);
+    if (common.gaussian.Tmp.sign == SIGN_POSITIVE)
     {
       break;
     }
       // Multiply G0 and U0 by i.
-    CopyBigInt(&Tmp, &ReG0);
-    BigIntNegate(&ImG0, &ReG0);
-    CopyBigInt(&ImG0, &Tmp);
-    CopyBigInt(&Tmp, &ReU0);
-    BigIntNegate(&ImU0, &ReU0);
-    CopyBigInt(&ImU0, &Tmp);
+    CopyBigInt(&common.gaussian.Tmp, &common.gaussian.ReG0);
+    BigIntNegate(&common.gaussian.ImG0, &common.gaussian.ReG0);
+    CopyBigInt(&common.gaussian.ImG0, &common.gaussian.Tmp);
+    CopyBigInt(&common.gaussian.Tmp, &common.gaussian.ReU0);
+    BigIntNegate(&common.gaussian.ImU0, &common.gaussian.ReU0);
+    CopyBigInt(&common.gaussian.ImU0, &common.gaussian.Tmp);
   }
-  if ((ReG0.nbrLimbs != 1) || (ReG0.limbs[0].x != 1) || !BigIntIsZero(&ImG0))
+  if ((common.gaussian.ReG0.nbrLimbs != 1) || (common.gaussian.ReG0.limbs[0].x != 1) ||
+      !BigIntIsZero(&common.gaussian.ImG0))
   {         // G0 is not 1.
     return EXPR_INVALID_PARAM;
   }
-  return Modulo(&ReU0, &ImU0, RealMod, ImagMod, result);
+  return Modulo(&common.gaussian.ReU0, &common.gaussian.ImU0, RealMod, ImagMod, result);
 }
 
 static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
@@ -1003,11 +978,11 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
   ImMin.nbrLimbs = 1;
   ReMin.sign = SIGN_POSITIVE; 
   ImMin.sign = SIGN_POSITIVE;
-  (void)BigIntMultiply(ReDen, ReDen, &norm);
+  (void)BigIntMultiply(ReDen, ReDen, &common.gaussian.norm);
   (void)BigIntMultiply(ImDen, ImDen, &Tmp);
-  BigIntAdd(&norm, &Tmp, &norm);
+  BigIntAdd(&common.gaussian.norm, &Tmp, &common.gaussian.norm);
   // Replace Num by the remainder of Num/Den.
-  GetRemainder(&norm, ReNum, ImNum, ReDen, ImDen, &Re, &Im);
+  GetRemainder(&common.gaussian.norm, ReNum, ImNum, ReDen, ImDen, &Re, &Im);
   // Initialize normmin to -1.
   normmin.limbs[0].x = 1;
   normmin.nbrLimbs = 1;
@@ -1065,13 +1040,13 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
     }
     if (Re.sign == SIGN_POSITIVE)
     {
-      (void)BigIntMultiply(&Re, &Re, &norm);
+      (void)BigIntMultiply(&Re, &Re, &common.gaussian.norm);
       (void)BigIntMultiply(&Im, &Im, &Tmp);
-      BigIntAdd(&norm, &Tmp, &norm);
-      BigIntSubt(&norm, &normmin, &Tmp);
+      BigIntAdd(&common.gaussian.norm, &Tmp, &common.gaussian.norm);
+      BigIntSubt(&common.gaussian.norm, &normmin, &Tmp);
       if ((normmin.sign == SIGN_NEGATIVE) || (Tmp.sign == SIGN_NEGATIVE))
       {
-        CopyBigInt(&normmin, &norm);
+        CopyBigInt(&normmin, &common.gaussian.norm);
         CopyBigInt(&ReMin, &Re);
         CopyBigInt(&ImMin, &Im);
       }
@@ -1086,49 +1061,55 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
 // curStackRe + i*curStackIm over curStack2Re + i*curStack2Im
 static enum eExprErr GaussianDivide(void)
 {
-  enum eExprErr retcode = BigIntMultiply(&curStack2Re, &curStack2Re, &curStack3Re);
+  enum eExprErr retcode = BigIntMultiply(&common.gaussian.curStack2Re, &common.gaussian.curStack2Re, 
+    &common.gaussian.curStack3Re);
   if (retcode != EXPR_OK)
   {
     return retcode;
   }
-  retcode = BigIntMultiply(&curStack2Im, &curStack2Im, &curStack3Im);
+  retcode = BigIntMultiply(&common.gaussian.curStack2Im, &common.gaussian.curStack2Im,
+    &common.gaussian.curStack3Im);
   if (retcode != EXPR_OK)
   {
     return retcode;
   }
-  BigIntAdd(&curStack3Re, &curStack3Im, &norm);       // norm <- re2^2 + im2^2.
-  if (BigIntIsZero(&norm))
+  BigIntAdd(&common.gaussian.curStack3Re, &common.gaussian.curStack3Im, &common.gaussian.norm);       // norm <- re2^2 + im2^2.
+  if (BigIntIsZero(&common.gaussian.norm))
   {              // norm is zero.
     return EXPR_INTERM_TOO_HIGH;
   }
-  retcode = BigIntMultiply(&curStackRe, &curStack2Re, &curStack3Re);
+  retcode = BigIntMultiply(&common.gaussian.curStackRe, &common.gaussian.curStack2Re, 
+    &common.gaussian.curStack3Re);
   if (retcode != EXPR_OK)
   {
     return retcode;
   }
-  retcode = BigIntMultiply(&curStackIm, &curStack2Im, &curStack3Im);
+  retcode = BigIntMultiply(&common.gaussian.curStackIm, &common.gaussian.curStack2Im,
+    &common.gaussian.curStack3Im);
   if (retcode != EXPR_OK)
   {
     return retcode;
   }
-  BigIntAdd(&curStack3Re, &curStack3Im, &curTmp);    // Re <- re1*re2 + im1*im2.
-  retcode = BigIntMultiply(&curStackIm, &curStack2Re, &curStack3Re);
+  BigIntAdd(&common.gaussian.curStack3Re, &common.gaussian.curStack3Im, &common.gaussian.curTmp);    // Re <- re1*re2 + im1*im2.
+  retcode = BigIntMultiply(&common.gaussian.curStackIm, &common.gaussian.curStack2Re,
+    &common.gaussian.curStack3Re);
   if (retcode != EXPR_OK)
   {
     return retcode;
   }
-  retcode = BigIntMultiply(&curStackRe, &curStack2Im, &curStack3Im);
+  retcode = BigIntMultiply(&common.gaussian.curStackRe, &common.gaussian.curStack2Im,
+    &common.gaussian.curStack3Im);
   if (retcode != EXPR_OK)
   {
     return retcode;
   }
-  BigIntSubt(&curStack3Re, &curStack3Im, &curStack3Im);   // Im <- im1*re2 - re1*im2.
-  retcode = BigIntDivide(&curTmp, &norm, &curStackRe);
+  BigIntSubt(&common.gaussian.curStack3Re, &common.gaussian.curStack3Im, &common.gaussian.curStack3Im);   // Im <- im1*re2 - re1*im2.
+  retcode = BigIntDivide(&common.gaussian.curTmp, &common.gaussian.norm, &common.gaussian.curStackRe);
   if (retcode != EXPR_OK)
   {
     return retcode;
   }
-  retcode = BigIntDivide(&curStack3Im, &norm, &curStackIm);
+  retcode = BigIntDivide(&common.gaussian.curStack3Im, &common.gaussian.norm, &common.gaussian.curStackIm);
   if (retcode != EXPR_OK)
   {
     return retcode;
@@ -1141,28 +1122,30 @@ static enum eExprErr GaussianDivide(void)
 static enum eExprErr GaussianMultiply(void)
 {
   // Re <- re1*re2 - im1*im2.
-  enum eExprErr retcode = BigIntMultiply(&curStackRe, &curStack2Re, &curStack3Re);
+  enum eExprErr retcode = BigIntMultiply(&common.gaussian.curStackRe, &common.gaussian.curStack2Re,
+    &common.gaussian.curStack3Re);
   if (retcode != EXPR_OK)
   {
     return retcode;
   }
-  retcode = BigIntMultiply(&curStackIm, &curStack2Im, &curStack3Im);
+  retcode = BigIntMultiply(&common.gaussian.curStackIm, &common.gaussian.curStack2Im,
+    &common.gaussian.curStack3Im);
   if (retcode != EXPR_OK)
   {
     return retcode;
   }
-  BigIntSubt(&curStack3Re, &curStack3Im, &curTmp);   // Save real part of product in temp var.
-  retcode = BigIntMultiply(&curStackIm, &curStack2Re, &curStack3Re); // Im <- im1*re2 + re1*im2.
+  BigIntSubt(&common.gaussian.curStack3Re, &common.gaussian.curStack3Im, &common.gaussian.curTmp);   // Save real part of product in temp var.
+  retcode = BigIntMultiply(&common.gaussian.curStackIm, &common.gaussian.curStack2Re, &common.gaussian.curStack3Re); // Im <- im1*re2 + re1*im2.
   if (retcode != EXPR_OK)
   {
     return retcode;
   }
-  retcode = BigIntMultiply(&curStackRe, &curStack2Im, &curStack3Im);
+  retcode = BigIntMultiply(&common.gaussian.curStackRe, &common.gaussian.curStack2Im, &common.gaussian.curStack3Im);
   if (retcode != EXPR_OK)
   {
     return retcode;
   }
-  BigIntAdd(&curStack3Re, &curStack3Im, &curStackIm);
-  CopyBigInt(&curStackRe, &curTmp);
+  BigIntAdd(&common.gaussian.curStack3Re, &common.gaussian.curStack3Im, &common.gaussian.curStackIm);
+  CopyBigInt(&common.gaussian.curStackRe, &common.gaussian.curTmp);
   return EXPR_OK;
 }

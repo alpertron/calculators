@@ -29,8 +29,11 @@ struct linkedBigInt
 };
 
 void initLinkedBigInt(void);
-void getBigIntegerFromLinked(struct linkedBigInt* pstLinkedBigInt, BigInteger* pBigInt);
+void getBigIntegerFromLinked(const struct linkedBigInt* pstLinkedBigInt, BigInteger* pBigInt);
+void getLimbsFromLinked(const struct linkedBigInt* pstLinkedBigInt, limb* pLimbs);
+void setLinkedLimbs(struct linkedBigInt** ppstLinkedBigInt, const limb* pLimbs);
 void setLinkedBigInteger(struct linkedBigInt** pstLinkedBigInt, const BigInteger* pBigInt);
+void deleteLinkedBigInteger(struct linkedBigInt* pstLinkedBigInt);
 bool linkedBigIntIsZero(const struct linkedBigInt* pstLinkedBigInt);
 bool linkedBigIntIsOne(const struct linkedBigInt* pstLinkedBigInt);
 bool linkedBigIntIsMinusOne(const struct linkedBigInt* pstLinkedBigInt);

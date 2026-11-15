@@ -25,8 +25,7 @@
 #include "expression.h"
 #include "showtime.h"
 #include "copyStr.h"
-
-#define PAREN_STACK_SIZE 100
+#include "commonstruc.h"
 
 static BigInteger ReValue;
 static BigInteger ImValue;
@@ -263,29 +262,25 @@ void GaussianFactorization(void)
 
 static void DivideGaussian(const BigInteger *real, const BigInteger *imag)
 {
-  static BigInteger Tmp;
-  static BigInteger norm;
-  static BigInteger realNum;
-  static BigInteger imagNum;
-  CopyBigInt(&Tmp, real);
-  Tmp.sign = SIGN_POSITIVE;
-  (void)BigIntMultiply(real, real, &norm);
-  (void)BigIntMultiply(imag, imag, &Tmp);
-  BigIntAdd(&norm, &Tmp, &norm);
-  (void)BigIntMultiply(&ReValue, real, &realNum);
-  (void)BigIntMultiply(&ImValue, imag, &Tmp);
-  BigIntAdd(&realNum, &Tmp, &realNum);
-  (void)BigIntMultiply(&ImValue, real, &imagNum);
-  (void)BigIntMultiply(&ReValue, imag, &Tmp);
-  BigIntSubt(&imagNum, &Tmp, &imagNum);
-  (void)BigIntRemainder(&realNum, &norm, &Tmp);
-  if (BigIntIsZero(&Tmp))
+  CopyBigInt(&common.gaussian.divTmp, real);
+  common.gaussian.divTmp.sign = SIGN_POSITIVE;
+  (void)BigIntMultiply(real, real, &common.gaussian.divNorm);
+  (void)BigIntMultiply(imag, imag, &common.gaussian.divTmp);
+  BigIntAdd(&common.gaussian.divNorm, &common.gaussian.divTmp, &common.gaussian.divNorm);
+  (void)BigIntMultiply(&ReValue, real, &common.gaussian.divRealNum);
+  (void)BigIntMultiply(&ImValue, imag, &common.gaussian.divTmp);
+  BigIntAdd(&common.gaussian.divRealNum, &common.gaussian.divTmp, &common.gaussian.divRealNum);
+  (void)BigIntMultiply(&ImValue, real, &common.gaussian.divImagNum);
+  (void)BigIntMultiply(&ReValue, imag, &common.gaussian.divTmp);
+  BigIntSubt(&common.gaussian.divImagNum, &common.gaussian.divTmp, &common.gaussian.divImagNum);
+  (void)BigIntRemainder(&common.gaussian.divRealNum, &common.gaussian.divNorm, &common.gaussian.divTmp);
+  if (BigIntIsZero(&common.gaussian.divTmp))
   {
-    (void)BigIntRemainder(&imagNum, &norm, &Tmp);
-    if (BigIntIsZero(&Tmp))
+    (void)BigIntRemainder(&common.gaussian.divImagNum, &common.gaussian.divNorm, &common.gaussian.divTmp);
+    if (BigIntIsZero(&common.gaussian.divTmp))
     {
-      (void)BigIntDivide(&realNum, &norm, &ReValue);
-      (void)BigIntDivide(&imagNum, &norm, &ImValue);
+      (void)BigIntDivide(&common.gaussian.divRealNum, &common.gaussian.divNorm, &ReValue);
+      (void)BigIntDivide(&common.gaussian.divImagNum, &common.gaussian.divNorm, &ImValue);
       showText("<li>");
       showNumber(real, imag);
       showText("</li>");

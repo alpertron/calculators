@@ -23,34 +23,18 @@
 #include "highlevel.h"
 #include "showtime.h"
 #include "copyStr.h"
-static BigInteger num;
-static BigInteger den;
-static BigInteger delta;
-static BigInteger origNum;
-static BigInteger origDen;
-static BigInteger origDelta;
-static BigInteger Temp;
-static BigInteger bigTmp;
-static BigInteger U1;
-static BigInteger U2;
-static BigInteger U3;
-static BigInteger V1;
-static BigInteger V2;
-static BigInteger V3;
-static BigInteger startPeriodNum;
-static BigInteger startPeriodDen;
-static BigInteger intSqrt;
-static BigInteger integerPart;
-static char *ptrOutput;
-static void ShowRational(BigInteger *pNum, BigInteger *pDen);
-static bool isShowingConvergents;
-static int periodIndex;
-static int coefIndex;
+#include "commonstruc.h"
+
+#ifndef __ANDROID__
+union uCommon common;
+#endif
+
 extern bool hexadecimal;
+static void ShowRational(BigInteger* pNum, BigInteger* pDen);
 
 static void showText(const char *text)
 {
-  copyStr(&ptrOutput, text);
+  copyStr(&common.misc.ptrOutput, text);
 }
 
 static void BigInteger2Out(char** ppDecimal, const BigInteger* pBigInt, int groupLength)
@@ -67,17 +51,17 @@ static void BigInteger2Out(char** ppDecimal, const BigInteger* pBigInt, int grou
 
 static void ShowConvergents(int coeffIndex, const BigInteger *coeff)
 {
-  CopyBigInt(&U3, &U2);                   // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
-  CopyBigInt(&U2, &U1);
-  (void)BigIntMultiply(coeff, &U2, &U1);
-  BigIntAdd(&U1, &U3, &U1);
-  CopyBigInt(&V3, &V2);                   // V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
-  CopyBigInt(&V2, &V1);
-  (void)BigIntMultiply(coeff, &V2, &V1);
-  BigIntAdd(&V1, &V3, &V1);
-  formatString(&ptrOutput, "A[$1d]/B[$1d] = $2b/$3b, a[$1d] = $4b<br>", 
-    coeffIndex, &U1, &V1, coeff);
-  *ptrOutput = 0;
+  CopyBigInt(&common.misc.U3, &common.misc.U2);                   // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
+  CopyBigInt(&common.misc.U2, &common.misc.U1);
+  (void)BigIntMultiply(coeff, &common.misc.U2, &common.misc.U1);
+  BigIntAdd(&common.misc.U1, &common.misc.U3, &common.misc.U1);
+  CopyBigInt(&common.misc.V3, &common.misc.V2);                   // V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
+  CopyBigInt(&common.misc.V2, &common.misc.V1);
+  (void)BigIntMultiply(coeff, &common.misc.V2, &common.misc.V1);
+  BigIntAdd(&common.misc.V1, &common.misc.V3, &common.misc.V1);
+  formatString(&common.misc.ptrOutput, "A[$1d]/B[$1d] = $2b/$3b, a[$1d] = $4b<br>",
+    coeffIndex, &common.misc.U1, &common.misc.V1, coeff);
+  *common.misc.ptrOutput = 0;
 }
 
 // PQa algorithm for 
@@ -103,44 +87,45 @@ static void PeriodicContinuedFraction(bool isContinuation)
   {
     // Check whether parameters have to be changed.
     // Initialize variables.
-    intToBigInteger(&startPeriodNum, -1);     // Less than zero means outside period.
-    intToBigInteger(&startPeriodDen, -1);
-    coefIndex = 0;
-    periodIndex = 0;
+    intToBigInteger(&common.misc.startPeriodNum, -1);     // Less than zero means outside period.
+    intToBigInteger(&common.misc.startPeriodDen, -1);
+    common.misc.coefIndex = 0;
+    common.misc.periodIndex = 0;
   }
   ended = false;
   do
   {
-    BigIntAdd(&num, &intSqrt, &bigTmp);
-    if (den.sign == SIGN_NEGATIVE)
+    BigIntAdd(&common.misc.num, &common.misc.intSqrt, &common.misc.bigTmp);
+    if (common.misc.den.sign == SIGN_NEGATIVE)
     {   // If denominator is negative, round square root upwards.
-      addbigint(&bigTmp, 1);
+      addbigint(&common.misc.bigTmp, 1);
     }
-    floordiv(&bigTmp, &den, &Temp);         // Temp = Term of continued fraction.
-    if (coefIndex == 0)
+    floordiv(&common.misc.bigTmp, &common.misc.den, &common.misc.Temp);         // Temp = Term of continued fraction.
+    if (common.misc.coefIndex == 0)
     {
-      CopyBigInt(&integerPart, &Temp);
+      CopyBigInt(&common.misc.integerPart, &common.misc.Temp);
     }
-    if (isShowingConvergents)
+    if (common.misc.isShowingConvergents)
     {      // Show convergent checkbox is checked.
-      ShowConvergents(coefIndex, &Temp);
+      ShowConvergents(common.misc.coefIndex, &common.misc.Temp);
     }
     else
     {      // Show convergent checkbox not checked.
-      BigInteger2Out(&ptrOutput, &Temp, groupLen);  // Show continued fraction coefficient.
-      copyStr(&ptrOutput, ((coefIndex == 0) ? " + //" : ", ")); // Show separator.
+      BigInteger2Out(&common.misc.ptrOutput, &common.misc.Temp, groupLen);  // Show continued fraction coefficient.
+      copyStr(&common.misc.ptrOutput, ((common.misc.coefIndex == 0) ? " + //" : ", ")); // Show separator.
     }
-    (void)BigIntMultiply(&Temp, &den, &bigTmp);  // U <- a*V - U
-    BigIntSubt(&bigTmp, &num, &num);
-    (void)BigIntMultiply(&num, &num, &bigTmp);   // V <- (D - U^2)/V
-    BigIntSubt(&delta, &bigTmp, &bigTmp);
-    (void)BigIntDivide(&bigTmp, &den, &Temp);
-    CopyBigInt(&den, &Temp);
-    coefIndex++;
-    if (startPeriodNum.sign == SIGN_POSITIVE)
+    (void)BigIntMultiply(&common.misc.Temp, &common.misc.den, &common.misc.bigTmp);  // U <- a*V - U
+    BigIntSubt(&common.misc.bigTmp, &common.misc.num, &common.misc.num);
+    (void)BigIntMultiply(&common.misc.num, &common.misc.num, &common.misc.bigTmp);   // V <- (D - U^2)/V
+    BigIntSubt(&common.misc.discr, &common.misc.bigTmp, &common.misc.bigTmp);
+    (void)BigIntDivide(&common.misc.bigTmp, &common.misc.den, &common.misc.Temp);
+    CopyBigInt(&common.misc.den, &common.misc.Temp);
+    common.misc.coefIndex++;
+    if (common.misc.startPeriodNum.sign == SIGN_POSITIVE)
     {             // Already inside period.
-      periodIndex++;
-      if (BigIntEqual(&num, &startPeriodNum) && BigIntEqual(&den, &startPeriodDen))
+      common.misc.periodIndex++;
+      if (BigIntEqual(&common.misc.num, &common.misc.startPeriodNum) &&
+        BigIntEqual(&common.misc.den, &common.misc.startPeriodDen))
       {           // New period started.
         ended = true;
         break;    // Go out in this case.
@@ -148,14 +133,14 @@ static void PeriodicContinuedFraction(bool isContinuation)
     }
     else
     {             // Check if periodic part of continued fraction has started.
-      BigIntSubt(&intSqrt, &num, &bigTmp);  // G - U must be >= 0 and < V.
-      if (bigTmp.sign == SIGN_POSITIVE)
+      BigIntSubt(&common.misc.intSqrt, &common.misc.num, &common.misc.bigTmp);  // G - U must be >= 0 and < V.
+      if (common.misc.bigTmp.sign == SIGN_POSITIVE)
       {
-        BigIntSubt(&bigTmp, &den, &bigTmp);
-        if (bigTmp.sign == SIGN_NEGATIVE)
+        BigIntSubt(&common.misc.bigTmp, &common.misc.den, &common.misc.bigTmp);
+        if (common.misc.bigTmp.sign == SIGN_NEGATIVE)
         {                                 // Periodic part of continued fraction started.
-          CopyBigInt(&startPeriodNum, &num);       // Save U and V to check period end.
-          CopyBigInt(&startPeriodDen, &den);
+          CopyBigInt(&common.misc.startPeriodNum, &common.misc.num);       // Save U and V to check period end.
+          CopyBigInt(&common.misc.startPeriodDen, &common.misc.den);
           showText("<span class=\"offscr\">");
           // start periodic part
           showText(LITERAL_START_PERIODIC_PART);
@@ -163,16 +148,16 @@ static void PeriodicContinuedFraction(bool isContinuation)
         }
       }
     }
-    diffPtrs = ptrOutput - &output[0];
+    diffPtrs = common.misc.ptrOutput - &output[0];
   } while ((int)diffPtrs < ((int)sizeof(output) - 30000));
-  if (!isShowingConvergents)
+  if (!common.misc.isShowingConvergents)
   {        // Show convergent checkbox not checked.
-    ptrOutput -= 2;                       // Delete extra comma and space at the end.
+    common.misc.ptrOutput -= 2;                       // Delete extra comma and space at the end.
   }
   if (ended)
   {
     showText("</span>");
-    if (!isShowingConvergents)
+    if (!common.misc.isShowingConvergents)
     {        // Show convergent checkbox not checked.
       showText("//");
     }
@@ -180,15 +165,15 @@ static void PeriodicContinuedFraction(bool isContinuation)
     // where the periodic part is marked in bold
     showText(LITERAL_PERIODIC_PART_IN_BOLD);
     showText("</span>");
-    if (periodIndex > 1)
+    if (common.misc.periodIndex > 1)
     {
       // (the period has $1d coefficients)
-      formatString(&ptrOutput, LITERAL_COEFFICIENTS_IN_PERIOD, periodIndex);
+      formatString(&common.misc.ptrOutput, LITERAL_COEFFICIENTS_IN_PERIOD, common.misc.periodIndex);
     }
   }
   else
   {  // Too many coefficients.
-    if (!isShowingConvergents)
+    if (!common.misc.isShowingConvergents)
     {        // Show convergents checkbox not checked.
       showText(", ... </span>//");
     }
@@ -198,7 +183,7 @@ static void PeriodicContinuedFraction(bool isContinuation)
     }
     showText("<br>");
     // where the periodic part (truncated after $1d coefficients) is marked in bold.
-    formatString(&ptrOutput, LITERAL_TRUNCATED_PERIOD, periodIndex);
+    formatString(&common.misc.ptrOutput, LITERAL_TRUNCATED_PERIOD, common.misc.periodIndex);
     output[0] = '6';         // Show Continue button.
   }
   showText("</p>");
@@ -206,30 +191,31 @@ static void PeriodicContinuedFraction(bool isContinuation)
 
 static void showFooter(void)
 {
-  showElapsedTime(&ptrOutput);
-  copyStr(&ptrOutput, "<p>");
-  showCopyright(&ptrOutput);
-  copyStr(&ptrOutput, "</p>");
+  showElapsedTime(&common.misc.ptrOutput);
+  copyStr(&common.misc.ptrOutput, "<p>");
+  showCopyright(&common.misc.ptrOutput);
+  copyStr(&common.misc.ptrOutput, "</p>");
 }
 
 static void showFormula(void)
 {
-  ptrOutput = output;
+  common.misc.ptrOutput = output;
   // Show formula.
   // the fraction whose numerator is
   // and the denominator is
-  formatString(&ptrOutput, "2<p><var>x</var> = <span class=\"fraction\">"
+  formatString(&common.misc.ptrOutput, "2<p><var>x</var> = <span class=\"fraction\">"
     "<span class=\"offscr\">$1s </span><span class=\"fup\">$2b" // Numerator
     " + <span class=\"sqrtout\"><span class=\"sqrtin\">$3b"     // Radicand
     "</span></span></span><span class=\"bar\"> </span><span class=\"fdn\">"
     "<span class=\"offscr\">$4s</span>$5b</span></span></p>",   // Denominator
-    LITERAL_SHOW_FORMULA_NUM, &origNum, &origDelta, LITERAL_SHOW_FORMULA_DEN, &origDen);
+    LITERAL_SHOW_FORMULA_NUM, &common.misc.origNum, &common.misc.origDelta, LITERAL_SHOW_FORMULA_DEN,
+    &common.misc.origDen);
 }
 
 static void showX(void)
 {
   showText("<p>");
-  if (!isShowingConvergents)
+  if (!common.misc.isShowingConvergents)
   {        // Show convergent checkbox not checked.
     showText("<span class = \"offscr\">");
     // The expansion in continued fraction of
@@ -240,60 +226,61 @@ static void showX(void)
 
 static void ContFrac(void)
 {
-  CopyBigInt(&origNum, &num);
-  CopyBigInt(&origDen, &den);
-  CopyBigInt(&origDelta, &delta);
+  CopyBigInt(&common.misc.origNum, &common.misc.num);
+  CopyBigInt(&common.misc.origDen, &common.misc.den);
+  CopyBigInt(&common.misc.origDelta, &common.misc.discr);
   showFormula();
   // Validate input.
-  if (BigIntIsZero(&den))
+  if (BigIntIsZero(&common.misc.den))
   {
     // Error: The denominator is zero.
-    formatString(&ptrOutput, "<p>$1s</p>", LITERAL_ZERO_DENOMINATOR);
+    formatString(&common.misc.ptrOutput, "<p>$1s</p>", LITERAL_ZERO_DENOMINATOR);
     return;
   }
-  if (delta.sign==SIGN_NEGATIVE)
+  if (common.misc.discr.sign==SIGN_NEGATIVE)
   {   /* Complex number */
     // The number is not real, so it does not have continued fraction expansion.
-    formatString(&ptrOutput, "<p>$1s</p>", LITERAL_NUMBER_NOT_REAL);
+    formatString(&common.misc.ptrOutput, "<p>$1s</p>", LITERAL_NUMBER_NOT_REAL);
     return;
   }
   showX();
-  intToBigInteger(&U1, 1);
-  intToBigInteger(&U2, 0);
-  intToBigInteger(&V1, 0);
-  intToBigInteger(&V2, 1);
-  if (BigIntIsZero(&delta))
+  intToBigInteger(&common.misc.U1, 1);
+  intToBigInteger(&common.misc.U2, 0);
+  intToBigInteger(&common.misc.V1, 0);
+  intToBigInteger(&common.misc.V2, 1);
+  if (BigIntIsZero(&common.misc.discr))
   {   /* Rational number */
-    ShowRational(&num, &den);
+    ShowRational(&common.misc.num, &common.misc.den);
     return;
   }
-  (void)BigIntMultiply(&num, &num, &Temp);
-  BigIntSubt(&delta, &Temp, &Temp);  // Temp <- delta - num^2.
-  (void)BigIntRemainder(&Temp, &den, &Temp);
-  if (!BigIntIsZero(&Temp))
-  {            // If delta - num^2 is not multiple of den...
+  (void)BigIntMultiply(&common.misc.num, &common.misc.num, &common.misc.Temp);
+  BigIntSubt(&common.misc.discr, &common.misc.Temp, &common.misc.Temp);  // Temp <- discr - num^2.
+  (void)BigIntRemainder(&common.misc.Temp, &common.misc.den, &common.misc.Temp);
+  if (!BigIntIsZero(&common.misc.Temp))
+  {            // If discr - num^2 is not multiple of den...
     enum eSign sign;
-    (void)BigIntMultiply(&delta, &den, &delta);
-    (void)BigIntMultiply(&delta, &den, &delta);   // delta <- delta*den^2
-    sign = den.sign;
-    (void)BigIntMultiply(&num, &den, &num);       // num <- num*den
-    (void)BigIntMultiply(&den, &den, &den);       // den <- den*den
+    (void)BigIntMultiply(&common.misc.discr, &common.misc.den, &common.misc.discr);
+    (void)BigIntMultiply(&common.misc.discr, &common.misc.den, &common.misc.discr);   // discr <- discr*den^2
+    sign = common.misc.den.sign;
+    (void)BigIntMultiply(&common.misc.num, &common.misc.den, &common.misc.num);       // num <- num*den
+    (void)BigIntMultiply(&common.misc.den, &common.misc.den, &common.misc.den);       // den <- den*den
     if (sign == SIGN_NEGATIVE)
     {
-      BigIntNegate(&num, &num);             // Change sign to both
-      BigIntNegate(&den, &den);             // numerator and denominator.
+      BigIntNegate(&common.misc.num, &common.misc.num);             // Change sign to both
+      BigIntNegate(&common.misc.den, &common.misc.den);             // numerator and denominator.
     }
   }
-  squareRoot(delta.limbs, intSqrt.limbs, delta.nbrLimbs, &intSqrt.nbrLimbs);
-  intSqrt.sign = SIGN_POSITIVE;
-  (void)BigIntMultiply(&intSqrt, &intSqrt, &Temp);
-  if (TestBigNbrEqual(&Temp, &delta) != 0)
-  {     // delta is a perfect square, so number is rational.
-    BigIntAdd(&num, &intSqrt, &Temp);
-    ShowRational(&Temp, &den);
+  squareRoot(common.misc.discr.limbs, common.misc.intSqrt.limbs,
+    common.misc.discr.nbrLimbs, &common.misc.intSqrt.nbrLimbs);
+  common.misc.intSqrt.sign = SIGN_POSITIVE;
+  (void)BigIntMultiply(&common.misc.intSqrt, &common.misc.intSqrt, &common.misc.Temp);
+  if (TestBigNbrEqual(&common.misc.Temp, &common.misc.discr) != 0)
+  {     // discr is a perfect square, so number is rational.
+    BigIntAdd(&common.misc.num, &common.misc.intSqrt, &common.misc.Temp);
+    ShowRational(&common.misc.Temp, &common.misc.den);
   }
   else
-  {     // delta is not a perfect square. Periodic continued fraction.
+  {     // discr is not a perfect square. Periodic continued fraction.
     PeriodicContinuedFraction(false);   // Start showing periodic continued fraction.
   }
   showFooter();
@@ -309,15 +296,15 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
   (void)BigIntDivide(pNum, &Tmp, pNum);
   (void)BigIntDivide(pDen, &Tmp, pDen);
   floordiv(pNum, pDen, &Tmp);
-  (void)BigIntMultiply(pDen, &Tmp, &bigTmp);
-  BigIntSubt(pNum, &bigTmp, pNum);   // Reduce numerator.
-  if (isShowingConvergents)
+  (void)BigIntMultiply(pDen, &Tmp, &common.misc.bigTmp);
+  BigIntSubt(pNum, &common.misc.bigTmp, pNum);   // Reduce numerator.
+  if (common.misc.isShowingConvergents)
   {      // Show convergent checkbox is checked.
     ShowConvergents(coeffIndex, &Tmp);
   }
   else
   {
-    BigInteger2Out(&ptrOutput, &Tmp, groupLen);  // Show convergent.
+    BigInteger2Out(&common.misc.ptrOutput, &Tmp, groupLen);  // Show convergent.
   }
   (void)BigIntRemainder(pNum, pDen, pNum);
   sep = " + //";
@@ -327,23 +314,23 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
     if (!BigIntIsZero(pDen))
     {    // Denominator greater than zero.
       floordiv(pDen, pNum, &Tmp);
-      if (isShowingConvergents)
+      if (common.misc.isShowingConvergents)
       {      // Show convergent checkbox is checked.
         ShowConvergents(coeffIndex, &Tmp);
       }
       else
       {
         showText(sep);
-        BigInteger2Out(&ptrOutput, &Tmp, groupLen);  // Show convergent.
+        BigInteger2Out(&common.misc.ptrOutput, &Tmp, groupLen);  // Show convergent.
       }
       sep = ", ";
     }
-    (void)BigIntMultiply(pNum, &Tmp, &bigTmp);
-    BigIntSubt(pDen, &bigTmp, &Tmp);
+    (void)BigIntMultiply(pNum, &Tmp, &common.misc.bigTmp);
+    BigIntSubt(pDen, &common.misc.bigTmp, &Tmp);
     CopyBigInt(pDen, pNum);
     CopyBigInt(pNum, &Tmp);
   }
-  if (!isShowingConvergents && (sep[0] == ','))
+  if (!common.misc.isShowingConvergents && (sep[0] == ','))
   {         // Inside continued fraction. Close it.
     showText("//");
   }
@@ -355,18 +342,18 @@ static void getNumber(BigInteger *pNumber, const char *title, char** pptrInput)
   rc = ComputeExpression(*pptrInput, pNumber);
   if (rc != EXPR_OK)
   {
-    if (ptrOutput == output)
+    if (common.misc.ptrOutput == output)
     {
-      *ptrOutput = '2';
-      ptrOutput++;
+      *common.misc.ptrOutput = '2';
+      common.misc.ptrOutput++;
     }
     showText("<p>");
     showText(title);
-    *ptrOutput = ':';
-    ptrOutput++;
-    *ptrOutput = ' ';
-    ptrOutput++;
-    textError(&ptrOutput, rc);
+    *common.misc.ptrOutput = ':';
+    common.misc.ptrOutput++;
+    *common.misc.ptrOutput = ' ';
+    common.misc.ptrOutput++;
+    textError(&common.misc.ptrOutput, rc);
     showText("</p>");
   }
   *pptrInput += strlen(*pptrInput) + 1U;  // Skip terminator.
@@ -378,30 +365,30 @@ void contfracText(char *input, int GroupLen, bool hex, bool converg)
   if (input == NULL)
   {
     showFormula();
-    if (!isShowingConvergents)
+    if (!common.misc.isShowingConvergents)
     {        // Show convergents checkbox not checked.
       showX();
-      BigInteger2Out(&ptrOutput, &integerPart, groupLen);  // Show integer part.
-      copyStr(&ptrOutput, " + // ");       // Show separator.
+      BigInteger2Out(&common.misc.ptrOutput, &common.misc.integerPart, groupLen);  // Show integer part.
+      copyStr(&common.misc.ptrOutput, " + // ");       // Show separator.
     }
     showText("<span class=\"offscr\">");   // Indicate start of periodic part.
     // start periodic part
     showText(LITERAL_START_PERIODIC_PART);
     showText("</span><span class=\"bold\">");
-    copyStr(&ptrOutput, "...");            // Show continuation.
+    copyStr(&common.misc.ptrOutput, "...");            // Show continuation.
     PeriodicContinuedFraction(true);
     showFooter();
     return;
   }
   char *ptrInput = input;
   groupLen = GroupLen;
-  ptrOutput = output;
-  isShowingConvergents = converg;
+  common.misc.ptrOutput = output;
+  common.misc.isShowingConvergents = converg;
   hexadecimal = hex;
-  getNumber(&num, LITERAL_NUMERATOR, &ptrInput);    // Numerator
-  getNumber(&delta, LITERAL_ARGUMENT_SQROOT, &ptrInput);  // Square root argument
-  getNumber(&den, LITERAL_DENOMINATOR, &ptrInput);  // Denominator
-  if (ptrOutput != output)
+  getNumber(&common.misc.num, LITERAL_NUMERATOR, &ptrInput);    // Numerator
+  getNumber(&common.misc.discr, LITERAL_ARGUMENT_SQROOT, &ptrInput);  // Square root argument
+  getNumber(&common.misc.den, LITERAL_DENOMINATOR, &ptrInput);  // Denominator
+  if (common.misc.ptrOutput != output)
   {       // Error written to output. Do not compute continued fraction.
     return;
   }

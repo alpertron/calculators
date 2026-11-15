@@ -29,7 +29,7 @@
 #include "fromBlockly.h"
 #include "isprime.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 11
+#define DEBUG_CODE 17
 #endif
 #ifdef __EMSCRIPTEN__
 extern char inputString[];

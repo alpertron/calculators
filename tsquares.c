@@ -28,32 +28,15 @@
 #include "batch.h"
 #include "tsquares.h"
 #include "copyStr.h"
+#include "commonstruc.h"
+
+#ifndef __ANDROID__
+union uCommon common;
+#endif
 
 #define NBR_PRIMES_QUADR_SIEVE  17
 
 const char* square = "<span class=\"bigger\">²</span>";
-int attempts;
-int sieve[MAX_SIEVE];
-int primediv[256];
-int primeexp[256];
-limb Mult2[MAX_LEN];
-limb valueP[MAX_LEN];
-limb number[MAX_LEN];
-BigInteger SquareMult1;
-BigInteger SquareMult2;
-BigInteger SquareMult3;
-BigInteger SquareMult4;
-int Mult1Len;
-int Mult2Len;
-int Mult3Len;
-int Mult4Len;
-int nbrLimbsP;
-int nbrLimbs;
-int nbrModExp;
-BigInteger biMult1;
-BigInteger biMult2;
-BigInteger biMult3;
-BigInteger biMult4;
 
 bool FindTwoSquaresNoNumTheory(void)
 {
@@ -110,32 +93,32 @@ bool FindTwoSquaresNoNumTheory(void)
   static BigInteger nextroot;
   static BigInteger c;
   static BigInteger val;
-  int lenBytes = nbrLimbsP * (int)sizeof(limb);
-  (void)memcpy(biMult3.limbs, valueP, lenBytes);  // Mult3 <- number to find
-  biMult3.sign = SIGN_POSITIVE;         // the decomposition into
-  biMult3.nbrLimbs = nbrLimbsP;         // two squares.
-  squareRoot(biMult3.limbs, biMult1.limbs, biMult3.nbrLimbs, &biMult1.nbrLimbs);
-  biMult1.sign = SIGN_POSITIVE;
-  (void)BigIntMultiply(&biMult1, &biMult1, &nextroot);
-  BigIntSubt(&biMult3, &nextroot, &c);
+  int lenBytes = common.misc.nbrLimbsP * (int)sizeof(limb);
+  (void)memcpy(common.misc.biMult3.limbs, common.misc.valueP, lenBytes);  // Mult3 <- number to find
+  common.misc.biMult3.sign = SIGN_POSITIVE;         // the decomposition into
+  common.misc.biMult3.nbrLimbs = common.misc.nbrLimbsP;         // two squares.
+  squareRoot(common.misc.biMult3.limbs, common.misc.biMult1.limbs, common.misc.biMult3.nbrLimbs, &common.misc.biMult1.nbrLimbs);
+  common.misc.biMult1.sign = SIGN_POSITIVE;
+  (void)BigIntMultiply(&common.misc.biMult1, &common.misc.biMult1, &nextroot);
+  BigIntSubt(&common.misc.biMult3, &nextroot, &c);
   for (i = 0; i < NBR_PRIMES_QUADR_SIEVE; i++)
   {
     int pr = primes[i];
     nbrs[i] = getRemainder(&c, pr);    // nbrs[i] <- c % primes[i]
     // Get difference between the square of biMult1 and the next one.
-    diffs[i] = ((getRemainder(&biMult1, pr) * 2) + 1) % pr;
+    diffs[i] = ((getRemainder(&common.misc.biMult1, pr) * 2) + 1) % pr;
   }
-  if (nbrLimbsP > 10)
+  if (common.misc.nbrLimbsP > 10)
   {
     nbrIterations = 10000;
   }
   else
   {
-    nbrIterations = 1000 * nbrLimbsP;
+    nbrIterations = 1000 * common.misc.nbrLimbsP;
   }
-  if ((biMult1.nbrLimbs == 1) && (nbrIterations > biMult1.limbs[0].x))
+  if ((common.misc.biMult1.nbrLimbs == 1) && (nbrIterations > common.misc.biMult1.limbs[0].x))
   {     // The number to be squared must be always positive.
-    nbrIterations = biMult1.limbs[0].x - 1;
+    nbrIterations = common.misc.biMult1.limbs[0].x - 1;
   }
   for (int iterNbr = 0; iterNbr < nbrIterations; iterNbr++)
   {
@@ -161,23 +144,23 @@ bool FindTwoSquaresNoNumTheory(void)
     if (i == NBR_PRIMES_QUADR_SIEVE)
     { // Test for perfect square
       intToBigInteger(&c, iterNbr);         // c <- iterNbr
-      BigIntSubt(&biMult1, &c, &val);
+      BigIntSubt(&common.misc.biMult1, &c, &val);
       (void)BigIntMultiply(&val, &val, &c); // c <- val * val
-      BigIntSubt(&biMult3, &c, &c);         // c <- nbr - val * val - sqr
-      squareRoot(c.limbs, biMult2.limbs, c.nbrLimbs, &biMult2.nbrLimbs);
-      biMult2.sign = SIGN_POSITIVE;   // sqrRoot <- sqrt(c)
-      (void)BigIntMultiply(&biMult2, &biMult2, &val); // val <- sqroot^2
+      BigIntSubt(&common.misc.biMult3, &c, &c);         // c <- nbr - val * val - sqr
+      squareRoot(c.limbs, common.misc.biMult2.limbs, c.nbrLimbs, &common.misc.biMult2.nbrLimbs);
+      common.misc.biMult2.sign = SIGN_POSITIVE;   // sqrRoot <- sqrt(c)
+      (void)BigIntMultiply(&common.misc.biMult2, &common.misc.biMult2, &val); // val <- sqroot^2
       if (BigIntEqual(&c, &val))
       {
         intToBigInteger(&c, iterNbr);       // c <- m * iterNbr
-        BigIntSubt(&biMult1, &c, &biMult1);
-        int nbrBytes = (nbrLimbs + 1) * (int)sizeof(limb);
-        (void)memset(Mult1, 0, nbrBytes);
-        (void)memset(Mult2, 0, nbrBytes);
-        nbrBytes = biMult1.nbrLimbs * (int)sizeof(limb);
-        (void)memcpy(Mult1, biMult1.limbs, nbrBytes);
-        nbrBytes = biMult2.nbrLimbs * (int)sizeof(limb);
-        (void)memcpy(Mult2, biMult2.limbs, nbrBytes);
+        BigIntSubt(&common.misc.biMult1, &c, &common.misc.biMult1);
+        int nbrBytes = (common.misc.nbrLimbs + 1) * (int)sizeof(limb);
+        (void)memset(common.misc.Mult1, 0, nbrBytes);
+        (void)memset(common.misc.Mult2, 0, nbrBytes);
+        nbrBytes = common.misc.biMult1.nbrLimbs * (int)sizeof(limb);
+        (void)memcpy(common.misc.Mult1, common.misc.biMult1.limbs, nbrBytes);
+        nbrBytes = common.misc.biMult2.nbrLimbs * (int)sizeof(limb);
+        (void)memcpy(common.misc.Mult2, common.misc.biMult2.limbs, nbrBytes);
         return true;          // Decomposition in two squares was found.
       }
     }
@@ -200,11 +183,11 @@ void FillSieveArray(const limb *value, int *sieveArr)
       int Rem;
       int LimbModQ;
       int Q;
-      const limb* ptrValue = value + nbrLimbs;
+      const limb* ptrValue = value + common.misc.nbrLimbs;
       Rem = 0;
       Q = (2 * i) + 3;                        // Prime
       LimbModQ = UintToInt(LIMB_RANGE % (unsigned int)Q);
-      for (int j = nbrLimbs - 1; j >= 0; j--)
+      for (int j = common.misc.nbrLimbs - 1; j >= 0; j--)
       {
         ptrValue--;
         int Divid = ptrValue->x + (Rem * LimbModQ);
@@ -223,96 +206,98 @@ bool FindSumTwoSquaresNoSmallDivisors(void)
   int lenBytes;
   int base;
   // At this moment p should be prime, otherwise we must try another number.
-  valueP[nbrLimbsP].x = 0;
-  lenBytes = (nbrLimbsP + 1) * (int)sizeof(valueP[0]);
-  (void)memcpy(valueQ, valueP, lenBytes);
-  nbrLimbsQ = nbrLimbsP;
-  valueQ[0].x--;                     // q = p - 1 (p is odd, so there is no carry).
-  lenBytes = (nbrLimbsQ + 1) * (int)sizeof(valueQ[0]);
-  (void)memcpy(Mult3, valueQ, lenBytes);
-  Mult3Len = nbrLimbsP;
-  DivideBigNbrByMaxPowerOf2(&shRightMult3, Mult3, &Mult3Len);
+  common.misc.valueP[common.misc.nbrLimbsP].x = 0;
+  lenBytes = (common.misc.nbrLimbsP + 1) * (int)sizeof(common.misc.valueP[0]);
+  (void)memcpy(common.misc.valueQ, common.misc.valueP, lenBytes);
+  nbrLimbsQ = common.misc.nbrLimbsP;
+  common.misc.valueQ[0].x--;                     // q = p - 1 (p is odd, so there is no carry).
+  lenBytes = (nbrLimbsQ + 1) * (int)sizeof(common.misc.valueQ[0]);
+  (void)memcpy(common.misc.Mult3, common.misc.valueQ, lenBytes);
+  common.misc.Mult3Len = common.misc.nbrLimbsP;
+  DivideBigNbrByMaxPowerOf2(&shRightMult3, common.misc.Mult3, &common.misc.Mult3Len);
   base = 1;
   if (FindTwoSquaresNoNumTheory())
   {                  // Two squares have been found.
     return true;
   }
-  lenBytes = (nbrLimbsP + 1) * (int)sizeof(valueP[0]);
-  (void)memcpy(TestNbr, valueP, lenBytes);
-  GetMontgomeryParms(nbrLimbsP);
+  lenBytes = (common.misc.nbrLimbsP + 1) * (int)sizeof(common.misc.valueP[0]);
+  (void)memcpy(TestNbr, common.misc.valueP, lenBytes);
+  GetMontgomeryParms(common.misc.nbrLimbsP);
   sqrtFound = false;
   do
   {                // Compute Mult1 = sqrt(-1) (mod p).
     ShowStatus();
     base++;
-    modPowBaseInt(base, Mult3, Mult3Len, Mult1); // Mult1 = base^Mult3.
-    nbrModExp++;   // Increment number of modular exponentiations.    
+    modPowBaseInt(base, common.misc.Mult3, common.misc.Mult3Len, common.misc.Mult1); // Mult1 = base^Mult3.
+    common.misc.nbrModExp++;   // Increment number of modular exponentiations.    
     for (int i = 0; i < shRightMult3; i++)
     {              // Loop that squares number.
-      modmult(Mult1, Mult1, Mult4);
-      if (checkMinusOne(Mult4, nbrLimbsP) != 0)
+      modmult(common.misc.Mult1, common.misc.Mult1, common.misc.Mult4);
+      if (checkMinusOne(common.misc.Mult4, common.misc.nbrLimbsP) != 0)
       {
         sqrtFound = true;
         break;      // Mult1^2 = -1 (mod p), so exit loop.
       }
-      lenBytes = nbrLimbsP * (int)sizeof(limb);
-      (void)memcpy(Mult1, Mult4, lenBytes);
+      lenBytes = common.misc.nbrLimbsP * (int)sizeof(limb);
+      (void)memcpy(common.misc.Mult1, common.misc.Mult4, lenBytes);
     }
     // If power (Mult4) is 1, that means that number is at least PRP,
     // so continue loop trying to find square root of -1.
-    lenBytes = nbrLimbsP * (int)sizeof(limb);
-  } while (memcmp(Mult4, MontgomeryMultR1, lenBytes) == 0);
+    lenBytes = common.misc.nbrLimbsP * (int)sizeof(limb);
+  } while (memcmp(common.misc.Mult4, MontgomeryMultR1, lenBytes) == 0);
   if (!sqrtFound)
   {            // Cannot find sqrt(-1) (mod p), try next candidate.
     return false;
   }
   // Convert Mult1 from Montgomery notation to standard number
   // by multiplying by 1 in Montgomery notation.
-  lenBytes = nbrLimbsP * (int)sizeof(limb);
-  (void)memset(Mult2, 0, lenBytes);
-  Mult2[0].x = 1;
-  modmult(Mult2, Mult1, Mult1);  // Mult1 = sqrt(-1) mod p.
+  lenBytes = common.misc.nbrLimbsP * (int)sizeof(limb);
+  (void)memset(common.misc.Mult2, 0, lenBytes);
+  common.misc.Mult2[0].x = 1;
+  modmult(common.misc.Mult2, common.misc.Mult1, common.misc.Mult1);  // Mult1 = sqrt(-1) mod p.
   // Find the sum of two squares that equals this PRP x^2 + y^2 = p using
   // Gaussian GCD as: x + iy = gcd(s + i, p)
   // where s = sqrt(-1) mod p
 
   // Result is stored in biMult1 and biMult2.
   // Initialize real part to square root of (-1).
-  (void)memcpy(biMult1.limbs, Mult1, lenBytes);
-  biMult1.nbrLimbs = nbrLimbsP;
-  biMult1.sign = SIGN_POSITIVE;
-  intToBigInteger(&biMult2, 1);   // Initialize imaginary part to 1.
-  while ((biMult1.nbrLimbs > 1) && (biMult1.limbs[biMult1.nbrLimbs - 1].x == 0))
+  (void)memcpy(common.misc.biMult1.limbs, common.misc.Mult1, lenBytes);
+  common.misc.biMult1.nbrLimbs = common.misc.nbrLimbsP;
+  common.misc.biMult1.sign = SIGN_POSITIVE;
+  intToBigInteger(&common.misc.biMult2, 1);   // Initialize imaginary part to 1.
+  while ((common.misc.biMult1.nbrLimbs > 1) &&
+    (common.misc.biMult1.limbs[common.misc.biMult1.nbrLimbs - 1].x == 0))
   {
-    biMult1.nbrLimbs--;
+    common.misc.biMult1.nbrLimbs--;
   }
   // Initialize real part to prime.
-  (void)memcpy(biMult3.limbs, TestNbr, lenBytes);
-  biMult3.nbrLimbs = nbrLimbsP;
-  biMult3.sign = SIGN_POSITIVE;
-  while ((biMult3.nbrLimbs > 1) && (biMult3.limbs[biMult3.nbrLimbs - 1].x == 0))
+  (void)memcpy(common.misc.biMult3.limbs, TestNbr, lenBytes);
+  common.misc.biMult3.nbrLimbs = common.misc.nbrLimbsP;
+  common.misc.biMult3.sign = SIGN_POSITIVE;
+  while ((common.misc.biMult3.nbrLimbs > 1) &&
+    (common.misc.biMult3.limbs[common.misc.biMult3.nbrLimbs - 1].x == 0))
   {
-    biMult3.nbrLimbs--;
+    common.misc.biMult3.nbrLimbs--;
   }
-  intToBigInteger(&biMult4, 0);   // Initialize imaginary part to 0.
+  intToBigInteger(&common.misc.biMult4, 0);   // Initialize imaginary part to 0.
   // Find gcd of (biMult1 + biMult2 * i) and 
   // (biMult3 + biMult4 * i)
-  GaussianGCD(&biMult1, &biMult2,          // First number.
-    &biMult3, &biMult4,          // Second number.
-    &SquareMult1, &SquareMult2,  // GCD.
-    &SquareMult3, &SquareMult4); // Temporary variables.
-  nbrLimbs = biMult1.nbrLimbs;
-  if (nbrLimbs < biMult2.nbrLimbs)
+  GaussianGCD(&common.misc.biMult1, &common.misc.biMult2,          // First number.
+    &common.misc.biMult3, &common.misc.biMult4,          // Second number.
+    &common.misc.SquareMult1, &common.misc.SquareMult2,  // GCD.
+    &common.misc.SquareMult3, &common.misc.SquareMult4); // Temporary variables.
+  common.misc.nbrLimbs = common.misc.biMult1.nbrLimbs;
+  if (common.misc.nbrLimbs < common.misc.biMult2.nbrLimbs)
   {
-    nbrLimbs = biMult2.nbrLimbs;
+    common.misc.nbrLimbs = common.misc.biMult2.nbrLimbs;
   }
-  lenBytes = (nbrLimbs + 1) * (int)sizeof(limb);
-  (void)memset(Mult1, 0, lenBytes);
-  (void)memset(Mult2, 0, lenBytes);
-  lenBytes = SquareMult1.nbrLimbs * (int)sizeof(limb);
-  (void)memcpy(Mult1, SquareMult1.limbs, lenBytes);
-  lenBytes = SquareMult2.nbrLimbs * (int)sizeof(limb);
-  (void)memcpy(Mult2, SquareMult2.limbs, lenBytes);
+  lenBytes = (common.misc.nbrLimbs + 1) * (int)sizeof(limb);
+  (void)memset(common.misc.Mult1, 0, lenBytes);
+  (void)memset(common.misc.Mult2, 0, lenBytes);
+  lenBytes = common.misc.SquareMult1.nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(common.misc.Mult1, common.misc.SquareMult1.limbs, lenBytes);
+  lenBytes = common.misc.SquareMult2.nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(common.misc.Mult2, common.misc.SquareMult2.limbs, lenBytes);
   return true;
 }
 
@@ -322,16 +307,16 @@ void FindSumOfTwoSquaresUsingCrt(int nbrDivisors)
   for (int i = 0; i < nbrDivisors; i++)
   {
     int index;
-    int divisor = primediv[i];
-    for (index = primeexp[i] - 1; index > 0; index -= 2)
+    int divisor = common.misc.primediv[i];
+    for (index = common.misc.primeexp[i] - 1; index > 0; index -= 2)
     {
-      MultBigNbrByInt(Mult1, divisor, Mult1, nbrLimbs + 1);
-      MultBigNbrByInt(Mult2, divisor, Mult2, nbrLimbs + 1);
-      if ((Mult1[nbrLimbs].x != 0) || (Mult2[nbrLimbs].x != 0))
+      MultBigNbrByInt(common.misc.Mult1, divisor, common.misc.Mult1, common.misc.nbrLimbs + 1);
+      MultBigNbrByInt(common.misc.Mult2, divisor, common.misc.Mult2, common.misc.nbrLimbs + 1);
+      if ((common.misc.Mult1[common.misc.nbrLimbs].x != 0) || (common.misc.Mult2[common.misc.nbrLimbs].x != 0))
       {
-        nbrLimbs++;
-        Mult1[nbrLimbs].x = 0;
-        Mult2[nbrLimbs].x = 0;
+        common.misc.nbrLimbs++;
+        common.misc.Mult1[common.misc.nbrLimbs].x = 0;
+        common.misc.Mult2[common.misc.nbrLimbs].x = 0;
       }
     }
     if (index == 0)
@@ -356,41 +341,43 @@ void FindSumOfTwoSquaresUsingCrt(int nbrDivisors)
       // Compute Mult1 <- Previous Mult1 * j + Previous Mult2 * r
       // Compute Mult2 <- Previous Mult1 * r - Previous Mult2 * j
       // Use SquareMult1, SquareMult2, SquareMult3, SquareMult4 as temporary storage.
-      MultBigNbrByInt(Mult1, j, SquareMult1.limbs, nbrLimbs + 1);
-      MultBigNbrByInt(Mult2, r, SquareMult2.limbs, nbrLimbs + 1);
-      MultBigNbrByInt(Mult1, r, SquareMult3.limbs, nbrLimbs + 1);
-      MultBigNbrByInt(Mult2, j, SquareMult4.limbs, nbrLimbs + 1);
-      AddBigNbr(SquareMult1.limbs, SquareMult2.limbs,
-        Mult1, nbrLimbs + 1);
-      SubtractBigNbrB(SquareMult3.limbs, SquareMult4.limbs,
-        Mult2, nbrLimbs + 1);
-      if ((unsigned int)Mult2[nbrLimbs].x >= LIMB_RANGE)
+      MultBigNbrByInt(common.misc.Mult1, j, common.misc.SquareMult1.limbs, common.misc.nbrLimbs + 1);
+      MultBigNbrByInt(common.misc.Mult2, r, common.misc.SquareMult2.limbs, common.misc.nbrLimbs + 1);
+      MultBigNbrByInt(common.misc.Mult1, r, common.misc.SquareMult3.limbs, common.misc.nbrLimbs + 1);
+      MultBigNbrByInt(common.misc.Mult2, j, common.misc.SquareMult4.limbs, common.misc.nbrLimbs + 1);
+      AddBigNbr(common.misc.SquareMult1.limbs, common.misc.SquareMult2.limbs,
+        common.misc.Mult1, common.misc.nbrLimbs + 1);
+      SubtractBigNbrB(common.misc.SquareMult3.limbs, common.misc.SquareMult4.limbs,
+        common.misc.Mult2, common.misc.nbrLimbs + 1);
+      if ((unsigned int)common.misc.Mult2[common.misc.nbrLimbs].x >= LIMB_RANGE)
       {   // Since Mult2 is a difference of products, it can be
           // negative. In this case replace it by its absolute value.
-        ChSignBigNbr(Mult2, nbrLimbs + 1);
+        ChSignBigNbr(common.misc.Mult2, common.misc.nbrLimbs + 1);
       }
-      if ((Mult1[nbrLimbs].x != 0) || (Mult2[nbrLimbs].x != 0))
+      if ((common.misc.Mult1[common.misc.nbrLimbs].x != 0) || (common.misc.Mult2[common.misc.nbrLimbs].x != 0))
       {
-        nbrLimbs++;
-        Mult1[nbrLimbs].x = 0;
-        Mult2[nbrLimbs].x = 0;
+        common.misc.nbrLimbs++;
+        common.misc.Mult1[common.misc.nbrLimbs].x = 0;
+        common.misc.Mult2[common.misc.nbrLimbs].x = 0;
       }
     }
   }
-  nbrBytes = nbrLimbs * (int)sizeof(int);
-  (void)memcpy(biMult1.limbs, Mult1, nbrBytes);
-  (void)memcpy(biMult2.limbs, Mult2, nbrBytes);
-  biMult1.sign = SIGN_POSITIVE;
-  biMult2.sign = SIGN_POSITIVE;
-  biMult1.nbrLimbs = nbrLimbs;
-  biMult2.nbrLimbs = nbrLimbs;
-  while ((biMult1.nbrLimbs > 1) && (biMult1.limbs[biMult1.nbrLimbs - 1].x == 0))
+  nbrBytes = common.misc.nbrLimbs * (int)sizeof(int);
+  (void)memcpy(common.misc.biMult1.limbs, common.misc.Mult1, nbrBytes);
+  (void)memcpy(common.misc.biMult2.limbs, common.misc.Mult2, nbrBytes);
+  common.misc.biMult1.sign = SIGN_POSITIVE;
+  common.misc.biMult2.sign = SIGN_POSITIVE;
+  common.misc.biMult1.nbrLimbs = common.misc.nbrLimbs;
+  common.misc.biMult2.nbrLimbs = common.misc.nbrLimbs;
+  while ((common.misc.biMult1.nbrLimbs > 1) && 
+    (common.misc.biMult1.limbs[common.misc.biMult1.nbrLimbs - 1].x == 0))
   {
-    biMult1.nbrLimbs--;
+    common.misc.biMult1.nbrLimbs--;
   }
-  while ((biMult2.nbrLimbs > 1) && (biMult2.limbs[biMult2.nbrLimbs - 1].x == 0))
+  while ((common.misc.biMult2.nbrLimbs > 1) &&
+    (common.misc.biMult2.limbs[common.misc.biMult2.nbrLimbs - 1].x == 0))
   {
-    biMult2.nbrLimbs--;
+    common.misc.biMult2.nbrLimbs--;
   }
 }
 
@@ -401,11 +388,11 @@ bool isSumOfTwoSquares(void)
   int shRight;
   bool multipleOf4kPlus3 = false;
   limb carry;
-  int mod8 = valueP[0].x & 7;
-  int mod3squared = sieve[((3 * 3) - 3) / 2];
-  int mod7squared = sieve[((7 * 7) - 3) / 2];
-  int mod11squared = sieve[((11 * 11) - 3) / 2];
-  int mod19squared = sieve[((19 * 19) - 3) / 2];
+  int mod8 = common.misc.valueP[0].x & 7;
+  int mod3squared = common.misc.sieve[((3 * 3) - 3) / 2];
+  int mod7squared = common.misc.sieve[((7 * 7) - 3) / 2];
+  int mod11squared = common.misc.sieve[((11 * 11) - 3) / 2];
+  int mod19squared = common.misc.sieve[((19 * 19) - 3) / 2];
 
   if ((mod8 == 3) || (mod8 == 6) || (mod8 == 7) ||
     (mod3squared == 3) || (mod3squared == 6) ||
@@ -416,7 +403,7 @@ bool isSumOfTwoSquares(void)
   {    // Number cannot be a sum of two squares in this case.
     return false;
   }
-  attempts++;
+  common.misc.attempts++;
   if (FindTwoSquaresNoNumTheory())
   {   // Sum of two squares was found.
     return true;
@@ -427,33 +414,33 @@ bool isSumOfTwoSquares(void)
   divisor = 3;
   for (int i = 0; i < (MAX_SIEVE / 2); i++)
   {
-    if ((sieve[i] >= 0) && ((sieve[i] % divisor) == 0))
+    if ((common.misc.sieve[i] >= 0) && ((common.misc.sieve[i] % divisor) == 0))
     {                          // Divisor found.
-      primediv[nbrDivisors] = divisor;   // Store divisor.
-      primeexp[nbrDivisors] = 0;         // Store exponent.
+      common.misc.primediv[nbrDivisors] = divisor;   // Store divisor.
+      common.misc.primeexp[nbrDivisors] = 0;         // Store exponent.
       for (;;)
       {
         // Compute the remainder of p and divisor.
         int LimbModDivisor = UintToInt(LIMB_RANGE % (unsigned int)divisor);
         carry.x = 0;
-        for (int index = nbrLimbsP - 1; index >= 0; index--)
+        for (int index = common.misc.nbrLimbsP - 1; index >= 0; index--)
         {
           carry.x = UintToInt((((unsigned int)carry.x * (unsigned int)LimbModDivisor) +
-            (unsigned int)valueP[index].x) % (unsigned int)divisor);
+            (unsigned int)common.misc.valueP[index].x) % (unsigned int)divisor);
         }
         if (carry.x != 0)
         {     // Number is not a multiple of "divisor".
           break;
         }
         // Divide by divisor.
-        DivBigNbrByInt(valueP, divisor, valueP, nbrLimbsP);
-        if ((nbrLimbsP > 1) && (valueP[nbrLimbsP - 1].x == 0))
+        DivBigNbrByInt(common.misc.valueP, divisor, common.misc.valueP, common.misc.nbrLimbsP);
+        if ((common.misc.nbrLimbsP > 1) && (common.misc.valueP[common.misc.nbrLimbsP - 1].x == 0))
         {
-          nbrLimbsP--;
+          common.misc.nbrLimbsP--;
         }
-        primeexp[nbrDivisors]++;       // Increment exponent.
+        common.misc.primeexp[nbrDivisors]++;       // Increment exponent.
       }    // End for
-      if (((divisor & 0x03) == 3) && ((primeexp[nbrDivisors] & 1) != 0))
+      if (((divisor & 0x03) == 3) && ((common.misc.primeexp[nbrDivisors] & 1) != 0))
       {                   // Divisor of the form 4k+3 not square.
         multipleOf4kPlus3 = true;
         break;            // Discard this value.
@@ -471,25 +458,25 @@ bool isSumOfTwoSquares(void)
   {         // Number cannot be expressed as sum of two squares.
     return false;
   }
-  DivideBigNbrByMaxPowerOf2(&shRight, valueP, &nbrLimbsP);
-  if ((valueP[0].x & 0x03) != 0x01)
+  DivideBigNbrByMaxPowerOf2(&shRight, common.misc.valueP, &common.misc.nbrLimbsP);
+  if ((common.misc.valueP[0].x & 0x03) != 0x01)
   {                   // p is not congruent to 1 mod 4
     return false;     // so it cannot be a sum of two squares.
   }
   if (shRight != 0)
   {
-    primediv[nbrDivisors] = 2;          // Store divisor.
-    primeexp[nbrDivisors] = shRight;    // Store exponent.
+    common.misc.primediv[nbrDivisors] = 2;          // Store divisor.
+    common.misc.primeexp[nbrDivisors] = shRight;    // Store exponent.
     nbrDivisors++;
   }
-  if ((valueP[0].x == 1) && (nbrLimbsP == 1))
+  if ((common.misc.valueP[0].x == 1) && (common.misc.nbrLimbsP == 1))
   {         // Number is the product of only small primes 4k+1 and
             // squares of primes 4k+3.
-    Mult1[0].x = 1;
-    Mult2[0].x = 0;
-    Mult1[1].x = 0;
-    Mult2[1].x = 0;
-    nbrLimbs = 1;
+    common.misc.Mult1[0].x = 1;
+    common.misc.Mult2[0].x = 0;
+    common.misc.Mult1[1].x = 0;
+    common.misc.Mult2[1].x = 0;
+    common.misc.nbrLimbs = 1;
   }
   else
   {
@@ -510,7 +497,7 @@ void InitSieveArray(void)
 
   for (i = 0; i < (MAX_SIEVE / 2); i++)
   {
-    sieve[i] = 0;
+    common.misc.sieve[i] = 0;
   }
   for (i = 3; (i * i) < (MAX_SIEVE / 2); i += 2)
   {
@@ -525,7 +512,7 @@ void InitSieveArray(void)
     }
     for (; j < (MAX_SIEVE / 2); j += i)
     {
-      sieve[j] = -1;             // Indicate number is composite.
+      common.misc.sieve[j] = -1;             // Indicate number is composite.
     }
   }
 }
@@ -546,7 +533,7 @@ void ShowStatus(void)
   // Time elapsed:
   formatString(&ptrStatus, LITERAL_SHOW_STATUS1, elapsedTime / 10);
   // &nbsp;&nbsp;&nbsp;Attempting sum of two squares. Attempt #$1d
-  formatString(&ptrStatus, LITERAL_SHOW_STATUS2, attempts);
+  formatString(&ptrStatus, LITERAL_SHOW_STATUS2, common.misc.attempts);
   *ptrStatus = 0;
   databack(status);
 #endif

@@ -29,27 +29,19 @@
 #include "batch.h"
 #include "tsquares.h"
 #include "copyStr.h"
+#include "commonstruc.h"
 
-static int delta[MAX_SIEVE];
-static int power4;
-static int groupLength;
 static void batchSquaresCallback(char** pptrOutput, int type);
-#ifdef __EMSCRIPTEN__
-  static char tmpOutput[MAX_LEN*12];
-#endif
-static BigInteger toProcess;
-static BigInteger biFirstTerm;
-static BigInteger biSecondTerm;
 
  // If Mult1 < Mult2, exchange both numbers.
 static void SortBigNbrs(BigInteger *pbiMult1, BigInteger *pbiMult2)
 {   // biFirstTerm not used at this time. Use it as temp variable.
-  BigIntSubt(pbiMult1, pbiMult2, &biFirstTerm);
-  if (biFirstTerm.sign == SIGN_NEGATIVE)
+  BigIntSubt(pbiMult1, pbiMult2, &common.misc.biFirstTerm);
+  if (common.misc.biFirstTerm.sign == SIGN_NEGATIVE)
   {                // mult1 < mult2 -> exchange them.
-    CopyBigInt(&biFirstTerm, pbiMult1);
+    CopyBigInt(&common.misc.biFirstTerm, pbiMult1);
     CopyBigInt(pbiMult1, pbiMult2);
-    CopyBigInt(pbiMult2, &biFirstTerm);
+    CopyBigInt(pbiMult2, &common.misc.biFirstTerm);
   }
 }
 
@@ -57,14 +49,14 @@ static void UpdateSieveArray(void)
 {
   for (int index = 0; index < MAX_SIEVE; index++)
   {
-    if (sieve[index] >= 0)
+    if (common.misc.sieve[index] >= 0)
     {
       int modulus = (2 * index) + 3;
-      sieve[index] = (sieve[index] + delta[index]) % modulus;
-      delta[index] -= 2;
-      if (delta[index] < 0)
+      common.misc.sieve[index] = (common.misc.sieve[index] + common.misc.delta[index]) % modulus;
+      common.misc.delta[index] -= 2;
+      if (common.misc.delta[index] < 0)
       {
-        delta[index] += modulus;
+        common.misc.delta[index] += modulus;
       }
     }
   }
@@ -72,60 +64,60 @@ static void UpdateSieveArray(void)
 
 // Try to decompose a number as a sum of three or four squares.
 // Mult1 = sqrt(toProcess).
-// biMult4 = toProcess - biFirstTerm^2.
-// Use biMult1, biMult2 and biMult3 as temporary storage.
+// common.misc.biMult4 = toProcess - biFirstTerm^2.
+// Use common.misc.biMult1, common.misc.biMult2 and common.misc.biMult3 as temporary storage.
 
 static void SumOfSquaresNumber(void)
 {
-  attempts = 0;
-  FillSieveArray(toProcess.limbs, sieve);
-  CopyBigInt(&biMult3, &toProcess);
-  int nbrBytes = toProcess.nbrLimbs * (int)sizeof(int);
-  if ((toProcess.limbs[0].x & 7) != 7)
+  common.misc.attempts = 0;
+  FillSieveArray(common.misc.toProcess.limbs, common.misc.sieve);
+  CopyBigInt(&common.misc.biMult3, &common.misc.toProcess);
+  int nbrBytes = common.misc.toProcess.nbrLimbs * (int)sizeof(limb);
+  if ((common.misc.toProcess.limbs[0].x & 7) != 7)
   {              // n!=7 (mod 8) => Sum of three squares
-                 // Compute biMult4 as a sum of two squares.
-    CopyBigInt(&biSecondTerm, &biFirstTerm);
-    intToBigInteger(&biFirstTerm, 0);
-    (void)memcpy(valueP, toProcess.limbs, nbrBytes);
-    nbrLimbsP = toProcess.nbrLimbs;
+                 // Compute common.misc.biMult4 as a sum of two squares.
+    CopyBigInt(&common.misc.biSecondTerm, &common.misc.biFirstTerm);
+    intToBigInteger(&common.misc.biFirstTerm, 0);
+    (void)memcpy(common.misc.valueP, common.misc.toProcess.limbs, nbrBytes);
+    common.misc.nbrLimbsP = common.misc.toProcess.nbrLimbs;
     if (isSumOfTwoSquares())
-    {            // Number is a sum of two squares: biMult1^2 + biMult2^2.
-      intToBigInteger(&biFirstTerm, 0);
-      intToBigInteger(&biSecondTerm, 0);
-      CopyBigInt(&biMult3, &biMult1);
-      CopyBigInt(&biMult4, &biMult2);
+    {            // Number is a sum of two squares: common.misc.biMult1^2 + common.misc.biMult2^2.
+      intToBigInteger(&common.misc.biFirstTerm, 0);
+      intToBigInteger(&common.misc.biSecondTerm, 0);
+      CopyBigInt(&common.misc.biMult3, &common.misc.biMult1);
+      CopyBigInt(&common.misc.biMult4, &common.misc.biMult2);
       return;
     }
   }
   else
   {              // n==7 (mod 8) => Sum of four squares
-                 // Compute biMult4 as a sum of three squares.
+                 // Compute common.misc.biMult4 as a sum of three squares.
     for (;;)
     {
       int pwr4;
-      CopyBigInt(&biMult3, &biMult4);
-      DivideBigNbrByMaxPowerOf4(&pwr4, biMult3.limbs, &biMult3.nbrLimbs);
-      if ((biMult3.limbs[0].x & 7) != 7)
-      {          // biMult4 is a sum of three squares. Compute them.
+      CopyBigInt(&common.misc.biMult3, &common.misc.biMult4);
+      DivideBigNbrByMaxPowerOf4(&pwr4, common.misc.biMult3.limbs, &common.misc.biMult3.nbrLimbs);
+      if ((common.misc.biMult3.limbs[0].x & 7) != 7)
+      {          // common.misc.biMult4 is a sum of three squares. Compute them.
         break;
       }
-      addbigint(&biFirstTerm, -1);  // Next candidate for largest term.
-      BigIntAdd(&biMult4, &biFirstTerm, &biMult4);
-      BigIntAdd(&biMult4, &biFirstTerm, &biMult4);
-      addbigint(&biMult4, 1);
+      addbigint(&common.misc.biFirstTerm, -1);  // Next candidate for largest term.
+      BigIntAdd(&common.misc.biMult4, &common.misc.biFirstTerm, &common.misc.biMult4);
+      BigIntAdd(&common.misc.biMult4, &common.misc.biFirstTerm, &common.misc.biMult4);
+      addbigint(&common.misc.biMult4, 1);
     }
-    squareRoot(biMult4.limbs, biSecondTerm.limbs, biMult4.nbrLimbs,
-      &biSecondTerm.nbrLimbs);
-    (void)BigIntMultiply(&biSecondTerm, &biSecondTerm, &biMult3);
-    BigIntSubt(&biMult4, &biMult3, &biMult4);
+    squareRoot(common.misc.biMult4.limbs, common.misc.biSecondTerm.limbs, common.misc.biMult4.nbrLimbs,
+      &common.misc.biSecondTerm.nbrLimbs);
+    (void)BigIntMultiply(&common.misc.biSecondTerm, &common.misc.biSecondTerm, &common.misc.biMult3);
+    BigIntSubt(&common.misc.biMult4, &common.misc.biMult3, &common.misc.biMult4);
   }
-  nbrLimbs = biMult4.nbrLimbs;
-  FillSieveArray(biMult4.limbs, sieve);
-  multint(&biMult3, &biSecondTerm, 2);
-  addbigint(&biMult3, -1);
-  nbrLimbs = biMult3.nbrLimbs;
-  FillSieveArray(biMult3.limbs, delta);
-  // Compute biMult4 as a sum of two squares:
+  common.misc.nbrLimbs = common.misc.biMult4.nbrLimbs;
+  FillSieveArray(common.misc.biMult4.limbs, common.misc.sieve);
+  multint(&common.misc.biMult3, &common.misc.biSecondTerm, 2);
+  addbigint(&common.misc.biMult3, -1);
+  common.misc.nbrLimbs = common.misc.biMult3.nbrLimbs;
+  FillSieveArray(common.misc.biMult3.limbs, common.misc.delta);
+  // Compute common.misc.biMult4 as a sum of two squares:
   // If the result is not the product of a power of 2, small primes
   // of the form 4k+1 and squares of primes of the form (4k+3)^2
   // and a (big) prime, it is not a sum of two squares (or it is
@@ -136,19 +128,19 @@ static void SumOfSquaresNumber(void)
     // p should be the product of power of 2,
     // powers of small primes of form 4k+1 and
     // powers of squares of small primes of form 4k+3.
-    nbrBytes = biMult4.nbrLimbs * (int)sizeof(int);
-    (void)memcpy(valueP, biMult4.limbs, nbrBytes);
-    nbrLimbsP = biMult4.nbrLimbs;
+    nbrBytes = common.misc.biMult4.nbrLimbs * (int)sizeof(limb);
+    (void)memcpy(common.misc.valueP, common.misc.biMult4.limbs, nbrBytes);
+    common.misc.nbrLimbsP = common.misc.biMult4.nbrLimbs;
     if (isSumOfTwoSquares())
-    {   // Found biMult1^2 + biMult2^2.
-      CopyBigInt(&biMult3, &biMult1);
-      CopyBigInt(&biMult4, &biMult2);
+    {   // Found common.misc.biMult1^2 + common.misc.biMult2^2.
+      CopyBigInt(&common.misc.biMult3, &common.misc.biMult1);
+      CopyBigInt(&common.misc.biMult4, &common.misc.biMult2);
       break;
     }
-    addbigint(&biSecondTerm, -1);
-    BigIntAdd(&biMult4, &biSecondTerm, &biMult4);
-    BigIntAdd(&biMult4, &biSecondTerm, &biMult4);
-    addbigint(&biMult4, 1);
+    addbigint(&common.misc.biSecondTerm, -1);
+    BigIntAdd(&common.misc.biMult4, &common.misc.biSecondTerm, &common.misc.biMult4);
+    BigIntAdd(&common.misc.biMult4, &common.misc.biSecondTerm, &common.misc.biMult4);
+    addbigint(&common.misc.biMult4, 1);
     UpdateSieveArray();
   }
 }
@@ -160,64 +152,64 @@ int fsquares(void)
   char *ptrOutput;
 #endif
   // Use biSecondTerm as temporary variable to display the original number.
-  CopyBigInt(&biSecondTerm, &toProcess);
-  DivideBigNbrByMaxPowerOf4(&power4, toProcess.limbs, &toProcess.nbrLimbs);
+  CopyBigInt(&common.misc.biSecondTerm, &common.misc.toProcess);
+  DivideBigNbrByMaxPowerOf4(&common.misc.power4, common.misc.toProcess.limbs, &common.misc.toProcess.nbrLimbs);
   // Get biFirstTerm <- square root of origNbr.
-  nbrLimbs = toProcess.nbrLimbs;
-  squareRoot(toProcess.limbs, biFirstTerm.limbs, nbrLimbs,
-    &biFirstTerm.nbrLimbs);
-  (void)BigIntMultiply(&biFirstTerm, &biFirstTerm, &biMult4);
-  BigIntSubt(&toProcess, &biMult4, &biMult4);
-  if (BigIntIsZero(&biMult4))
+  common.misc.nbrLimbs = common.misc.toProcess.nbrLimbs;
+  squareRoot(common.misc.toProcess.limbs, common.misc.biFirstTerm.limbs, common.misc.nbrLimbs,
+    &common.misc.biFirstTerm.nbrLimbs);
+  (void)BigIntMultiply(&common.misc.biFirstTerm, &common.misc.biFirstTerm, &common.misc.biMult4);
+  BigIntSubt(&common.misc.toProcess, &common.misc.biMult4, &common.misc.biMult4);
+  if (BigIntIsZero(&common.misc.biMult4))
   {          // number is a perfect square.
-    CopyBigInt(&biMult1, &biFirstTerm);
-    intToBigInteger(&biMult2, 0);
-    intToBigInteger(&biMult3, 0);
+    CopyBigInt(&common.misc.biMult1, &common.misc.biFirstTerm);
+    intToBigInteger(&common.misc.biMult2, 0);
+    intToBigInteger(&common.misc.biMult3, 0);
   }
   else
   {          // number is not a perfect square.
-    nbrModExp = 0;
+    common.misc.nbrModExp = 0;
     InitSieveArray();
 #ifdef __EMSCRIPTEN__
     // Show number to be processed on screen.
-    ptrOutput = tmpOutput;
+    ptrOutput = common.misc.tmpOutput;
     copyStr(&ptrOutput, "1<p><var>n</var> = ");
     if (hexadecimal)
     {
-      Bin2Hex(&ptrOutput, biSecondTerm.limbs, biSecondTerm.nbrLimbs, groupLength);
+      Bin2Hex(&ptrOutput, common.misc.biSecondTerm.limbs, common.misc.biSecondTerm.nbrLimbs, common.misc.groupLength);
     }
     else
     {
-      Bin2Dec(&ptrOutput, biSecondTerm.limbs, biSecondTerm.nbrLimbs, groupLength);
+      Bin2Dec(&ptrOutput, common.misc.biSecondTerm.limbs, common.misc.biSecondTerm.nbrLimbs, common.misc.groupLength);
     }
     copyStr(&ptrOutput, "</p>");
-    databack(tmpOutput);
+    databack(common.misc.tmpOutput);
 #endif
     SumOfSquaresNumber();
-    CopyBigInt(&biMult1, &biFirstTerm);
-    CopyBigInt(&biMult2, &biSecondTerm);
+    CopyBigInt(&common.misc.biMult1, &common.misc.biFirstTerm);
+    CopyBigInt(&common.misc.biMult2, &common.misc.biSecondTerm);
     // Sort squares
-    SortBigNbrs(&biMult1, &biMult2);
-    SortBigNbrs(&biMult1, &biMult3);
-    SortBigNbrs(&biMult1, &biMult4);
-    SortBigNbrs(&biMult2, &biMult3);
-    SortBigNbrs(&biMult2, &biMult4);
-    SortBigNbrs(&biMult3, &biMult4);
+    SortBigNbrs(&common.misc.biMult1, &common.misc.biMult2);
+    SortBigNbrs(&common.misc.biMult1, &common.misc.biMult3);
+    SortBigNbrs(&common.misc.biMult1, &common.misc.biMult4);
+    SortBigNbrs(&common.misc.biMult2, &common.misc.biMult3);
+    SortBigNbrs(&common.misc.biMult2, &common.misc.biMult4);
+    SortBigNbrs(&common.misc.biMult3, &common.misc.biMult4);
   }
-  (void)BigIntMultiplyPower2(&toProcess, 2*power4);
-  (void)BigIntMultiplyPower2(&biMult1, power4);
-  (void)BigIntMultiplyPower2(&biMult2, power4);
-  (void)BigIntMultiplyPower2(&biMult3, power4);
-  (void)BigIntMultiplyPower2(&biMult4, power4);
+  (void)BigIntMultiplyPower2(&common.misc.toProcess, 2* common.misc.power4);
+  (void)BigIntMultiplyPower2(&common.misc.biMult1, common.misc.power4);
+  (void)BigIntMultiplyPower2(&common.misc.biMult2, common.misc.power4);
+  (void)BigIntMultiplyPower2(&common.misc.biMult3, common.misc.power4);
+  (void)BigIntMultiplyPower2(&common.misc.biMult4, common.misc.power4);
   // Validate result.
-  BigIntMultiply(&biMult1, &biMult1, &biFirstTerm);
-  BigIntMultiply(&biMult2, &biMult2, &biSecondTerm);
-  BigIntAdd(&biFirstTerm, &biSecondTerm, &biFirstTerm);
-  BigIntMultiply(&biMult3, &biMult3, &biSecondTerm);
-  BigIntAdd(&biFirstTerm, &biSecondTerm, &biFirstTerm);
-  BigIntMultiply(&biMult4, &biMult4, &biSecondTerm);
-  BigIntAdd(&biFirstTerm, &biSecondTerm, &biFirstTerm);
-  if (BigIntEqual(&biFirstTerm, &toProcess))
+  BigIntMultiply(&common.misc.biMult1, &common.misc.biMult1, &common.misc.biFirstTerm);
+  BigIntMultiply(&common.misc.biMult2, &common.misc.biMult2, &common.misc.biSecondTerm);
+  BigIntAdd(&common.misc.biFirstTerm, &common.misc.biSecondTerm, &common.misc.biFirstTerm);
+  BigIntMultiply(&common.misc.biMult3, &common.misc.biMult3, &common.misc.biSecondTerm);
+  BigIntAdd(&common.misc.biFirstTerm, &common.misc.biSecondTerm, &common.misc.biFirstTerm);
+  BigIntMultiply(&common.misc.biMult4, &common.misc.biMult4, &common.misc.biSecondTerm);
+  BigIntAdd(&common.misc.biFirstTerm, &common.misc.biSecondTerm, &common.misc.biFirstTerm);
+  if (BigIntEqual(&common.misc.biFirstTerm, &common.misc.toProcess))
   {
     return 0;    // Validation is OK.
   }
@@ -229,9 +221,9 @@ void fsquaresText(char *input, int grpLen)
   char *ptrOutput;
   if (valuesProcessed == 0)
   {
-    groupLength = grpLen;
+    common.misc.groupLength = grpLen;
   }
-  (void)BatchProcessing(input, &toProcess, &ptrOutput, NULL, batchSquaresCallback);
+  (void)BatchProcessing(input, &common.misc.toProcess, &ptrOutput, NULL, batchSquaresCallback);
   copyStr(&ptrOutput, "<p>");
   showElapsedTime(&ptrOutput);
   copyStr(&ptrOutput, "</p><p>");
@@ -244,17 +236,17 @@ static void batchSquaresCallback(char **pptrOutput, int type)
   int rc;
   char *ptrOutput;
   ptrOutput = *pptrOutput;
-  NumberLength = toProcess.nbrLimbs;
-  BigInteger2IntArray((int *)number, &toProcess);
+  NumberLength = common.misc.toProcess.nbrLimbs;
+  BigInteger2IntArray((int *)common.misc.number, &common.misc.toProcess);
   if ((type == BATCH_NO_PROCESS_DEC) || (type == BATCH_NO_PROCESS_HEX))
   {         // Do not compute sum of squares.
     if (hexadecimal)
     {
-      BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
+      BigInteger2Hex(&ptrOutput, &common.misc.toProcess, common.misc.groupLength);
     }
     else
     {
-      BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+      BigInteger2Dec(&ptrOutput, &common.misc.toProcess, common.misc.groupLength);
     }
     *pptrOutput = ptrOutput;
     return;
@@ -266,14 +258,14 @@ static void batchSquaresCallback(char **pptrOutput, int type)
     copyStr(&ptrOutput, "<p>");
     if (hexadecimal)
     {
-      BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
+      BigInteger2Hex(&ptrOutput, &common.misc.toProcess, common.misc.groupLength);
     }
     else
     {
-      BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+      BigInteger2Dec(&ptrOutput, &common.misc.toProcess, common.misc.groupLength);
     }
   }
-  if (toProcess.sign == SIGN_NEGATIVE)
+  if (common.misc.toProcess.sign == SIGN_NEGATIVE)
   {
     if (type == BATCH_NO_QUOTE)
     {
@@ -311,49 +303,49 @@ static void batchSquaresCallback(char **pptrOutput, int type)
   }
   if (hexadecimal)
   {
-    Bin2Hex(&ptrOutput, biMult1.limbs, biMult1.nbrLimbs, groupLength);
+    Bin2Hex(&ptrOutput, common.misc.biMult1.limbs, common.misc.biMult1.nbrLimbs, common.misc.groupLength);
   }
   else
   {
-    Bin2Dec(&ptrOutput, biMult1.limbs, biMult1.nbrLimbs, groupLength);
+    Bin2Dec(&ptrOutput, common.misc.biMult1.limbs, common.misc.biMult1.nbrLimbs, common.misc.groupLength);
   }
   copyStr(&ptrOutput, square);
-  if (!BigIntIsZero(&biMult2))
+  if (!BigIntIsZero(&common.misc.biMult2))
   {
     copyStr(&ptrOutput, " + ");
     if (hexadecimal)
     {
-      Bin2Hex(&ptrOutput, biMult2.limbs, biMult2.nbrLimbs, groupLength);
+      Bin2Hex(&ptrOutput, common.misc.biMult2.limbs, common.misc.biMult2.nbrLimbs, common.misc.groupLength);
     }
     else
     {
-      Bin2Dec(&ptrOutput, biMult2.limbs, biMult2.nbrLimbs, groupLength);
+      Bin2Dec(&ptrOutput, common.misc.biMult2.limbs, common.misc.biMult2.nbrLimbs, common.misc.groupLength);
     }
     copyStr(&ptrOutput, square);
   }
-  if (!BigIntIsZero(&biMult3))
+  if (!BigIntIsZero(&common.misc.biMult3))
   {
     copyStr(&ptrOutput, " + ");
     if (hexadecimal)
     {
-      Bin2Hex(&ptrOutput, biMult3.limbs, biMult3.nbrLimbs, groupLength);
+      Bin2Hex(&ptrOutput, common.misc.biMult3.limbs, common.misc.biMult3.nbrLimbs, common.misc.groupLength);
     }
     else
     {
-      Bin2Dec(&ptrOutput, biMult3.limbs, biMult3.nbrLimbs, groupLength);
+      Bin2Dec(&ptrOutput, common.misc.biMult3.limbs, common.misc.biMult3.nbrLimbs, common.misc.groupLength);
     }
     copyStr(&ptrOutput, square);
   }
-  if (!BigIntIsZero(&biMult4))
+  if (!BigIntIsZero(&common.misc.biMult4))
   {
     copyStr(&ptrOutput, " + ");
     if (hexadecimal)
     {
-      Bin2Hex(&ptrOutput, biMult4.limbs, biMult4.nbrLimbs, groupLength);
+      Bin2Hex(&ptrOutput, common.misc.biMult4.limbs, common.misc.biMult4.nbrLimbs, common.misc.groupLength);
     }
     else
     {
-      Bin2Dec(&ptrOutput, biMult4.limbs, biMult4.nbrLimbs, groupLength);
+      Bin2Dec(&ptrOutput, common.misc.biMult4.limbs, common.misc.biMult4.nbrLimbs, common.misc.groupLength);
     }
     copyStr(&ptrOutput, square);
   }

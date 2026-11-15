@@ -35,9 +35,6 @@ extern int nbrBlocklyOutputLines;
 extern bool doShowPrime;
 #endif
 
-#define PAREN_STACK_SIZE           5000
-#define COMPR_STACK_SIZE        1000000
-
 #define DO_NOT_SHORT_CIRCUIT  (COMPR_STACK_SIZE + 100)  // Larger than stack size.
 
 bool teach = true;
@@ -109,10 +106,10 @@ const struct sFuncOperExpr stFuncOperIntExpr[] =
   {NULL, 0, 0},
 };
 
-static int comprStackValues[COMPR_STACK_SIZE];
-static int comprStackOffset[PAREN_STACK_SIZE];
+extern int comprStackValues[COMPR_STACK_SIZE];
+extern int comprStackOffset[PAREN_STACK_SIZE];
+extern int stackIndex;
 extern limb MontgomeryR1[MAX_LEN];
-static int stackIndex;
 char output[3000000];
 limb Mult1[MAX_LEN];
 limb Mult3[MAX_LEN];

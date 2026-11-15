@@ -2266,14 +2266,19 @@ int FactorPolyOverIntegers(void)
   struct sFactorInfo* pstFactorInfoOrig;
   struct sFactorInfo* pstFactorInfoInteger = factorInfoInteger;
   nbrFactorsFound = 0;
-  initLinkedBigInt();
   ptrFactorInteger = common.poly.polyInteger;
   modulusIsZero = true;
   (void)memset(factorInfoInteger, 0, sizeof(factorInfoInteger));
   (void)getContent(common.poly.values, &contentPolyToFactor);
   (void)CopyPolynomial(&origPolyToFactor[1], &common.poly.values[1], degreePolyToFactor);
   origPolyToFactor[0] = degreePolyToFactor;
-  // polyToFactor -> original polynomial / content of polynomial.
+  memset(basis, 0, sizeof(basis));
+  memset(basisStar, 0, sizeof(basisStar));
+  memset(lambda, 0, sizeof(lambda));
+  memset(matrixBL, 0, sizeof(matrixBL));
+  memset(detProdB, 0, sizeof(detProdB));
+  memset(traces, 0, sizeof(traces));
+  memset(ptrCoeffs, 0, sizeof(ptrCoeffs));  // polyToFactor -> original polynomial / content of polynomial.
   // Let n be the degree of the least coefficient different from zero.
   // Then x^n divides the polynomial.
   polyToFactor[0] = degreePolyToFactor;
@@ -2421,6 +2426,22 @@ int FactorPolyOverIntegers(void)
     {
       break;
     }
+  }
+  for (int row = 0; row < MAX_MATRIX_SIZE; row++)
+  {
+    deleteLinkedBigInteger(detProdB[row]);
+    for (int col = 0; col < MAX_MATRIX_SIZE; col++)
+    {
+      deleteLinkedBigInteger(basis[row][col]);
+      deleteLinkedBigInteger(basisStar[row][col]);
+      deleteLinkedBigInteger(lambda[row][col]);
+      deleteLinkedBigInteger(matrixBL[row][col]);
+    }
+  }
+  for (int idx = 0; idx < 10*MAX_MATRIX_SIZE; idx++)
+  {
+    deleteLinkedBigInteger(traces[idx]);
+    deleteLinkedBigInteger(ptrCoeffs[idx]);
   }
   return EXPR_OK;
 }

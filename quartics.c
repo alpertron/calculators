@@ -23,6 +23,7 @@
 #include "rootseq.h"
 #include "expression.h"
 #include "copyStr.h"
+#include "linkedbignbr.h"
 
 #define NBR_COEFFS_BACKUP 7
 extern const char* ptrI;
@@ -32,7 +33,6 @@ extern int eqNbr;
 char currLetter;
 static int eqPlusMinusAfterRoot;
 static int FerrariEq;
-static BigRational coeffBackup[NBR_COEFFS_BACKUP];
 
 static void showFirstTermQuarticEq(int ctr)
 {
@@ -1023,6 +1023,8 @@ static void showEndFerrariResolventNoRationalRoot(const char* minus, int multipl
 
 static void showFerrariResolventNoRationalRoot(int multiplicity)
 {
+  struct linkedBigInt* coeffBackup[2*NBR_COEFFS_BACKUP];
+  struct linkedBigInt** ptrCoeffBackup = coeffBackup;
   BigRational* coeffsToBackup[NBR_COEFFS_BACKUP] =
   {
     &RatDeprLinear,
@@ -1033,11 +1035,16 @@ static void showFerrariResolventNoRationalRoot(int multiplicity)
     &RatIndependent,
     &RatDiscr
   };
+  // Backup coefficients because they will be used for solving the cubic equation.
   BigRational** pRat = coeffsToBackup;
   for (int i = 0; i < NBR_COEFFS_BACKUP; i++)
   {
-    CopyBigInt(&coeffBackup[i].numerator, &(*pRat)->numerator);
-    CopyBigInt(&coeffBackup[i].denominator, &(*pRat)->denominator);
+    *ptrCoeffBackup = NULL;
+    setLinkedBigInteger(ptrCoeffBackup, &(*pRat)->numerator);
+    ptrCoeffBackup++;
+    *ptrCoeffBackup = NULL;
+    setLinkedBigInteger(ptrCoeffBackup, &(*pRat)->denominator);
+    ptrCoeffBackup++;
     pRat++;
   }
   // Lodovico Ferrari's resolvent equation is:
@@ -1052,11 +1059,17 @@ static void showFerrariResolventNoRationalRoot(int multiplicity)
   BigRationalDivideByInt(&Rat3, 8, &RatIndependent);             // (1/8)q^2
   BigIntChSign(&RatIndependent.numerator);                       // (-1/8)q^2
   solveCubic(1, true, 'm');
+  // Restore coefficients.
   pRat = coeffsToBackup;
+  ptrCoeffBackup = coeffBackup;
   for (int i = 0; i < NBR_COEFFS_BACKUP; i++)
   {
-    CopyBigInt(&(*pRat)->numerator, &coeffBackup[i].numerator);
-    CopyBigInt(&(*pRat)->denominator, &coeffBackup[i].denominator);
+    getBigIntegerFromLinked(*ptrCoeffBackup, &(*pRat)->numerator);
+    deleteLinkedBigInteger(*ptrCoeffBackup);
+    ptrCoeffBackup++;
+    getBigIntegerFromLinked(*ptrCoeffBackup, &(*pRat)->denominator);
+    deleteLinkedBigInteger(*ptrCoeffBackup);
+    ptrCoeffBackup++;
     pRat++;
   }
   showText("<p>");

@@ -143,6 +143,136 @@ struct stEcm
   BigInteger Temp3;
 };
 
+struct stGaussian
+{
+  BigInteger ReG0;
+  BigInteger ReG1;
+  BigInteger ImG0;
+  BigInteger ImG1;
+  BigInteger ReU0;
+  BigInteger ReU1;
+  BigInteger ImU0;
+  BigInteger ImU1;
+  BigInteger Re;
+  BigInteger Im;
+  BigInteger Tmp;
+  BigInteger ReTmp;
+  BigInteger ImTmp;
+  BigInteger ReBase;
+  BigInteger ImBase;
+  BigInteger ReExp;
+  BigInteger ImExp;
+  BigInteger ReMod;
+  BigInteger ImMod;
+  BigInteger curStackRe;
+  BigInteger curStackIm;
+  BigInteger curStack2Re;
+  BigInteger curStack2Im;
+  BigInteger curStack3Re;
+  BigInteger curStack3Im;
+  BigInteger curStackReBak;
+  BigInteger curStackImBak;
+  BigInteger curStack2ReBak;
+  BigInteger curStack2ImBak;
+  BigInteger curTmp;
+  BigInteger norm;
+  BigInteger Result[2];
+  BigInteger LastAnswerRe;
+  BigInteger LastAnswerIm;
+  BigInteger divTmp;
+  BigInteger divNorm;
+  BigInteger divRealNum;
+  BigInteger divImagNum;
+};
+
+// Sum of squares, cubes and continued fractions.
+#define MAX_SIEVE 65536
+struct stMisc
+{
+  // Variables for sum of powers.
+  int delta[MAX_SIEVE];
+  int power4;
+  int groupLength;
+#ifdef __EMSCRIPTEN__
+  char tmpOutput[MAX_LEN * 12];
+#endif
+  BigInteger toProcess;
+  BigInteger biFirstTerm;
+  BigInteger biSecondTerm;
+  BigInteger value;
+  BigInteger Base1;
+  BigInteger Base2;
+  BigInteger Base3;
+  BigInteger Base4;
+  BigInteger P;
+  BigInteger Q;
+  BigInteger R;
+  BigInteger S;
+  BigInteger a;
+  BigInteger b;
+  BigInteger P1;
+  BigInteger Q1;
+  BigInteger R1;
+  BigInteger S1;
+  BigInteger tmpP1;
+  BigInteger tmpQ1;
+  BigInteger tmpR1;
+  BigInteger tmpS1;
+  int attempts;
+  int sieve[MAX_SIEVE];
+  int primediv[256];
+  int primeexp[256];
+  limb Mult1[MAX_LEN];
+  limb Mult2[MAX_LEN];
+  limb Mult3[MAX_LEN];
+  limb Mult4[MAX_LEN];
+  limb valueP[MAX_LEN];
+  limb valueQ[MAX_LEN];
+  limb number[MAX_LEN];
+  BigInteger SquareMult1;
+  BigInteger SquareMult2;
+  BigInteger SquareMult3;
+  BigInteger SquareMult4;
+  int Mult1Len;
+  int Mult2Len;
+  int Mult3Len;
+  int Mult4Len;
+  int nbrLimbsP;
+  int nbrLimbs;
+  int nbrModExp;
+  BigInteger biMult1;
+  BigInteger biMult2;
+  BigInteger biMult3;
+  BigInteger biMult4;
+  BigInteger valueN;
+  BigInteger powerN;
+  const char* powerStr;
+
+  // Continued fraction variables.
+  BigInteger num;
+  BigInteger den;
+  BigInteger discr;
+  BigInteger origNum;
+  BigInteger origDen;
+  BigInteger origDelta;
+  BigInteger Temp;
+  BigInteger bigTmp;
+  BigInteger U1;
+  BigInteger U2;
+  BigInteger U3;
+  BigInteger V1;
+  BigInteger V2;
+  BigInteger V3;
+  BigInteger startPeriodNum;
+  BigInteger startPeriodDen;
+  BigInteger intSqrt;
+  BigInteger integerPart;
+  char* ptrOutput;
+  bool isShowingConvergents;
+  int periodIndex;
+  int coefIndex;
+};
+
 struct stBigComplex
 {
   BigInteger real;
@@ -227,6 +357,11 @@ struct stQuad
   BigInteger Solution1[400];
   BigInteger Solution2[400];
   BigInteger Increment[400];
+  BigInteger chineseAux[400];
+  BigInteger valueU;
+  BigInteger valueV;
+  BigInteger valueW;
+  BigInteger valueY;
 };
 
 // Sum of squares and divisors are used at the same time.
@@ -244,6 +379,8 @@ union uCommon
   struct stQuad quad;
   struct stK k;
   struct stPoly poly;
+  struct stGaussian gaussian;
+  struct stMisc misc;
 };
 
 extern union uCommon common;

@@ -25,6 +25,7 @@
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
+#include "linkedbignbr.h"
 #ifdef __EMSCRIPTEN__
 extern int64_t lModularMult;
 #endif
@@ -53,7 +54,7 @@ static BigInteger bigNbrA;
 static BigInteger bigNbrB;
 static BigInteger LastModulus;
 static int ExponentsGOComputed[400];
-static BigInteger nbrV[400];
+static struct linkedBigInt* linkedNbrV[400];
 static int NbrFactorsMod = 0;
 static limb nbrA[MAX_LEN];
 static limb nbrA2[MAX_LEN];
@@ -159,18 +160,16 @@ static bool ComputeDLogModSubGroupOrder(int indexBase, int indexExp,
   // Set tmpBase to 1 in Montgomery notation.
   int lenBytes = NumberLength * (int)sizeof(limb);
   (void)memcpy(tmpBase.limbs, MontgomeryMultR1, lenBytes);
-  // Set Exponent to zero.
-  intToBigInteger(bigExp, 0);
-  while (!TestBigNbrEqual(bigExp, bigSubGroupOrder))
+  int subGrpOrder = bigSubGroupOrder->limbs[0].x;
+  for (int expon = 0; expon < subGrpOrder; expon++)
   {
     if (!memcmp(tmpBase.limbs, powerPHMontg, lenBytes))
     {    // Logarithm for this subgroup has been found. Go out.
+      intToBigInteger(bigExp, expon);
       return true;
     }
          // Set tmpBase to next power.
     modmult(tmpBase.limbs, primRootPwr, tmpBase.limbs);
-         // Set next exponent.
-    addbigint(bigExp, 1);
   }
   // All exponents have been tried and logarithm has not been found, so go out.
   indicateCannotComputeLog(indexBase, indexExp);
@@ -345,7 +344,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   ExponentsGOComputed[indexBase] = 0;
   if (!memcmp(primRoot, MontgomeryMultR1, NumberSizeBytes))
   {          // Power is one, check power of power.
-    intToBigInteger(&nbrV[indexBase], 0);
+    intToLinkedBigInt(&linkedNbrV[indexBase], 0);
     modPow(powerMontg, tmpBase.limbs, tmpBase.nbrLimbs, primRoot);
     return memcmp(primRoot, MontgomeryMultR1, NumberSizeBytes) == 0;
   }
@@ -412,7 +411,8 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
     (void)memcpy(primRoot, tmpBase.limbs, NumberSizeBytes);
   }
 
-  CopyBigInt(&nbrV[indexBase], &runningExp);
+  setLinkedBigInteger(&linkedNbrV[indexBase], &runningExp);
+  CopyBigInt(&tmp2, &runningExp);
   NumberLength = powSubGroupOrder.nbrLimbs;
   lenBytes = NumberLength * (int)sizeof(limb);
   (void)memcpy(TestNbr, powSubGroupOrder.limbs, lenBytes);
@@ -426,12 +426,15 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
     // the modular inverse of PrimesGO[indexExp] raised to ExponentsGO[indexExp]
     // mod powSubGroupOrder.
     NumberLength = mod.nbrLimbs;
-    BigIntSubt(&nbrV[indexBase], &nbrV[indexExp], &nbrV[indexBase]);
-    (void)BigIntRemainder(&nbrV[indexBase], &powSubGroupOrder, &nbrV[indexBase]);
-    if (nbrV[indexBase].sign == SIGN_NEGATIVE)
+    getBigIntegerFromLinked(linkedNbrV[indexBase], &tmp2);
+    getBigIntegerFromLinked(linkedNbrV[indexExp], &tmp3);
+    BigIntSubt(&tmp2, &tmp3, &tmp2);
+    (void)BigIntRemainder(&tmp2, &powSubGroupOrder, &tmp2);
+    if (tmp2.sign == SIGN_NEGATIVE)
     {
-      BigIntAdd(&nbrV[indexBase], &powSubGroupOrder, &nbrV[indexBase]);
+      BigIntAdd(&tmp2, &powSubGroupOrder, &tmp2);
     }
+    setLinkedBigInteger(&linkedNbrV[indexBase], &tmp2);
     pstFactors = &astFactorsGO[indexExp + 1];
     IntArray2BigInteger(pstFactors->ptrFactor, &tmpBase);
     (void)BigIntPowerIntExp(&tmpBase, ExponentsGOComputed[indexExp], &tmpBase);
@@ -448,10 +451,13 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
     (void)memset(&tmpBase.limbs[1], 0, lenBytes);
     modmult(tmpBase.limbs, tmp2.limbs, tmp2.limbs);
     UncompressLimbsBigInteger(tmp2.limbs, &tmpBase);
-    (void)BigIntMultiply(&tmpBase, &nbrV[indexBase], &nbrV[indexBase]);
+    getBigIntegerFromLinked(linkedNbrV[indexBase], &tmp2);
+    (void)BigIntMultiply(&tmpBase, &tmp2, &tmp2);
+    setLinkedBigInteger(&linkedNbrV[indexBase], &tmp2);
   }
-  (void)BigIntRemainder(&nbrV[indexBase], &powSubGroupOrder, &nbrV[indexBase]);
-  (void)BigIntMultiply(&nbrV[indexBase], &logarMult, &tmpBase);
+  (void)BigIntRemainder(&tmp2, &powSubGroupOrder, &tmp2);
+  (void)BigIntMultiply(&tmp2, &logarMult, &tmpBase);
+  setLinkedBigInteger(&linkedNbrV[indexBase], &tmp2);
   BigIntAdd(&logar, &tmpBase, &logar);
   (void)BigIntMultiply(&logarMult, &powSubGroupOrder, &logarMult);
   return true;
@@ -550,7 +556,7 @@ void DiscreteLogarithm(void)
 #ifdef __EMSCRIPTEN__
   lModularMult = 0;
 #endif
-  intToBigInteger(&nbrV[0], 0);
+  intToLinkedBigInt(&linkedNbrV[0], 0);
   NumberLength = modulus.nbrLimbs;
   if ((LastModulus.nbrLimbs == 0) || !TestBigNbrEqual(&LastModulus, &modulus))
   {
@@ -851,6 +857,7 @@ static void generateOutput(enum eExprErr rc, int groupLength)
 void dilogText(const char* baseText, const char* powerText, const char* modText, int groupLength)
 {
   enum eExprErr rc;
+  initLinkedBigInt();
   rc = ComputeExpression(baseText, &base);
   if ((rc == EXPR_OK) &&
     ((base.sign == SIGN_NEGATIVE) || BigIntIsZero(&base)))

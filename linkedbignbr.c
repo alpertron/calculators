@@ -43,15 +43,16 @@ void initLinkedBigInt(void)
   pstLinkedBigInt->pstNext = NULL;
 }
 
-void getBigIntegerFromLinked(struct linkedBigInt* pstLinkedBigInt, BigInteger* pBigInt)
+static void getElementFromLinked(const struct linkedBigInt* pstLinkedBigInt, int *pNbrLimbs, 
+  enum eSign *pSign, limb *pLimbs)
 {
   int lenBytes;
-  struct linkedBigInt* pstCurrentBigInt;
-  limb* pLimb = &pBigInt->limbs[LIMBS_PER_LINKED_NODE-2];
-  pBigInt->nbrLimbs = pstLinkedBigInt->node[0];
-  pBigInt->sign = pstLinkedBigInt->node[1];
+  const struct linkedBigInt* pstCurrentBigInt;
+  limb* pLimb = &pLimbs[LIMBS_PER_LINKED_NODE-2];
+  *pNbrLimbs = pstLinkedBigInt->node[0];
+  *pSign = pstLinkedBigInt->node[1];
   lenBytes = (LIMBS_PER_LINKED_NODE - 2) * (int)sizeof(int);
-  (void)memcpy(pBigInt->limbs, &pstLinkedBigInt->node[2], lenBytes);
+  (void)memcpy(pLimbs, &pstLinkedBigInt->node[2], lenBytes);
   pstCurrentBigInt = pstLinkedBigInt;
   while (pstCurrentBigInt->pstNext != NULL)
   {
@@ -62,7 +63,19 @@ void getBigIntegerFromLinked(struct linkedBigInt* pstLinkedBigInt, BigInteger* p
   }
 }
 
-static void deleteLinkedBigInteger(struct linkedBigInt* pstLinkedBigInt)
+void getBigIntegerFromLinked(const struct linkedBigInt* pstLinkedBigInt, BigInteger* pBigInt)
+{
+  getElementFromLinked(pstLinkedBigInt, &pBigInt->nbrLimbs, &pBigInt->sign, pBigInt->limbs);
+}
+
+void getLimbsFromLinked(const struct linkedBigInt* pstLinkedBigInt, limb *pLimbs)
+{
+  int nbrLimbs;      // Not required outside this function.
+  enum eSign sign;   // Not required outside this function.
+  getElementFromLinked(pstLinkedBigInt, &nbrLimbs, &sign, pLimbs);
+}
+
+void deleteLinkedBigInteger(struct linkedBigInt* pstLinkedBigInt)
 {
   if (pstLinkedBigInt != NULL)
   {    // Send this linked big number to linked free area.
@@ -78,28 +91,39 @@ static void deleteLinkedBigInteger(struct linkedBigInt* pstLinkedBigInt)
   }
 }
 
-void setLinkedBigInteger(struct linkedBigInt** ppstLinkedBigInt, const BigInteger* pBigInt)
+static void setLinkedElement(struct linkedBigInt** ppstLinkedBigInt, int nbrLimbs,
+  enum eSign sign, const limb* pLimbs)
 {
   int ctrLimbs;
   int lenBytes;
   struct linkedBigInt* pstLinkedBigInt = *ppstLinkedBigInt;
   deleteLinkedBigInteger(pstLinkedBigInt); // Delete old number.
   *ppstLinkedBigInt = pstFirstFree;
-  pstFirstFree->node[0] = pBigInt->nbrLimbs;
-  pstFirstFree->node[1] = pBigInt->sign;
+  pstFirstFree->node[0] = nbrLimbs;
+  pstFirstFree->node[1] = sign;
   lenBytes = (LIMBS_PER_LINKED_NODE - 2) * (int)sizeof(int);
-  (void)memcpy(&pstFirstFree->node[2], pBigInt->limbs, lenBytes);
+  (void)memcpy(&pstFirstFree->node[2], pLimbs, lenBytes);
   ctrLimbs = LIMBS_PER_LINKED_NODE - 2;
-  while (ctrLimbs < pBigInt->nbrLimbs)
+  while (ctrLimbs < nbrLimbs)
   {
     pstFirstFree = pstFirstFree->pstNext;
     lenBytes = LIMBS_PER_LINKED_NODE * (int)sizeof(int);
-    (void)memcpy(&pstFirstFree->node, &pBigInt->limbs[ctrLimbs], lenBytes);
+    (void)memcpy(&pstFirstFree->node, &pLimbs[ctrLimbs], lenBytes);
     ctrLimbs += LIMBS_PER_LINKED_NODE;
   }
   pstLinkedBigInt = pstFirstFree->pstNext;
   pstFirstFree->pstNext = NULL;    // End of link of big number.
   pstFirstFree = pstLinkedBigInt;  // First link of first area.
+}
+
+void setLinkedBigInteger(struct linkedBigInt** ppstLinkedBigInt, const BigInteger* pBigInt)
+{
+  setLinkedElement(ppstLinkedBigInt, pBigInt->nbrLimbs, pBigInt->sign, pBigInt->limbs);
+}
+
+void setLinkedLimbs(struct linkedBigInt** ppstLinkedBigInt, const limb* pLimbs)
+{
+  setLinkedElement(ppstLinkedBigInt, NumberLength, SIGN_POSITIVE, pLimbs);
 }
 
 bool linkedBigIntIsZero(const struct linkedBigInt* pstLinkedBigInt)

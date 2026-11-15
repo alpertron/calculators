@@ -55,7 +55,7 @@ static enum eCallbackQuadModType callbackQuadModType;
 static int counters[400];
 static char isDescending[400];
 static int originalMultiplicities[400];
-static BigInteger Aux[400];
+static BigInteger Aux[6];
 static BigInteger ValA;
 static BigInteger ValB;
 static BigInteger ValC;
@@ -422,7 +422,7 @@ static void showSolutionXY(const BigInteger *X, const BigInteger *Y)
 {
   showText("<p>x = ");
   shownbr(ExchXY ? Y : X);
-  showText("<BR>y = ");
+  showText("<br>y = ");
   shownbr(ExchXY ? X : Y);
   showText("</p>");
 }
