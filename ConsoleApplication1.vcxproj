@@ -169,6 +169,7 @@
   <ItemGroup>
     <ClCompile Include="ClassicalMult.c" />
     <ClCompile Include="cubiceq.c" />
+    <ClCompile Include="exprstack.c" />
     <ClCompile Include="fft.c" />
     <ClCompile Include="fftUtil.c" />
     <ClCompile Include="isprime.c" />

@@ -52,6 +52,7 @@ extern limb Mult3[MAX_LEN];
 extern limb Mult4[MAX_LEN];
 extern int valueQ[MAX_LEN];
 int groupLen = 6;
+int groupSeparator = '0';  // Default separator is spaces.
 int smallPrimes[SMALL_PRIMES_ARRLEN+1];
 #ifdef __EMSCRIPTEN__
 int percentageBPSW;

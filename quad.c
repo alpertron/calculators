@@ -3919,8 +3919,14 @@ EXTERNALIZE void doWork(void)
     ptrData++;
   }
   ptrData++;                    // Skip comma.
-  flags = *ptrData;
+  flags = *ptrData - '0';
+  while (*(ptrData+1) != ',')
+  {
+    ptrData++;
+    flags = (flags * 10) + *ptrData - '0';
+  }
   teach = ((flags & 2)? true: false);
+  groupSeparator = flags >> 4;
   ptrCoeffA = ptrData + 2;  // Skip flags and comma.
   ptrCoeffB = ptrCoeffA + (int)strlen(ptrCoeffA) + 1;
   ptrCoeffC = ptrCoeffB + (int)strlen(ptrCoeffB) + 1;

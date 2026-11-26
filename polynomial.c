@@ -39,6 +39,7 @@ union uCommon common;
 #endif
 
 extern bool teachMod;
+extern bool hexadecimal;
 extern int grpLen;
 extern char* ptrOutput; 
 extern char* ptrOutput2;
@@ -2062,6 +2063,39 @@ static void getMontCoeff(const int* ptrCoeff)
   }
 }
 
+void showNbr(char **pptrOut, BigInteger *bigNbr, int groupLength)
+{
+  char *ptrOut = *pptrOut;
+  bigNbr->sign = SIGN_POSITIVE;
+  if (pretty == PRETTY_PRINT)
+  {          // Show number of digits if there are more than 30.
+    if (hexadecimal)
+    {
+      Bin2Hex(&ptrOut, bigNbr->limbs, bigNbr->nbrLimbs, groupLength);
+    }
+    else
+    {
+      Bin2Dec(&ptrOut, bigNbr->limbs, bigNbr->nbrLimbs, groupLength);
+    }
+  }
+  else
+  {         // Do not show number of digits.
+    if (hexadecimal)
+    {
+      *ptrOut = '0';
+      ptrOut++;
+      *ptrOut = 'x';
+      ptrOut++;
+      Bin2Hex(&ptrOut, bigNbr->limbs, bigNbr->nbrLimbs, -groupLength);
+    }
+    else
+    {
+      Bin2Dec(&ptrOut, bigNbr->limbs, bigNbr->nbrLimbs, -groupLength);
+    }
+  }
+  *pptrOut = ptrOut;
+}
+
 static void showPolynomialMontOrNorm(char **pptrOutput, const int *ptrPoly,
       int polyDegree, int groupLength, bool isMontNotation)
 {
@@ -2126,15 +2160,7 @@ static void showPolynomialMontOrNorm(char **pptrOutput, const int *ptrPoly,
       }
       if ((operand1.nbrLimbs > 1) || (operand1.limbs[0].x != 1))
       {            // Absolute value of coefficient is not one.
-        operand1.sign = SIGN_POSITIVE;
-        if (pretty == PRETTY_PRINT)
-        {          // Show number of digits if there are more than 30.
-          Bin2Dec(&ptrOut, operand1.limbs, operand1.nbrLimbs, groupLength);
-        }
-        else
-        {         // Do not show number of digits.
-          Bin2Dec(&ptrOut, operand1.limbs, operand1.nbrLimbs, -groupLength);
-        }
+        showNbr(&ptrOut, &operand1, groupLength);
         if (currentDegree > 0)
         {
           copyStr(&ptrOut, ptrTimes);
@@ -2205,14 +2231,7 @@ static void outputOriginalPolynomialElem(char** pptrOutput, const int* ptrPoly, 
   }
   if ((operand1.nbrLimbs != 1) || (operand1.limbs[0].x != 1) || (degree == 0))
   {     // Leading coefficient is not 1 or degree is zero.
-    if (pretty == PRETTY_PRINT)
-    {          // Show number of digits if there are more than 30.
-      Bin2Dec(&ptrOut, operand1.limbs, operand1.nbrLimbs, groupLength);
-    }
-    else
-    {         // Do not show number of digits.
-      Bin2Dec(&ptrOut, operand1.limbs, operand1.nbrLimbs, -groupLength);
-    }
+    showNbr(&ptrOut, &operand1, groupLength);
     if ((pretty == PARI_GP) && (degree > 0))
     {
       *ptrOut = '*';
@@ -2252,14 +2271,7 @@ static void outputOriginalPolynomialElem(char** pptrOutput, const int* ptrPoly, 
     {     // Pari-GP
       copyStr(&ptrOut, ", ");
     }
-    if (pretty == PRETTY_PRINT)
-    {          // Show number of digits if there are more than 30.
-      Bin2Dec(&ptrOut, primeMod.limbs, primeMod.nbrLimbs, groupLength);
-    }
-    else
-    {         // Do not show number of digits.
-      Bin2Dec(&ptrOut, primeMod.limbs, primeMod.nbrLimbs, -groupLength);
-    }
+    showNbr(&ptrOut, &primeMod, groupLength);
     if (exponentMod != 1)
     {
       showPower(&ptrOut, exponentMod);
@@ -2352,7 +2364,7 @@ void outputPolynomialFactor(char **pptrOutput, int groupLength, const struct sFa
     }
     if ((operand1.nbrLimbs != 1) || (operand1.limbs[0].x != 1))
     {     // Absolute value is not 1.
-      Bin2Dec(&ptrOut, operand1.limbs, operand1.nbrLimbs, groupLength);
+      showNbr(&ptrOut, &operand1, groupLength);
     }
   }
   showPowerX(&ptrOut, polyDegree);

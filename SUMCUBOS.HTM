@@ -19,7 +19,7 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:description" content="Funciona con polinomios enteros y módulo p^n.">
-<meta property="article:published_time" content="2026-10-18">
+<meta property="article:published_time" content="2026-11-25">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/SUMCUBOS.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/FCUBES.HTM">
@@ -132,7 +132,7 @@ fieldset {border-radius:10px}
 }
 @media screen and (prefers-color-scheme: dark) {
 body {color: #ddd; background-color: #121212}
-.applet {background-color:#606060; color: #fff}
+.applet, .modal-body {background-color:#606060; color: #fff}
 a {color: #a3d4a7}
 a:link,a:active {color: #a3d4a7}
 a:hover {color: #f5cba7}
@@ -365,7 +365,9 @@ En el resto de los casos se reemplaza n por &minus;n y luego se multiplican las 
 <h2>Configuración</h2>
 <p>Puedes cambiar la configuración de esta aplicación apretando el botón <strong>Config</strong> mientras el programa no está factorizando. En ese momento aparecerá una nueva ventana donde puedes seleccionar los siguientes ajustes:</p>
 <ul>
-<li><strong>Dígitos por grupo</strong>: Para mejorar la legibilidad, los números grandes se separan mediante espacios formando grupos de una cantidad fija de dígitos. Con esta caja de entrada, puedes determinar la cantidad de dígitos por grupo.</li> 
+<li><strong>Dígitos por grupo</strong>:  
+Para facilitar la lectura, los números grandes se dividen en grupos separados por espacios, comas o puntos. Con esta opción, usted puede especificar cuántos dígitos contendrá cada grupo.</li>
+<li><strong>Separador</strong>: Esto permite seleccionar si los grupos se separan mediante espacios, comas o puntos.</li>
 <li><strong>Salida hexadecimal</strong>: Indica que los valores mostrados en pantalla deben figurar en hexadecimal en vez de decimal, que es lo habitual.
 Para ingresar números en el formato hexadecimal es necesario que tengan los caracteres 0x adelante. Por ejemplo, 0x38 = 56. El programa muestra números en hexadecimal con tipo monoespaciado.</li>
 <li><strong>Teclado</strong>: Esto permite que el usuario seleccione entre el teclado virtual númerico o completo (alfanumérico). El teclado virtual aparece en la pantalla cuando el usuario selecciona una caja de entrada en pantallas táctiles.</li>
@@ -404,7 +406,7 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <h2>Código fuente</h2>
 <p>Se puede bajar el código fuente de este programa y el del viejo applet de suma de cuatro cubos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 18 de octubre de 2026.</p>
+<p>Escrito por Dario Alpern. Actualizado el 25 de noviembre de 2026.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -472,6 +474,7 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <fieldset>
 <legend>Parámetros de configuración</legend>
 <p><label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"></p>
+<p><label for="sep">Separador:&nbsp;</label><select id="sep"><option value=" ">espacio</option><option value=",">coma</option><option value=".">punto</option></select></p>
 <p><label for="kbd">Teclado:&nbsp;</label><select id="kbd"><option value="numeric">Numérico</option><option value="comp">Completo</option></select>
 <p><input type="checkbox" id="hex"><label for="hex">Salida hexadecimal</label></p>
 </fieldset>
@@ -578,8 +581,8 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
   "name": "Suma de cuatro cubos",
   "description": "Aplicación Web application que descompone un número en una suma de cuatro cubos.",
   "image": ["https://www.alpertron.com.ar/fcubes.png"],
-  "datePublished": "2026-10-18",
-  "dateModified": "2026-10-18",
+  "datePublished": "2026-11-25",
+  "dateModified": "2026-11-25",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {

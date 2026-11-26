@@ -34,21 +34,86 @@
  w2: Number of limbs.
  Other registers:
  x0: Pointer to multiplicand, then multiplier. Also pointer to product.
- x1: 0x7FFFFFFF (mask)
+ x7: x1 = carry between columns.
  x4: x3 = Sum of products of double limbs in a column during long multiplication.
  x6: x5 = Product of double limbs in a column during long multiplication.
  x8, x9, ... = Double limbs of multiplicand and multiplier.
  */
 
+    A0 .req x8
+    A1 .req x10
+    A2 .req x12
+    A3 .req x14
+    A4 .req x16
+    A5 .req x19
+    A6 .req x21
+    A7 .req x23
+    B0 .req x9
+    B1 .req x11
+    B2 .req x13
+    B3 .req x15
+    B4 .req x17
+    B5 .req x20
+    B6 .req x22
+    B7 .req x24
+
+    A0L .req w8
+    A1L .req w10
+    A2L .req w12
+    A3L .req w14
+    A4L .req w16
+    A5L .req w19
+    A6L .req w21
+    A7L .req w23
+    B0L .req w9
+    B1L .req w11
+    B2L .req w13
+    B3L .req w15
+    B4L .req w17
+    B5L .req w20
+    B6L .req w22
+    B7L .req w24
+
+    /* x3:x4 accumulator, x5:x6 temporary regs,
+       x1:x7 carry (low:high), x0 output */
+
+    .macro FIRST a, b
+    mul   x3, \a, \b
+    umulh x4, \a, \b
+    .endm
+
+    .macro MAC a, b
+    mul   x5, \a, \b
+    umulh x6, \a, \b
+    adds  x3, x3, x5
+    adc   x4, x4, x6
+    .endm
+
+    /* Add input carry, saves two 31-bit limbs and sets x1 to low carry */
+    .macro CLOSE off, hi=xzr
+    adds  x3, x3, x1
+    adc   x4, x4, \hi
+    and   x5, x3, #0x7fffffff
+    ubfx  x6, x3, #31, #31
+    stp   w5, w6, [x0, #\off]
+    extr  x1, x4, x3, #62
+    .endm
+    
+    .macro FINAL_CARRY off
+    and   x5, x1, #0x7fffffff
+    lsr   x6, x1, #31
+    stp   w5, w6, [x0, #\off]
+    .endm
+    
 ClassicalMult:
     /* Get external values and pointers to buffers. */
     adrp x3, :got:arr
-    ldr x3, [x3, #:got_lo12:arr]     /* x3 = Pointer to arr. */
-    add x0, x3, x0, lsl #2           /* x0 = Pointer to multiplier. */
-    mov w1, #0x7FFFFFFF
-    cmp w2, #1
-    bne Test2Limbs
-
+    ldr x3, [x3, #:got_lo12:arr] /* x3 = Pointer to arr. */
+    add x0, x3, x0, lsl #2       /* x0 = Pointer to multiplier. */
+    adr x13, mm_jump_table       /* Jump to specific multiplication routine. */    
+    add x13, x13, x12, lsl #2
+    br x13
+ 
 ClassicalMult1Limb:
     ldp w5, w6, [x0]             /* w5 = Multiplicand, w6 = Multiplier */
     umull x9, w5, w6             /* Compute product */
@@ -57,30 +122,21 @@ ClassicalMult1Limb:
     stp w9, w10, [x0]            /* Save product */
     ret
 
-Test2Limbs:
-    cmp w2, #2
-    bne Test3Limbs
-
 ClassicalMult2Limbs:
     ldp w5, w6, [x0]
     orr x5, x5, x6, lsl #31      /* x5 = Multiplicand */
     ldp w6, w7, [x0, #8]
     orr x6, x6, x7, lsl #31      /* x6 = Multiplier */
     mul x3, x5, x6
-    umulh x4, x5, x6             /* x5: x4 = Product */
-    and x9, x1, x3               /* Get limb #0 of product */
-    and x10, x1, x3, lsr #31     /* Get limb #1 of product */
+    umulh x4, x5, x6             /* x4: x3 = Product */
+    and x9, x3, #0x7fffffff      /* Get limb #0 of product */
+    ubfx x10, x3, #31, #31       /* Get limb #1 of product */
     stp w9, w10, [x0]            /* Store product in memory */
-    lsl x9, x4, #2
-    orr x9, x9, x3, lsr #62
-    and x9, x1, x9               /* Get limb #2 of product */
+    extr x9, x5, x4, #62
+    and x9, x9, #0x7fffffff      /* Get limb #2 of product */
     lsr x10, x4, #29             /* Get limb #3 of product */
     stp w9, w10, [x0, #8]        /* Store product in memory */
     ret
-
-Test3Limbs:
-    cmp w2, #3
-    bne MoreThan3Limbs
 
 ClassicalMult3Limbs:
     ldp w5, w6, [x0]
@@ -109,1616 +165,754 @@ ClassicalMult3Limbs:
     bic w11, w11, #0x80000000   /* Get limb #4 of product */
     stp w11, w12, [x0, #16]     /* Store limbs #4 and #5 of product in memory */
     ret
-MoreThan3Limbs:
-    cmp w2, #4
-    bhi MoreThan4Limbs
+ClassicalMult4Limbs:
     /* Load multiplicand and multiplier into registers */
-    ldp w8, w3, [x0, #0]
-    orr x8, x8, x3, lsl #31
-    ldp w9, w3, [x0, #8]
-    orr x9, x9, x3, lsl #31
-    ldp w10, w3, [x0, #16]
-    orr x10, x10, x3, lsl #31
-    ldp w11, w3, [x0, #24]
-    orr x11, x11, x3, lsl #31
+    ldp A0L, w3, [x0, #0]
+    orr A0, A0, x3, lsl #31
+    ldp A1L, w3, [x0, #8]
+    orr A1, A1, x3, lsl #31
+    ldp B0L, w3, [x0, #16]
+    orr B0, x10, x3, lsl #31
+    ldp B1L, w3, [x0, #24]
+    orr B1, B1, x3, lsl #31
 Multiply2DoubleLimbs:
-    /* Perform first multiplication */
-    mul x3, x8, x10
-    umulh x4, x8, x10
-    and x6, x1, x3               /* Get limb #0 of product */
-    and x7, x1, x3, lsr #31      /* Get limb #1 of product */
-    stp w6, w7, [x0]             /* Save these limbs */
-    umulh x6, x9, x10
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #1: sum of products */
-    mul x5, x9, x10
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x8, x11
-    adds x3, x3, x5
-    umulh x6, x8, x11
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #2 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #3 of product */
-    stp w6, w7, [x0, #8]      /* Save these limbs */
-    umulh x6, x9, x11
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #2: sum of products */
-    mul x5, x9, x11
-    adds x3, x3, x5
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #4 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #5 of product */
-    stp w6, w7, [x0, #16]      /* Save these limbs */
-    tbnz w2, #0, EndMultiply2DoubleLimbs
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x6, x4, #2
-    orr x3, x6, x3, lsr #62
-    /* Store carry in product */
-    and x6, x1, x3             /* Get limb #6 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #7 of product */
-    stp w6, w7, [x0, #24]      /* Save these limbs */
+    /* ---- Column #0: no input carry ---- */
+    FIRST A0, B0
+    and   x5, x3, #0x7fffffff
+    ubfx  x6, x3, #31, #31
+    stp   w5, w6, [x0, #0]
+    extr  x1, x4, x3, #62
+
+    /* ---- Column #1 (2 products) ---- */
+    FIRST A1, B0
+    MAC   A0, B1
+    CLOSE 8
+
+    /* ---- Column #2 (1 product) ---- */
+    FIRST A1, B1
+    CLOSE 16
+    
+    /* ---- Final carry (< 2^62): last two limbs ---- */
+    FINAL_CARRY 24
 EndMultiply2DoubleLimbs:
     ret
-MoreThan4Limbs:
-    cmp w2, #6
-    bhi MoreThan6Limbs
+ClassicalMult5Limbs:
     /* Load multiplicand and multiplier into registers */
-    ldp w8, w3, [x0, #0]
-    orr x8, x8, x3, lsl #31
-    ldp w9, w3, [x0, #8]
-    orr x9, x9, x3, lsl #31
-    tbnz w2, #0, LengthIs5Limbs
-    ldp w10, w3, [x0, #16]
-    orr x10, x10, x3, lsl #31
-    ldp w11, w3, [x0, #24]
-    orr x11, x11, x3, lsl #31
-    ldp w12, w3, [x0, #32]
-    orr x12, x12, x3, lsl #31
-    ldp w13, w3, [x0, #40]
-    orr x13, x13, x3, lsl #31
-    b Multiply3DoubleLimbs
-LengthIs5Limbs:
-    ldr w10, [x0, #16]
-    ldp w11, w3, [x0, #20]
-    orr x11, x11, x3, lsl #31
-    ldp w12, w3, [x0, #28]
-    orr x12, x12, x3, lsl #31
-    ldr w13, [x0, #36]
+    ldr A2L, [x0, #16]
+    ldp B0L, w3, [x0, #20]
+    orr B0, B0, x3, lsl #31
+    ldp B1L, w3, [x0, #28]
+    orr B1, B1, x3, lsl #31
+    ldr B2L, [x0, #36]
+    b 1f
+ClassicalMult6Limbs:
+    ldp A2L, w3, [x0, #16]
+    orr A2, A2, x3, lsl #31
+    ldp B0L, w3, [x0, #24]
+    orr B0, B0, x3, lsl #31
+    ldp B1L, w3, [x0, #32]
+    orr B1, B1, x3, lsl #31
+    ldp B2L, w3, [x0, #40]
+    orr B2, B2, x3, lsl #31
+1:    
+    ldp A0L, w3, [x0, #0]
+    orr A0, A0, x3, lsl #31
+    ldp A1L, w3, [x0, #8]
+    orr A1, A1, x3, lsl #31
 Multiply3DoubleLimbs:
-    /* Perform first multiplication */
-    mul x3, x8, x11
-    umulh x4, x8, x11
-    and x6, x1, x3               /* Get limb #0 of product */
-    and x7, x1, x3, lsr #31      /* Get limb #1 of product */
-    stp w6, w7, [x0]             /* Save these limbs */
-    umulh x6, x9, x11
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #1: sum of products */
-    mul x5, x9, x11
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x8, x12
-    adds x3, x3, x5
-    umulh x6, x8, x12
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #2 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #3 of product */
-    stp w6, w7, [x0, #8]      /* Save these limbs */
-    umulh x6, x10, x11
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #2: sum of products */
-    mul x5, x10, x11
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x9, x12
-    adds x3, x3, x5
-    umulh x6, x9, x12
-    adc x4, x4, x6
-    mul x5, x8, x13
-    adds x3, x3, x5
-    umulh x6, x8, x13
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #4 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #5 of product */
-    stp w6, w7, [x0, #16]      /* Save these limbs */
-    umulh x6, x10, x12
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #3: sum of products */
-    mul x5, x10, x12
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x9, x13
-    adds x3, x3, x5
-    umulh x6, x9, x13
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #6 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #7 of product */
-    stp w6, w7, [x0, #24]      /* Save these limbs */
-    umulh x6, x10, x13
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #4: sum of products */
-    mul x5, x10, x13
-    adds x3, x3, x5
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #8 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #9 of product */
-    stp w6, w7, [x0, #32]      /* Save these limbs */
+    /* ---- Column #0: no input carry ---- */
+    FIRST A0, B0
+    and   x5, x3, #0x7fffffff
+    ubfx  x6, x3, #31, #31
+    stp   w5, w6, [x0, #0]
+    extr  x1, x4, x3, #62
+
+    /* ---- Column #1 (2 products) ---- */
+    FIRST A1, B0
+    MAC   A0, B1
+    CLOSE 8
+
+    /* ---- Column #2 (3 products) ---- */
+    FIRST A2, B0
+    MAC   A1, B1
+    MAC   A0, B2
+    CLOSE 16
+
+    /* ---- Column #3 (2 products) ---- */
+    FIRST A2, B1
+    MAC   A1, B2
+    CLOSE 24
+
+    /* ---- Column #4 (1 product) ---- */
+    FIRST A2, B2
+    CLOSE 32 
     tbnz w2, #0, EndMultiply3DoubleLimbs
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x6, x4, #2
-    orr x3, x6, x3, lsr #62
-    /* Store carry in product */
-    and x6, x1, x3             /* Get limb #10 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #11 of product */
-    stp w6, w7, [x0, #40]      /* Save these limbs */
+  
+    /* ---- Final carry (< 2^62): last two limbs ---- */
+    FINAL_CARRY 40
 EndMultiply3DoubleLimbs:
     ret
-MoreThan6Limbs:
-    cmp w2, #8
-    bhi MoreThan8Limbs
+ClassicalMult7Limbs:
     /* Load multiplicand and multiplier into registers */
-    ldp w8, w3, [x0, #0]
-    orr x8, x8, x3, lsl #31
-    ldp w9, w3, [x0, #8]
-    orr x9, x9, x3, lsl #31
-    ldp w10, w3, [x0, #16]
-    orr x10, x10, x3, lsl #31
-    tbnz w2, #0, LengthIs7Limbs
-    ldp w11, w3, [x0, #24]
-    orr x11, x11, x3, lsl #31
-    ldp w12, w3, [x0, #32]
-    orr x12, x12, x3, lsl #31
-    ldp w13, w3, [x0, #40]
-    orr x13, x13, x3, lsl #31
-    ldp w14, w3, [x0, #48]
-    orr x14, x14, x3, lsl #31
-    ldp w15, w3, [x0, #56]
-    orr x15, x15, x3, lsl #31
-    b Multiply4DoubleLimbs
-LengthIs7Limbs:
-    ldr w11, [x0, #24]
-    ldp w12, w3, [x0, #28]
-    orr x12, x12, x3, lsl #31
-    ldp w13, w3, [x0, #36]
-    orr x13, x13, x3, lsl #31
-    ldp w14, w3, [x0, #44]
-    orr x14, x14, x3, lsl #31
-    ldr w15, [x0, #52]
+    ldr A3L, [x0, #24]
+    ldp B0L, w3, [x0, #28]
+    orr B0, B0, x3, lsl #31
+    ldp B1L, w3, [x0, #36]
+    orr B1, B1, x3, lsl #31
+    ldp B2L, w3, [x0, #44]
+    orr B2, B2, x3, lsl #31
+    ldr B3L, [x0, #52]
+    b 1f
+ClassicalMult8Limbs:
+    ldp A3L, w3, [x0, #24]
+    orr A3, A3, x3, lsl #31
+    ldp B0L, w3, [x0, #32]
+    orr B0, B0, x3, lsl #31
+    ldp B1L, w3, [x0, #40]
+    orr B1, B1, x3, lsl #31
+    ldp B2L, w3, [x0, #48]
+    orr B2, B2, x3, lsl #31
+    ldp B3L, w3, [x0, #56]
+    orr B3, B3, x3, lsl #31
+1:
+    ldp A0L, w3, [x0, #0]
+    orr A0, A0, x3, lsl #31
+    ldp A1L, w3, [x0, #8]
+    orr A1, A1, x3, lsl #31
+    ldp A2L, w3, [x0, #16]
+    orr A2, A2, x3, lsl #31
 Multiply4DoubleLimbs:
-    /* Perform first multiplication */
-    mul x3, x8, x12
-    umulh x4, x8, x12
-    and x6, x1, x3               /* Get limb #0 of product */
-    and x7, x1, x3, lsr #31      /* Get limb #1 of product */
-    stp w6, w7, [x0]             /* Save these limbs */
-    umulh x6, x9, x12
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #1: sum of products */
-    mul x5, x9, x12
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x8, x13
-    adds x3, x3, x5
-    umulh x6, x8, x13
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #2 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #3 of product */
-    stp w6, w7, [x0, #8]      /* Save these limbs */
-    umulh x6, x10, x12
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #2: sum of products */
-    mul x5, x10, x12
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x9, x13
-    adds x3, x3, x5
-    umulh x6, x9, x13
-    adc x4, x4, x6
-    mul x5, x8, x14
-    adds x3, x3, x5
-    umulh x6, x8, x14
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #4 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #5 of product */
-    stp w6, w7, [x0, #16]      /* Save these limbs */
-    umulh x6, x11, x12
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #3: sum of products */
-    mul x5, x11, x12
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x10, x13
-    adds x3, x3, x5
-    umulh x6, x10, x13
-    adc x4, x4, x6
-    mul x5, x9, x14
-    adds x3, x3, x5
-    umulh x6, x9, x14
-    adc x4, x4, x6
-    mul x5, x8, x15
-    adds x3, x3, x5
-    umulh x6, x8, x15
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #6 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #7 of product */
-    stp w6, w7, [x0, #24]      /* Save these limbs */
-    umulh x6, x11, x13
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #4: sum of products */
-    mul x5, x11, x13
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x10, x14
-    adds x3, x3, x5
-    umulh x6, x10, x14
-    adc x4, x4, x6
-    mul x5, x9, x15
-    adds x3, x3, x5
-    umulh x6, x9, x15
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #8 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #9 of product */
-    stp w6, w7, [x0, #32]      /* Save these limbs */
-    umulh x6, x11, x14
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #5: sum of products */
-    mul x5, x11, x14
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x10, x15
-    adds x3, x3, x5
-    umulh x6, x10, x15
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #10 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #11 of product */
-    stp w6, w7, [x0, #40]      /* Save these limbs */
-    umulh x6, x11, x15
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #6: sum of products */
-    mul x5, x11, x15
-    adds x3, x3, x5
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #12 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #13 of product */
-    stp w6, w7, [x0, #48]      /* Save these limbs */
+    /* ---- Column #0: no input carry ---- */
+    FIRST A0, B0
+    and   x5, x3, #0x7fffffff
+    ubfx  x6, x3, #31, #31
+    stp   w5, w6, [x0, #0]
+    extr  x1, x4, x3, #62
+
+    /* ---- Column #1 (2 products) ---- */
+    FIRST A1, B0
+    MAC   A0, B1
+    CLOSE 8
+
+    /* ---- Column #2 (3 products) ---- */
+    FIRST A2, B0
+    MAC   A1, B1
+    MAC   A0, B2
+    CLOSE 16
+
+    /* ---- Column #3 (4 products: the carry still fits in a word) ---- */
+    FIRST A3, B0
+    MAC   A2, B1
+    MAC   A1, B2
+    MAC   A0, B3
+    CLOSE 24
+
+    /* ---- Column #4 (3 products) ---- */
+    FIRST A3, B1
+    MAC   A2, B2
+    MAC   A1, B3
+    CLOSE 32
+  
+    /* ---- Column #5 (2 products) ---- */
+    FIRST A3, B2
+    MAC   A2, B3
+    CLOSE 40
+  
+    /* ---- Column #6 (1 product) ---- */
+    FIRST A3, B3
+    CLOSE 48
     tbnz w2, #0, EndMultiply4DoubleLimbs
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x6, x4, #2
-    orr x3, x6, x3, lsr #62
-    /* Store carry in product */
-    and x6, x1, x3             /* Get limb #14 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #15 of product */
-    stp w6, w7, [x0, #56]      /* Save these limbs */
+  
+    /* ---- Final carry (< 2^62): last two limbs ---- */
+    FINAL_CARRY 56
 EndMultiply4DoubleLimbs:
     ret
-MoreThan8Limbs:
-    cmp w2, #10
-    bhi MoreThan10Limbs
+ClassicalMult9Limbs:
     /* Load multiplicand and multiplier into registers */
-    ldp w8, w3, [x0, #0]
-    orr x8, x8, x3, lsl #31
-    ldp w9, w3, [x0, #8]
-    orr x9, x9, x3, lsl #31
-    ldp w10, w3, [x0, #16]
-    orr x10, x10, x3, lsl #31
-    ldp w11, w3, [x0, #24]
-    orr x11, x11, x3, lsl #31
-    tbnz w2, #0, LengthIs9Limbs
-    ldp w12, w3, [x0, #32]
-    orr x12, x12, x3, lsl #31
-    ldp w13, w3, [x0, #40]
-    orr x13, x13, x3, lsl #31
-    ldp w14, w3, [x0, #48]
-    orr x14, x14, x3, lsl #31
-    ldp w15, w3, [x0, #56]
-    orr x15, x15, x3, lsl #31
-    ldp w16, w3, [x0, #64]
-    orr x16, x16, x3, lsl #31
-    ldp w17, w3, [x0, #72]
-    orr x17, x17, x3, lsl #31
-    b Multiply5DoubleLimbs
-LengthIs9Limbs:
-    ldr w12, [x0, #32]
-    ldp w13, w3, [x0, #36]
-    orr x13, x13, x3, lsl #31
-    ldp w14, w3, [x0, #44]
-    orr x14, x14, x3, lsl #31
-    ldp w15, w3, [x0, #52]
-    orr x15, x15, x3, lsl #31
-    ldp w16, w3, [x0, #60]
-    orr x16, x16, x3, lsl #31
-    ldr w17, [x0, #68]
+    ldr A4L, [x0, #32]
+    ldp B0L, w3, [x0, #36]
+    orr B0, B0, x3, lsl #31
+    ldp B1L, w3, [x0, #44]
+    orr B1, B1, x3, lsl #31
+    ldp B2L, w3, [x0, #52]
+    orr B2, B2, x3, lsl #31
+    ldp B3L, w3, [x0, #60]
+    orr B3, B3, x3, lsl #31
+    ldr B4L, [x0, #68]
+    b 1f
+ClassicalMult10Limbs:
+    ldp A4L, w3, [x0, #32]
+    orr A4, A4, x3, lsl #31
+    ldp B0L, w3, [x0, #40]
+    orr B0, B0, x3, lsl #31
+    ldp B1L, w3, [x0, #48]
+    orr B1, B1, x3, lsl #31
+    ldp B2L, w3, [x0, #56]
+    orr B2, B2, x3, lsl #31
+    ldp B3L, w3, [x0, #64]
+    orr B3, B3, x3, lsl #31
+    ldp B4L, w3, [x0, #72]
+    orr B4, B4, x3, lsl #31
+1:
+    ldp A0L, w3, [x0, #0]
+    orr A0, A0, x3, lsl #31
+    ldp A1L, w3, [x0, #8]
+    orr A1, A1, x3, lsl #31
+    ldp A2L, w3, [x0, #16]
+    orr A2, A2, x3, lsl #31
+    ldp A3L, w3, [x0, #24]
+    orr A3, A3, x3, lsl #31
 Multiply5DoubleLimbs:
-    /* Perform first multiplication */
-    mul x3, x8, x13
-    umulh x4, x8, x13
-    and x6, x1, x3               /* Get limb #0 of product */
-    and x7, x1, x3, lsr #31      /* Get limb #1 of product */
-    stp w6, w7, [x0]             /* Save these limbs */
-    umulh x6, x9, x13
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #1: sum of products */
-    mul x5, x9, x13
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x8, x14
-    adds x3, x3, x5
-    umulh x6, x8, x14
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #2 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #3 of product */
-    stp w6, w7, [x0, #8]      /* Save these limbs */
-    umulh x6, x10, x13
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #2: sum of products */
-    mul x5, x10, x13
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x9, x14
-    adds x3, x3, x5
-    umulh x6, x9, x14
-    adc x4, x4, x6
-    mul x5, x8, x15
-    adds x3, x3, x5
-    umulh x6, x8, x15
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #4 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #5 of product */
-    stp w6, w7, [x0, #16]      /* Save these limbs */
-    umulh x6, x11, x13
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #3: sum of products */
-    mul x5, x11, x13
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x10, x14
-    adds x3, x3, x5
-    umulh x6, x10, x14
-    adc x4, x4, x6
-    mul x5, x9, x15
-    adds x3, x3, x5
-    umulh x6, x9, x15
-    adc x4, x4, x6
-    mul x5, x8, x16
-    adds x3, x3, x5
-    umulh x6, x8, x16
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #6 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #7 of product */
-    stp w6, w7, [x0, #24]      /* Save these limbs */
-    umulh x6, x12, x13
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #4: sum of products */
-    mul x5, x12, x13
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x11, x14
-    adds x3, x3, x5
-    umulh x6, x11, x14
-    adc x4, x4, x6
-    mul x5, x10, x15
-    adds x3, x3, x5
-    umulh x6, x10, x15
-    adc x4, x4, x6
-    mul x5, x9, x16
-    adds x3, x3, x5
-    umulh x6, x9, x16
-    adc x4, x4, x6
-    mul x5, x8, x17
-    adds x3, x3, x5
-    umulh x6, x8, x17
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #8 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #9 of product */
-    stp w6, w7, [x0, #32]      /* Save these limbs */
-    umulh x6, x12, x14
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #5: sum of products */
-    mul x5, x12, x14
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x11, x15
-    adds x3, x3, x5
-    umulh x6, x11, x15
-    adc x4, x4, x6
-    mul x5, x10, x16
-    adds x3, x3, x5
-    umulh x6, x10, x16
-    adc x4, x4, x6
-    mul x5, x9, x17
-    adds x3, x3, x5
-    umulh x6, x9, x17
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #10 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #11 of product */
-    stp w6, w7, [x0, #40]      /* Save these limbs */
-    umulh x6, x12, x15
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #6: sum of products */
-    mul x5, x12, x15
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x11, x16
-    adds x3, x3, x5
-    umulh x6, x11, x16
-    adc x4, x4, x6
-    mul x5, x10, x17
-    adds x3, x3, x5
-    umulh x6, x10, x17
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #12 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #13 of product */
-    stp w6, w7, [x0, #48]      /* Save these limbs */
-    umulh x6, x12, x16
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #7: sum of products */
-    mul x5, x12, x16
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x11, x17
-    adds x3, x3, x5
-    umulh x6, x11, x17
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #14 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #15 of product */
-    stp w6, w7, [x0, #56]      /* Save these limbs */
-    umulh x6, x12, x17
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #8: sum of products */
-    mul x5, x12, x17
-    adds x3, x3, x5
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #16 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #17 of product */
-    stp w6, w7, [x0, #64]      /* Save these limbs */
+    /* ---- Column #0: no input carry ---- */
+    FIRST A0, B0
+    and   x5, x3, #0x7fffffff
+    ubfx  x6, x3, #31, #31
+    stp   w5, w6, [x0, #0]
+    extr  x1, x4, x3, #62
+
+    /* ---- Column #1 (2 products) ---- */
+    FIRST A1, B0
+    MAC   A0, B1
+    CLOSE 8
+
+    /* ---- Column #2 (3 products) ---- */
+    FIRST A2, B0
+    MAC   A1, B1
+    MAC   A0, B2
+    CLOSE 16
+
+    /* ---- Column #3 (4 products: the carry still fits in a word) ---- */
+    FIRST A3, B0
+    MAC   A2, B1
+    MAC   A1, B2
+    MAC   A0, B3
+    CLOSE 24
+
+    /* ---- Column #4: input carry in 1 word, output carry in 2 words ---- */
+    FIRST A4, B0
+    MAC   A3, B1
+    MAC   A2, B2
+    MAC   A1, B3
+    MAC   A0, B4
+    CLOSE 32
+    lsr   x7, x4, #62
+
+    /* ---- Column #5: input carry in 2 words, output carry in 1 word ---- */
+    FIRST A4, B1
+    MAC   A3, B2
+    MAC   A2, B3
+    MAC   A1, B4
+    CLOSE 40, x7
+  
+    /* ---- Column #6 (3 products) ---- */
+    FIRST A4, B2
+    MAC   A3, B3
+    MAC   A2, B4
+    CLOSE 48
+  
+    /* ---- Column #7 (2 products) ---- */
+    FIRST A4, B3
+    MAC   A3, B4
+    CLOSE 56
+  
+    /* ---- Column #8 (1 product) ---- */
+    FIRST A4, B4
+    CLOSE 64
     tbnz w2, #0, EndMultiply5DoubleLimbs
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x6, x4, #2
-    orr x3, x6, x3, lsr #62
-    /* Store carry in product */
-    and x6, x1, x3             /* Get limb #18 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #19 of product */
-    stp w6, w7, [x0, #72]      /* Save these limbs */
+  
+    /* ---- Final carry (< 2^62): last two limbs ---- */
+    FINAL_CARRY 64
 EndMultiply5DoubleLimbs:
     ret
-MoreThan10Limbs:
-    cmp w2, #12
-    bhi MoreThan12Limbs
+ClassicalMult11Limbs:
     stp x19, x20, [sp, #-16]!
     /* Load multiplicand and multiplier into registers */
-    ldp w8, w3, [x0, #0]
-    orr x8, x8, x3, lsl #31
-    ldp w9, w3, [x0, #8]
-    orr x9, x9, x3, lsl #31
-    ldp w10, w3, [x0, #16]
-    orr x10, x10, x3, lsl #31
-    ldp w11, w3, [x0, #24]
-    orr x11, x11, x3, lsl #31
-    ldp w12, w3, [x0, #32]
-    orr x12, x12, x3, lsl #31
-    tbnz w2, #0, LengthIs11Limbs
-    ldp w13, w3, [x0, #40]
-    orr x13, x13, x3, lsl #31
-    ldp w14, w3, [x0, #48]
-    orr x14, x14, x3, lsl #31
-    ldp w15, w3, [x0, #56]
-    orr x15, x15, x3, lsl #31
-    ldp w16, w3, [x0, #64]
-    orr x16, x16, x3, lsl #31
-    ldp w17, w3, [x0, #72]
-    orr x17, x17, x3, lsl #31
-    ldp w19, w3, [x0, #80]
-    orr x19, x19, x3, lsl #31
-    ldp w20, w3, [x0, #88]
-    orr x20, x20, x3, lsl #31
-    b Multiply6DoubleLimbs
-LengthIs11Limbs:
-    ldr w13, [x0, #40]
-    ldp w14, w3, [x0, #44]
-    orr x14, x14, x3, lsl #31
-    ldp w15, w3, [x0, #52]
-    orr x15, x15, x3, lsl #31
-    ldp w16, w3, [x0, #60]
-    orr x16, x16, x3, lsl #31
-    ldp w17, w3, [x0, #68]
-    orr x17, x17, x3, lsl #31
-    ldp w19, w3, [x0, #76]
-    orr x19, x19, x3, lsl #31
-    ldr w20, [x0, #84]
+    ldr A5L, [x0, #40]
+    ldp B0L, w3, [x0, #44]
+    orr B0, B0, x3, lsl #31
+    ldp B1L, w3, [x0, #52]
+    orr B1, B1, x3, lsl #31
+    ldp B2L, w3, [x0, #60]
+    orr B2, B2, x3, lsl #31
+    ldp B3L, w3, [x0, #68]
+    orr B3, B3, x3, lsl #31
+    ldp B4L, w3, [x0, #76]
+    orr B4, B4, x3, lsl #31
+    ldr B5L, [x0, #84]
+    b 1f
+ClassicalMult12Limbs:
+    stp x19, x20, [sp, #-16]!
+    /* Load multiplicand and multiplier into registers */
+    ldp A5L, w3, [x0, #40]
+    orr A5, A5, x3, lsl #31
+    ldp B0L, w3, [x0, #48]
+    orr B0, B0, x3, lsl #31
+    ldp B1L, w3, [x0, #56]
+    orr B1, B1, x3, lsl #31
+    ldp B2L, w3, [x0, #64]
+    orr B2, B2, x3, lsl #31
+    ldp B3L, w3, [x0, #72]
+    orr B3, B3, x3, lsl #31
+    ldp B4L, w3, [x0, #80]
+    orr B4, B4, x3, lsl #31
+    ldp B5L, w3, [x0, #88]
+    orr B5, B5, x3, lsl #31
+1:
+    ldp A0L, w3, [x0, #0]
+    orr A0, A0, x3, lsl #31
+    ldp A1L, w3, [x0, #8]
+    orr A1, A1, x3, lsl #31
+    ldp A2L, w3, [x0, #16]
+    orr A2, A2, x3, lsl #31
+    ldp A3L, w3, [x0, #24]
+    orr A3, A3, x3, lsl #31
+    ldp A4L, w3, [x0, #32]
+    orr A4, A4, x3, lsl #31
 Multiply6DoubleLimbs:
-    /* Perform first multiplication */
-    mul x3, x8, x14
-    umulh x4, x8, x14
-    and x6, x1, x3               /* Get limb #0 of product */
-    and x7, x1, x3, lsr #31      /* Get limb #1 of product */
-    stp w6, w7, [x0]             /* Save these limbs */
-    umulh x6, x9, x14
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #1: sum of products */
-    mul x5, x9, x14
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x8, x15
-    adds x3, x3, x5
-    umulh x6, x8, x15
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #2 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #3 of product */
-    stp w6, w7, [x0, #8]      /* Save these limbs */
-    umulh x6, x10, x14
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #2: sum of products */
-    mul x5, x10, x14
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x9, x15
-    adds x3, x3, x5
-    umulh x6, x9, x15
-    adc x4, x4, x6
-    mul x5, x8, x16
-    adds x3, x3, x5
-    umulh x6, x8, x16
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #4 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #5 of product */
-    stp w6, w7, [x0, #16]      /* Save these limbs */
-    umulh x6, x11, x14
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #3: sum of products */
-    mul x5, x11, x14
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x10, x15
-    adds x3, x3, x5
-    umulh x6, x10, x15
-    adc x4, x4, x6
-    mul x5, x9, x16
-    adds x3, x3, x5
-    umulh x6, x9, x16
-    adc x4, x4, x6
-    mul x5, x8, x17
-    adds x3, x3, x5
-    umulh x6, x8, x17
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #6 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #7 of product */
-    stp w6, w7, [x0, #24]      /* Save these limbs */
-    umulh x6, x12, x14
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #4: sum of products */
-    mul x5, x12, x14
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x11, x15
-    adds x3, x3, x5
-    umulh x6, x11, x15
-    adc x4, x4, x6
-    mul x5, x10, x16
-    adds x3, x3, x5
-    umulh x6, x10, x16
-    adc x4, x4, x6
-    mul x5, x9, x17
-    adds x3, x3, x5
-    umulh x6, x9, x17
-    adc x4, x4, x6
-    mul x5, x8, x19
-    adds x3, x3, x5
-    umulh x6, x8, x19
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #8 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #9 of product */
-    stp w6, w7, [x0, #32]      /* Save these limbs */
-    umulh x6, x13, x14
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #5: sum of products */
-    mul x5, x13, x14
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x12, x15
-    adds x3, x3, x5
-    umulh x6, x12, x15
-    adc x4, x4, x6
-    mul x5, x11, x16
-    adds x3, x3, x5
-    umulh x6, x11, x16
-    adc x4, x4, x6
-    mul x5, x10, x17
-    adds x3, x3, x5
-    umulh x6, x10, x17
-    adc x4, x4, x6
-    mul x5, x9, x19
-    adds x3, x3, x5
-    umulh x6, x9, x19
-    adc x4, x4, x6
-    mul x5, x8, x20
-    adds x3, x3, x5
-    umulh x6, x8, x20
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #10 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #11 of product */
-    stp w6, w7, [x0, #40]      /* Save these limbs */
-    umulh x6, x13, x15
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #6: sum of products */
-    mul x5, x13, x15
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x12, x16
-    adds x3, x3, x5
-    umulh x6, x12, x16
-    adc x4, x4, x6
-    mul x5, x11, x17
-    adds x3, x3, x5
-    umulh x6, x11, x17
-    adc x4, x4, x6
-    mul x5, x10, x19
-    adds x3, x3, x5
-    umulh x6, x10, x19
-    adc x4, x4, x6
-    mul x5, x9, x20
-    adds x3, x3, x5
-    umulh x6, x9, x20
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #12 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #13 of product */
-    stp w6, w7, [x0, #48]      /* Save these limbs */
-    umulh x6, x13, x16
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #7: sum of products */
-    mul x5, x13, x16
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x12, x17
-    adds x3, x3, x5
-    umulh x6, x12, x17
-    adc x4, x4, x6
-    mul x5, x11, x19
-    adds x3, x3, x5
-    umulh x6, x11, x19
-    adc x4, x4, x6
-    mul x5, x10, x20
-    adds x3, x3, x5
-    umulh x6, x10, x20
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #14 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #15 of product */
-    stp w6, w7, [x0, #56]      /* Save these limbs */
-    umulh x6, x13, x17
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #8: sum of products */
-    mul x5, x13, x17
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x12, x19
-    adds x3, x3, x5
-    umulh x6, x12, x19
-    adc x4, x4, x6
-    mul x5, x11, x20
-    adds x3, x3, x5
-    umulh x6, x11, x20
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #16 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #17 of product */
-    stp w6, w7, [x0, #64]      /* Save these limbs */
-    umulh x6, x13, x19
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #9: sum of products */
-    mul x5, x13, x19
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x12, x20
-    adds x3, x3, x5
-    umulh x6, x12, x20
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #18 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #19 of product */
-    stp w6, w7, [x0, #72]      /* Save these limbs */
-    umulh x6, x13, x20
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #10: sum of products */
-    mul x5, x13, x20
-    adds x3, x3, x5
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #20 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #21 of product */
-    stp w6, w7, [x0, #80]      /* Save these limbs */
+    /* ---- Column #0: no input carry ---- */
+    FIRST A0, B0
+    and   x5, x3, #0x7fffffff
+    ubfx  x6, x3, #31, #31
+    stp   w5, w6, [x0, #0]
+    extr  x1, x4, x3, #62
+
+    /* ---- Column #1 (2 products) ---- */
+    FIRST A1, B0
+    MAC   A0, B1
+    CLOSE 8
+
+    /* ---- Column #2 (3 products) ---- */
+    FIRST A2, B0
+    MAC   A1, B1
+    MAC   A0, B2
+    CLOSE 16
+
+    /* ---- Column #3 (4 products: the carry still fits in a word) ---- */
+    FIRST A3, B0
+    MAC   A2, B1
+    MAC   A1, B2
+    MAC   A0, B3
+    CLOSE 24
+
+    /* ---- Column #4: input carry in 1 word, output carry in 2 words ---- */
+    FIRST A4, B0
+    MAC   A3, B1
+    MAC   A2, B2
+    MAC   A1, B3
+    MAC   A0, B4
+    CLOSE 32
+    lsr   x7, x4, #62
+
+    /* ---- Column #5 (6 products) ---- */
+    FIRST A5, B0
+    MAC   A4, B1
+    MAC   A3, B2
+    MAC   A2, B3
+    MAC   A1, B4
+    MAC   A0, B5
+    CLOSE 40, x7
+    lsr   x7, x4, #62
+
+    /* ---- Column #6 (5 products) ---- */
+    FIRST A5, B1
+    MAC   A4, B2
+    MAC   A3, B3
+    MAC   A2, B4
+    MAC   A1, B5
+    CLOSE 48, x7
+    lsr   x7, x4, #62
+
+    /* ---- Column #7: input carry in 2 words, output carry in 1 word ---- */
+    FIRST A5, B2
+    MAC   A4, B3
+    MAC   A3, B4
+    MAC   A2, B5
+    CLOSE 56, x7
+  
+    /* ---- Column #8 (3 products) ---- */
+    FIRST A5, B3
+    MAC   A4, B4
+    MAC   A3, B5
+    CLOSE 64
+ 
+    /* ---- Column #9 (2 products) ---- */
+    FIRST A5, B4
+    MAC   A4, B5
+    CLOSE 72
+  
+    /* ---- Column #10 (1 product) ---- */
+    FIRST A5, B5
+    CLOSE 80
     tbnz w2, #0, EndMultiply6DoubleLimbs
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x6, x4, #2
-    orr x3, x6, x3, lsr #62
-    /* Store carry in product */
-    and x6, x1, x3             /* Get limb #22 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #23 of product */
-    stp w6, w7, [x0, #88]      /* Save these limbs */
+  
+    /* ---- Final carry (< 2^62): last two limbs ---- */
+    FINAL_CARRY 88
+    /* ---- Restore registers and go out ---- */
 EndMultiply6DoubleLimbs:
     ldp x19, x20, [sp], #16
     ret
-MoreThan12Limbs:
-    cmp w2, #14
-    bhi MoreThan14Limbs
-    stp x19, x20, [sp, #-16]!
-    stp x21, x22, [sp, #-16]!
+ClassicalMult13Limbs:
+    stp x19, x20, [sp, #-32]!
+    stp x21, x22, [sp, #16]
     /* Load multiplicand and multiplier into registers */
-    ldp w8, w3, [x0, #0]
-    orr x8, x8, x3, lsl #31
-    ldp w9, w3, [x0, #8]
-    orr x9, x9, x3, lsl #31
-    ldp w10, w3, [x0, #16]
-    orr x10, x10, x3, lsl #31
-    ldp w11, w3, [x0, #24]
-    orr x11, x11, x3, lsl #31
-    ldp w12, w3, [x0, #32]
-    orr x12, x12, x3, lsl #31
-    ldp w13, w3, [x0, #40]
-    orr x13, x13, x3, lsl #31
-    tbnz w2, #0, LengthIs13Limbs
-    ldp w14, w3, [x0, #48]
-    orr x14, x14, x3, lsl #31
-    ldp w15, w3, [x0, #56]
-    orr x15, x15, x3, lsl #31
-    ldp w16, w3, [x0, #64]
-    orr x16, x16, x3, lsl #31
-    ldp w17, w3, [x0, #72]
-    orr x17, x17, x3, lsl #31
-    ldp w19, w3, [x0, #80]
-    orr x19, x19, x3, lsl #31
-    ldp w20, w3, [x0, #88]
-    orr x20, x20, x3, lsl #31
-    ldp w21, w3, [x0, #96]
-    orr x21, x21, x3, lsl #31
-    ldp w22, w3, [x0, #104]
-    orr x22, x22, x3, lsl #31
-    b Multiply7DoubleLimbs
-LengthIs13Limbs:
-    ldr w14, [x0, #48]
-    ldp w15, w3, [x0, #52]
-    orr x15, x15, x3, lsl #31
-    ldp w16, w3, [x0, #60]
-    orr x16, x16, x3, lsl #31
-    ldp w17, w3, [x0, #68]
-    orr x17, x17, x3, lsl #31
-    ldp w19, w3, [x0, #76]
-    orr x19, x19, x3, lsl #31
-    ldp w20, w3, [x0, #84]
-    orr x20, x20, x3, lsl #31
-    ldp w21, w3, [x0, #92]
-    orr x21, x21, x3, lsl #31
-    ldr w22, [x0, #100]
+    ldr A6L, [x0, #48]
+    ldp B0L, w3, [x0, #52]
+    orr B0, B0, x3, lsl #31
+    ldp B1L, w3, [x0, #60]
+    orr B1, B1, x3, lsl #31
+    ldp B2L, w3, [x0, #68]
+    orr B2, B2, x3, lsl #31
+    ldp B3L, w3, [x0, #76]
+    orr B3, B3, x3, lsl #31
+    ldp B4L, w3, [x0, #84]
+    orr B4, B4, x3, lsl #31
+    ldp B5L, w3, [x0, #92]
+    orr B5, B5, x3, lsl #31
+    ldr B6L, [x0, #100]
+    b 1f
+ClassicalMult14Limbs:
+    stp x19, x20, [sp, #-32]!
+    stp x21, x22, [sp, #16]
+    /* Load multiplicand and multiplier into registers */
+    ldp A6L, w3, [x0, #48]
+    orr A6, A6, x3, lsl #31
+    ldp B0L, w3, [x0, #56]
+    orr B0, B0, x3, lsl #31
+    ldp B1L, w3, [x0, #64]
+    orr B1, B1, x3, lsl #31
+    ldp B2L, w3, [x0, #72]
+    orr B2, B2, x3, lsl #31
+    ldp B3L, w3, [x0, #80]
+    orr B3, B3, x3, lsl #31
+    ldp B4L, w3, [x0, #88]
+    orr B4, B4, x3, lsl #31
+    ldp B5L, w3, [x0, #96]
+    orr B5, B5, x3, lsl #31
+    ldp B6L, w3, [x0, #104]
+    orr B6, B6, x3, lsl #31
+1:
+    ldp A0L, w3, [x0, #0]
+    orr A0, A0, x3, lsl #31
+    ldp A1L, w3, [x0, #8]
+    orr A1, A1, x3, lsl #31
+    ldp A2L, w3, [x0, #16]
+    orr A2, A2, x3, lsl #31
+    ldp A3L, w3, [x0, #24]
+    orr A3, A3, x3, lsl #31
+    ldp A4L, w3, [x0, #32]
+    orr A4, A4, x3, lsl #31
+    ldp A5L, w3, [x0, #40]
+    orr A5, A5, x3, lsl #31
 Multiply7DoubleLimbs:
-    /* Perform first multiplication */
-    mul x3, x8, x15
-    umulh x4, x8, x15
-    and x6, x1, x3               /* Get limb #0 of product */
-    and x7, x1, x3, lsr #31      /* Get limb #1 of product */
-    stp w6, w7, [x0]             /* Save these limbs */
-    umulh x6, x9, x15
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #1: sum of products */
-    mul x5, x9, x15
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x8, x16
-    adds x3, x3, x5
-    umulh x6, x8, x16
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #2 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #3 of product */
-    stp w6, w7, [x0, #8]      /* Save these limbs */
-    umulh x6, x10, x15
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #2: sum of products */
-    mul x5, x10, x15
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x9, x16
-    adds x3, x3, x5
-    umulh x6, x9, x16
-    adc x4, x4, x6
-    mul x5, x8, x17
-    adds x3, x3, x5
-    umulh x6, x8, x17
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #4 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #5 of product */
-    stp w6, w7, [x0, #16]      /* Save these limbs */
-    umulh x6, x11, x15
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #3: sum of products */
-    mul x5, x11, x15
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x10, x16
-    adds x3, x3, x5
-    umulh x6, x10, x16
-    adc x4, x4, x6
-    mul x5, x9, x17
-    adds x3, x3, x5
-    umulh x6, x9, x17
-    adc x4, x4, x6
-    mul x5, x8, x19
-    adds x3, x3, x5
-    umulh x6, x8, x19
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #6 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #7 of product */
-    stp w6, w7, [x0, #24]      /* Save these limbs */
-    umulh x6, x12, x15
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #4: sum of products */
-    mul x5, x12, x15
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x11, x16
-    adds x3, x3, x5
-    umulh x6, x11, x16
-    adc x4, x4, x6
-    mul x5, x10, x17
-    adds x3, x3, x5
-    umulh x6, x10, x17
-    adc x4, x4, x6
-    mul x5, x9, x19
-    adds x3, x3, x5
-    umulh x6, x9, x19
-    adc x4, x4, x6
-    mul x5, x8, x20
-    adds x3, x3, x5
-    umulh x6, x8, x20
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #8 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #9 of product */
-    stp w6, w7, [x0, #32]      /* Save these limbs */
-    umulh x6, x13, x15
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #5: sum of products */
-    mul x5, x13, x15
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x12, x16
-    adds x3, x3, x5
-    umulh x6, x12, x16
-    adc x4, x4, x6
-    mul x5, x11, x17
-    adds x3, x3, x5
-    umulh x6, x11, x17
-    adc x4, x4, x6
-    mul x5, x10, x19
-    adds x3, x3, x5
-    umulh x6, x10, x19
-    adc x4, x4, x6
-    mul x5, x9, x20
-    adds x3, x3, x5
-    umulh x6, x9, x20
-    adc x4, x4, x6
-    mul x5, x8, x21
-    adds x3, x3, x5
-    umulh x6, x8, x21
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #10 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #11 of product */
-    stp w6, w7, [x0, #40]      /* Save these limbs */
-    umulh x6, x14, x15
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #6: sum of products */
-    mul x5, x14, x15
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x13, x16
-    adds x3, x3, x5
-    umulh x6, x13, x16
-    adc x4, x4, x6
-    mul x5, x12, x17
-    adds x3, x3, x5
-    umulh x6, x12, x17
-    adc x4, x4, x6
-    mul x5, x11, x19
-    adds x3, x3, x5
-    umulh x6, x11, x19
-    adc x4, x4, x6
-    mul x5, x10, x20
-    adds x3, x3, x5
-    umulh x6, x10, x20
-    adc x4, x4, x6
-    mul x5, x9, x21
-    adds x3, x3, x5
-    umulh x6, x9, x21
-    adc x4, x4, x6
-    mul x5, x8, x22
-    adds x3, x3, x5
-    umulh x6, x8, x22
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #12 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #13 of product */
-    stp w6, w7, [x0, #48]      /* Save these limbs */
-    umulh x6, x14, x16
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #7: sum of products */
-    mul x5, x14, x16
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x13, x17
-    adds x3, x3, x5
-    umulh x6, x13, x17
-    adc x4, x4, x6
-    mul x5, x12, x19
-    adds x3, x3, x5
-    umulh x6, x12, x19
-    adc x4, x4, x6
-    mul x5, x11, x20
-    adds x3, x3, x5
-    umulh x6, x11, x20
-    adc x4, x4, x6
-    mul x5, x10, x21
-    adds x3, x3, x5
-    umulh x6, x10, x21
-    adc x4, x4, x6
-    mul x5, x9, x22
-    adds x3, x3, x5
-    umulh x6, x9, x22
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #14 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #15 of product */
-    stp w6, w7, [x0, #56]      /* Save these limbs */
-    umulh x6, x14, x17
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #8: sum of products */
-    mul x5, x14, x17
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x13, x19
-    adds x3, x3, x5
-    umulh x6, x13, x19
-    adc x4, x4, x6
-    mul x5, x12, x20
-    adds x3, x3, x5
-    umulh x6, x12, x20
-    adc x4, x4, x6
-    mul x5, x11, x21
-    adds x3, x3, x5
-    umulh x6, x11, x21
-    adc x4, x4, x6
-    mul x5, x10, x22
-    adds x3, x3, x5
-    umulh x6, x10, x22
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #16 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #17 of product */
-    stp w6, w7, [x0, #64]      /* Save these limbs */
-    umulh x6, x14, x19
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #9: sum of products */
-    mul x5, x14, x19
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x13, x20
-    adds x3, x3, x5
-    umulh x6, x13, x20
-    adc x4, x4, x6
-    mul x5, x12, x21
-    adds x3, x3, x5
-    umulh x6, x12, x21
-    adc x4, x4, x6
-    mul x5, x11, x22
-    adds x3, x3, x5
-    umulh x6, x11, x22
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #18 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #19 of product */
-    stp w6, w7, [x0, #72]      /* Save these limbs */
-    umulh x6, x14, x20
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #10: sum of products */
-    mul x5, x14, x20
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x13, x21
-    adds x3, x3, x5
-    umulh x6, x13, x21
-    adc x4, x4, x6
-    mul x5, x12, x22
-    adds x3, x3, x5
-    umulh x6, x12, x22
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #20 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #21 of product */
-    stp w6, w7, [x0, #80]      /* Save these limbs */
-    umulh x6, x14, x21
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #11: sum of products */
-    mul x5, x14, x21
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x13, x22
-    adds x3, x3, x5
-    umulh x6, x13, x22
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #22 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #23 of product */
-    stp w6, w7, [x0, #88]      /* Save these limbs */
-    umulh x6, x14, x22
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #12: sum of products */
-    mul x5, x14, x22
-    adds x3, x3, x5
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #24 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #25 of product */
-    stp w6, w7, [x0, #96]      /* Save these limbs */
+    /* ---- Column #0: no input carry ---- */
+    FIRST A0, B0
+    and   x5, x3, #0x7fffffff
+    ubfx  x6, x3, #31, #31
+    stp   w5, w6, [x0, #0]
+    extr  x1, x4, x3, #62
+
+    /* ---- Column #1 (2 products) ---- */
+    FIRST A1, B0
+    MAC   A0, B1
+    CLOSE 8
+
+    /* ---- Column #2 (3 products) ---- */
+    FIRST A2, B0
+    MAC   A1, B1
+    MAC   A0, B2
+    CLOSE 16
+
+    /* ---- Column #3 (4 products: the carry still fits in a word) ---- */
+    FIRST A3, B0
+    MAC   A2, B1
+    MAC   A1, B2
+    MAC   A0, B3
+    CLOSE 24
+
+    /* ---- Column #4: input carry in 1 word, output carry in 2 words ---- */
+    FIRST A4, B0
+    MAC   A3, B1
+    MAC   A2, B2
+    MAC   A1, B3
+    MAC   A0, B4
+    CLOSE 32
+    lsr   x7, x4, #62
+
+    /* ---- Column #5 (6 products) ---- */
+    FIRST A5, B0
+    MAC   A4, B1
+    MAC   A3, B2
+    MAC   A2, B3
+    MAC   A1, B4
+    MAC   A0, B5
+    CLOSE 40, x7
+    lsr   x7, x4, #62
+
+    /* ---- Column #6 (7 products)---- */
+    FIRST A6, B0
+    MAC   A5, B1
+    MAC   A4, B2
+    MAC   A3, B3
+    MAC   A2, B4
+    MAC   A1, B5
+    MAC   A0, B6
+    CLOSE 48, x7
+    lsr   x7, x4, #62
+
+    /* ---- Column #7 (6 products) ---- */
+    FIRST A6, B1
+    MAC   A5, B2
+    MAC   A4, B3
+    MAC   A3, B4
+    MAC   A2, B5
+    MAC   A1, B6
+    CLOSE 56, x7
+    lsr   x7, x4, #62
+
+    /* ---- Column #8 (5 products) ---- */
+    FIRST A6, B2
+    MAC   A5, B3
+    MAC   A4, B4
+    MAC   A3, B5
+    MAC   A2, B6
+    CLOSE 64, x7
+    lsr   x7, x4, #62
+
+    /* ---- Column #9: input carry in 2 words, output carry in 1 word ---- */
+    FIRST A6, B3
+    MAC   A5, B4
+    MAC   A4, B5
+    MAC   A3, B6
+    CLOSE 72, x7
+  
+    /* ---- Column #10 (3 products) ---- */
+    FIRST A6, B4
+    MAC   A5, B5
+    MAC   A4, B6
+    CLOSE 80
+  
+    /* ---- Column #11 (2 products) ---- */
+    FIRST A6, B5
+    MAC   A5, B6
+    CLOSE 88
+
+    /* ---- Column #12 (1 product) ---- */
+    FIRST A6, B6
+    CLOSE 96
     tbnz w2, #0, EndMultiply7DoubleLimbs
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x6, x4, #2
-    orr x3, x6, x3, lsr #62
-    /* Store carry in product */
-    and x6, x1, x3             /* Get limb #26 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #27 of product */
-    stp w6, w7, [x0, #104]      /* Save these limbs */
+   
+    /* ---- Final carry (< 2^62): last two limbs ---- */
+    FINAL_CARRY 104
+    /* ---- Restore registers and go out ---- */
 EndMultiply7DoubleLimbs:
-    ldp x21, x22, [sp], #16
-    ldp x19, x20, [sp], #16
+    ldp   x21, x22, [sp, #16]
+    ldp   x19, x20, [sp], #32
     ret
-MoreThan14Limbs:
-    stp x19, x20, [sp, #-16]!
-    stp x21, x22, [sp, #-16]!
-    stp x23, x24, [sp, #-16]!
+ClassicalMult15Limbs:
+    stp x19, x20, [sp, #-48]!
+    stp x21, x22, [sp, #16]
+    stp x23, x24, [sp, #32]
     /* Load multiplicand and multiplier into registers */
-    ldp w8, w3, [x0, #0]
-    orr x8, x8, x3, lsl #31
-    ldp w9, w3, [x0, #8]
-    orr x9, x9, x3, lsl #31
-    ldp w10, w3, [x0, #16]
-    orr x10, x10, x3, lsl #31
-    ldp w11, w3, [x0, #24]
-    orr x11, x11, x3, lsl #31
-    ldp w12, w3, [x0, #32]
-    orr x12, x12, x3, lsl #31
-    ldp w13, w3, [x0, #40]
-    orr x13, x13, x3, lsl #31
-    ldp w14, w3, [x0, #48]
-    orr x14, x14, x3, lsl #31
-    tbnz w2, #0, LengthIs15Limbs
-    ldp w15, w3, [x0, #56]
-    orr x15, x15, x3, lsl #31
-    ldp w16, w3, [x0, #64]
-    orr x16, x16, x3, lsl #31
-    ldp w17, w3, [x0, #72]
-    orr x17, x17, x3, lsl #31
-    ldp w19, w3, [x0, #80]
-    orr x19, x19, x3, lsl #31
-    ldp w20, w3, [x0, #88]
-    orr x20, x20, x3, lsl #31
-    ldp w21, w3, [x0, #96]
-    orr x21, x21, x3, lsl #31
-    ldp w22, w3, [x0, #104]
-    orr x22, x22, x3, lsl #31
-    ldp w23, w3, [x0, #112]
-    orr x23, x23, x3, lsl #31
-    ldp w24, w3, [x0, #120]
-    orr x24, x24, x3, lsl #31
-    b Multiply8DoubleLimbs
-LengthIs15Limbs:
-    ldr w15, [x0, #56]
-    ldp w16, w3, [x0, #60]
-    orr x16, x16, x3, lsl #31
-    ldp w17, w3, [x0, #68]
-    orr x17, x17, x3, lsl #31
-    ldp w19, w3, [x0, #76]
-    orr x19, x19, x3, lsl #31
-    ldp w20, w3, [x0, #84]
-    orr x20, x20, x3, lsl #31
-    ldp w21, w3, [x0, #92]
-    orr x21, x21, x3, lsl #31
-    ldp w22, w3, [x0, #100]
-    orr x22, x22, x3, lsl #31
-    ldp w23, w3, [x0, #108]
-    orr x23, x23, x3, lsl #31
-    ldr w24, [x0, #116]
+    ldr A7L, [x0, #56]
+    ldp B0L, w3, [x0, #60]
+    orr B0, B0, x3, lsl #31
+    ldp B1L, w3, [x0, #68]
+    orr B1, B1, x3, lsl #31
+    ldp B2L, w3, [x0, #76]
+    orr B2, B2, x3, lsl #31
+    ldp B3L, w3, [x0, #84]
+    orr B3, B3, x3, lsl #31
+    ldp B4L, w3, [x0, #92]
+    orr B4, B4, x3, lsl #31
+    ldp B5L, w3, [x0, #100]
+    orr B5, B5, x3, lsl #31
+    ldp B6L, w3, [x0, #108]
+    orr B6, B6, x3, lsl #31
+    ldr B7L, [x0, #116]
+    b 1f
+ClassicalMult16Limbs:
+    stp x19, x20, [sp, #-48]!
+    stp x21, x22, [sp, #16]
+    stp x23, x24, [sp, #32]
+    /* Load multiplicand and multiplier into registers */
+    ldp A7L, w3, [x0, #56]
+    orr A7, A7, x3, lsl #31
+    ldp B0L, w3, [x0, #64]
+    orr B0, B0, x3, lsl #31
+    ldp B1L, w3, [x0, #72]
+    orr B1, B1, x3, lsl #31
+    ldp B2L, w3, [x0, #80]
+    orr B2, B2, x3, lsl #31
+    ldp B3L, w3, [x0, #88]
+    orr B3, B3, x3, lsl #31
+    ldp B4L, w3, [x0, #96]
+    orr B4, B4, x3, lsl #31
+    ldp B5L, w3, [x0, #104]
+    orr B5, B5, x3, lsl #31
+    ldp B6L, w3, [x0, #112]
+    orr B6, B6, x3, lsl #31
+    ldp B7L, w3, [x0, #120]
+    orr B7, B7, x3, lsl #31
+1:    
+    ldp A0L, w3, [x0, #0]
+    orr A0, A0, x3, lsl #31
+    ldp A1L, w3, [x0, #8]
+    orr A1, A1, x3, lsl #31
+    ldp A2L, w3, [x0, #16]
+    orr A2, A2, x3, lsl #31
+    ldp A3L, w3, [x0, #24]
+    orr A3, A3, x3, lsl #31
+    ldp A4L, w3, [x0, #32]
+    orr A4, A4, x3, lsl #31
+    ldp A5L, w3, [x0, #40]
+    orr A5, A5, x3, lsl #31
+    ldp A6L, w3, [x0, #48]
+    orr A6, A6, x3, lsl #31
 Multiply8DoubleLimbs:
-    /* Perform first multiplication */
-    mul x3, x8, x16
-    umulh x4, x8, x16
-    and x6, x1, x3               /* Get limb #0 of product */
-    and x7, x1, x3, lsr #31      /* Get limb #1 of product */
-    stp w6, w7, [x0]             /* Save these limbs */
-    umulh x6, x9, x16
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #1: sum of products */
-    mul x5, x9, x16
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x8, x17
-    adds x3, x3, x5
-    umulh x6, x8, x17
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #2 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #3 of product */
-    stp w6, w7, [x0, #8]      /* Save these limbs */
-    umulh x6, x10, x16
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #2: sum of products */
-    mul x5, x10, x16
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x9, x17
-    adds x3, x3, x5
-    umulh x6, x9, x17
-    adc x4, x4, x6
-    mul x5, x8, x19
-    adds x3, x3, x5
-    umulh x6, x8, x19
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #4 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #5 of product */
-    stp w6, w7, [x0, #16]      /* Save these limbs */
-    umulh x6, x11, x16
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #3: sum of products */
-    mul x5, x11, x16
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x10, x17
-    adds x3, x3, x5
-    umulh x6, x10, x17
-    adc x4, x4, x6
-    mul x5, x9, x19
-    adds x3, x3, x5
-    umulh x6, x9, x19
-    adc x4, x4, x6
-    mul x5, x8, x20
-    adds x3, x3, x5
-    umulh x6, x8, x20
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #6 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #7 of product */
-    stp w6, w7, [x0, #24]      /* Save these limbs */
-    umulh x6, x12, x16
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #4: sum of products */
-    mul x5, x12, x16
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x11, x17
-    adds x3, x3, x5
-    umulh x6, x11, x17
-    adc x4, x4, x6
-    mul x5, x10, x19
-    adds x3, x3, x5
-    umulh x6, x10, x19
-    adc x4, x4, x6
-    mul x5, x9, x20
-    adds x3, x3, x5
-    umulh x6, x9, x20
-    adc x4, x4, x6
-    mul x5, x8, x21
-    adds x3, x3, x5
-    umulh x6, x8, x21
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #8 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #9 of product */
-    stp w6, w7, [x0, #32]      /* Save these limbs */
-    umulh x6, x13, x16
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #5: sum of products */
-    mul x5, x13, x16
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x12, x17
-    adds x3, x3, x5
-    umulh x6, x12, x17
-    adc x4, x4, x6
-    mul x5, x11, x19
-    adds x3, x3, x5
-    umulh x6, x11, x19
-    adc x4, x4, x6
-    mul x5, x10, x20
-    adds x3, x3, x5
-    umulh x6, x10, x20
-    adc x4, x4, x6
-    mul x5, x9, x21
-    adds x3, x3, x5
-    umulh x6, x9, x21
-    adc x4, x4, x6
-    mul x5, x8, x22
-    adds x3, x3, x5
-    umulh x6, x8, x22
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #10 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #11 of product */
-    stp w6, w7, [x0, #40]      /* Save these limbs */
-    umulh x6, x14, x16
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #6: sum of products */
-    mul x5, x14, x16
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x13, x17
-    adds x3, x3, x5
-    umulh x6, x13, x17
-    adc x4, x4, x6
-    mul x5, x12, x19
-    adds x3, x3, x5
-    umulh x6, x12, x19
-    adc x4, x4, x6
-    mul x5, x11, x20
-    adds x3, x3, x5
-    umulh x6, x11, x20
-    adc x4, x4, x6
-    mul x5, x10, x21
-    adds x3, x3, x5
-    umulh x6, x10, x21
-    adc x4, x4, x6
-    mul x5, x9, x22
-    adds x3, x3, x5
-    umulh x6, x9, x22
-    adc x4, x4, x6
-    mul x5, x8, x23
-    adds x3, x3, x5
-    umulh x6, x8, x23
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #12 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #13 of product */
-    stp w6, w7, [x0, #48]      /* Save these limbs */
-    umulh x6, x15, x16
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #7: sum of products */
-    mul x5, x15, x16
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x14, x17
-    adds x3, x3, x5
-    umulh x6, x14, x17
-    adc x4, x4, x6
-    mul x5, x13, x19
-    adds x3, x3, x5
-    umulh x6, x13, x19
-    adc x4, x4, x6
-    mul x5, x12, x20
-    adds x3, x3, x5
-    umulh x6, x12, x20
-    adc x4, x4, x6
-    mul x5, x11, x21
-    adds x3, x3, x5
-    umulh x6, x11, x21
-    adc x4, x4, x6
-    mul x5, x10, x22
-    adds x3, x3, x5
-    umulh x6, x10, x22
-    adc x4, x4, x6
-    mul x5, x9, x23
-    adds x3, x3, x5
-    umulh x6, x9, x23
-    adc x4, x4, x6
-    mul x5, x8, x24
-    adds x3, x3, x5
-    umulh x6, x8, x24
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #14 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #15 of product */
-    stp w6, w7, [x0, #56]      /* Save these limbs */
-    umulh x6, x15, x17
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #8: sum of products */
-    mul x5, x15, x17
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x14, x19
-    adds x3, x3, x5
-    umulh x6, x14, x19
-    adc x4, x4, x6
-    mul x5, x13, x20
-    adds x3, x3, x5
-    umulh x6, x13, x20
-    adc x4, x4, x6
-    mul x5, x12, x21
-    adds x3, x3, x5
-    umulh x6, x12, x21
-    adc x4, x4, x6
-    mul x5, x11, x22
-    adds x3, x3, x5
-    umulh x6, x11, x22
-    adc x4, x4, x6
-    mul x5, x10, x23
-    adds x3, x3, x5
-    umulh x6, x10, x23
-    adc x4, x4, x6
-    mul x5, x9, x24
-    adds x3, x3, x5
-    umulh x6, x9, x24
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #16 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #17 of product */
-    stp w6, w7, [x0, #64]      /* Save these limbs */
-    umulh x6, x15, x19
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #9: sum of products */
-    mul x5, x15, x19
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x14, x20
-    adds x3, x3, x5
-    umulh x6, x14, x20
-    adc x4, x4, x6
-    mul x5, x13, x21
-    adds x3, x3, x5
-    umulh x6, x13, x21
-    adc x4, x4, x6
-    mul x5, x12, x22
-    adds x3, x3, x5
-    umulh x6, x12, x22
-    adc x4, x4, x6
-    mul x5, x11, x23
-    adds x3, x3, x5
-    umulh x6, x11, x23
-    adc x4, x4, x6
-    mul x5, x10, x24
-    adds x3, x3, x5
-    umulh x6, x10, x24
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #18 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #19 of product */
-    stp w6, w7, [x0, #72]      /* Save these limbs */
-    umulh x6, x15, x20
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #10: sum of products */
-    mul x5, x15, x20
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x14, x21
-    adds x3, x3, x5
-    umulh x6, x14, x21
-    adc x4, x4, x6
-    mul x5, x13, x22
-    adds x3, x3, x5
-    umulh x6, x13, x22
-    adc x4, x4, x6
-    mul x5, x12, x23
-    adds x3, x3, x5
-    umulh x6, x12, x23
-    adc x4, x4, x6
-    mul x5, x11, x24
-    adds x3, x3, x5
-    umulh x6, x11, x24
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #20 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #21 of product */
-    stp w6, w7, [x0, #80]      /* Save these limbs */
-    umulh x6, x15, x21
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #11: sum of products */
-    mul x5, x15, x21
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x14, x22
-    adds x3, x3, x5
-    umulh x6, x14, x22
-    adc x4, x4, x6
-    mul x5, x13, x23
-    adds x3, x3, x5
-    umulh x6, x13, x23
-    adc x4, x4, x6
-    mul x5, x12, x24
-    adds x3, x3, x5
-    umulh x6, x12, x24
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #22 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #23 of product */
-    stp w6, w7, [x0, #88]      /* Save these limbs */
-    umulh x6, x15, x22
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #12: sum of products */
-    mul x5, x15, x22
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x14, x23
-    adds x3, x3, x5
-    umulh x6, x14, x23
-    adc x4, x4, x6
-    mul x5, x13, x24
-    adds x3, x3, x5
-    umulh x6, x13, x24
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #24 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #25 of product */
-    stp w6, w7, [x0, #96]      /* Save these limbs */
-    umulh x6, x15, x23
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #13: sum of products */
-    mul x5, x15, x23
-    adds x3, x3, x5
-    adc x4, x4, x6
-    mul x5, x14, x24
-    adds x3, x3, x5
-    umulh x6, x14, x24
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #26 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #27 of product */
-    stp w6, w7, [x0, #104]      /* Save these limbs */
-    umulh x6, x15, x24
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x7, x4, #2
-    lsr x4, x4, #62
-    orr x3, x7, x3, lsr #62
-    /* Process the column #14: sum of products */
-    mul x5, x15, x24
-    adds x3, x3, x5
-    adc x4, x4, x6
-    and x6, x1, x3             /* Get limb #28 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #29 of product */
-    stp w6, w7, [x0, #112]      /* Save these limbs */
+    /* ---- Column #0: no input carry ---- */
+    FIRST A0, B0
+    and   x5, x3, #0x7fffffff
+    ubfx  x6, x3, #31, #31
+    stp   w5, w6, [x0, #0]
+    extr  x1, x4, x3, #62
+
+    /* ---- Column #1 (2 products) ---- */
+    FIRST A1, B0
+    MAC   A0, B1
+    CLOSE 8
+
+    /* ---- Column #2 (3 products)  ---- */
+    FIRST A2, B0
+    MAC   A1, B1
+    MAC   A0, B2
+    CLOSE 16
+
+    /* ---- Column #3 (4 products: the carry still fits in a word) ---- */
+    FIRST A3, B0
+    MAC   A2, B1
+    MAC   A1, B2
+    MAC   A0, B3
+    CLOSE 24
+
+    /* ---- Column #4: input carry in 1 word, output carry in 2 words ---- */
+    FIRST A4, B0
+    MAC   A3, B1
+    MAC   A2, B2
+    MAC   A1, B3
+    MAC   A0, B4
+    CLOSE 32
+    lsr   x7, x4, #62
+
+    /* ---- Column #5 (6 products) ---- */
+    FIRST A5, B0
+    MAC   A4, B1
+    MAC   A3, B2
+    MAC   A2, B3
+    MAC   A1, B4
+    MAC   A0, B5
+    CLOSE 40, x7
+    lsr   x7, x4, #62
+
+    /* ---- Column #6 (7 products) ---- */
+    FIRST A6, B0
+    MAC   A5, B1
+    MAC   A4, B2
+    MAC   A3, B3
+    MAC   A2, B4
+    MAC   A1, B5
+    MAC   A0, B6
+    CLOSE 48, x7
+    lsr   x7, x4, #62
+
+    /* ---- Column #7 (8 products) ---- */
+    FIRST A7, B0
+    MAC   A6, B1
+    MAC   A5, B2
+    MAC   A4, B3
+    MAC   A3, B4
+    MAC   A2, B5
+    MAC   A1, B6
+    MAC   A0, B7
+    CLOSE 56, x7
+    lsr   x7, x4, #62
+
+    /* ---- Column #8 (7 products) ---- */
+    FIRST A7, B1
+    MAC   A6, B2
+    MAC   A5, B3
+    MAC   A4, B4
+    MAC   A3, B5
+    MAC   A2, B6
+    MAC   A1, B7
+    CLOSE 64, x7
+    lsr   x7, x4, #62
+
+    /* ---- Column #9 (6 products) ---- */
+    FIRST A7, B2
+    MAC   A6, B3
+    MAC   A5, B4
+    MAC   A4, B5
+    MAC   A3, B6
+    MAC   A2, B7
+    CLOSE 72, x7
+    lsr   x7, x4, #62
+
+    /* ---- Column #10 (5 products) ---- */
+    FIRST A7, B3
+    MAC   A6, B4
+    MAC   A5, B5
+    MAC   A4, B6
+    MAC   A3, B7
+    CLOSE 80, x7
+    lsr   x7, x4, #62
+
+    /* ---- Column #11: input carry in 2 words, output carry in 1 word ---- */
+    FIRST A7, B4
+    MAC   A6, B5
+    MAC   A5, B6
+    MAC   A4, B7
+    CLOSE 88, x7
+
+    /* ---- Column #12 (3 products) ---- */
+    FIRST A7, B5
+    MAC   A6, B6
+    MAC   A5, B7
+    CLOSE 96
+
+    /* ---- Column #13 (2 products) ---- */
+    FIRST A7, B6
+    MAC   A6, B7
+    CLOSE 104
+
+    /* ---- Column #14 (1 product) ---- */
+    FIRST A7, B7
+    CLOSE 112
     tbnz w2, #0, EndMultiply8DoubleLimbs
-    /* Shift right 62 bits the sum of products x4: x3 */
-    lsl x6, x4, #2
-    orr x3, x6, x3, lsr #62
-    /* Store carry in product */
-    and x6, x1, x3             /* Get limb #30 of product */
-    and x7, x1, x3, lsr #31    /* Get limb #31 of product */
-    stp w6, w7, [x0, #120]      /* Save these limbs */
+    
+    /* ---- Final carry (< 2^62): last two limbs ---- */
+    FINAL_CARRY 120
+    /* ---- Restore registers and go out ---- */
 EndMultiply8DoubleLimbs:
-    ldp x23, x24, [sp], #16
-    ldp x21, x22, [sp], #16
-    ldp x19, x20, [sp], #16
+    ldp   x23, x24, [sp, #32]
+    ldp   x21, x22, [sp, #16]
+    ldp   x19, x20, [sp], #48
     ret
+
+mm_jump_table:
+    nop
+    b ClassicalMult1Limb
+    b ClassicalMult2Limbs
+    b ClassicalMult3Limbs
+    b ClassicalMult4Limbs
+    b ClassicalMult5Limbs
+    b ClassicalMult6Limbs
+    b ClassicalMult7Limbs
+    b ClassicalMult8Limbs
+    b ClassicalMult9Limbs
+    b ClassicalMult10Limbs
+    b ClassicalMult11Limbs
+    b ClassicalMult12Limbs
+    b ClassicalMult13Limbs
+    b ClassicalMult14Limbs
+    b ClassicalMult15Limbs
+    b ClassicalMult16Limbs

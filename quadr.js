@@ -78,7 +78,8 @@ function saveConfig()
            prettyValue +
            CunninghamValue +
            hexValue +
-           (get("kbd")[1].selected? "1" : "0");
+           get("kbd").selectedIndex +
+           get("sep").selectedIndex;
   digits = get("digits").value.trim();
   setStorage("ecmConfig", digits+","+config);
   changeInputmode(get("kbd")[1].selected);
@@ -92,7 +93,7 @@ function comingFromWorker(e)
 function dowork(n)
 {
   let param;
-  let app = n;
+  let app = n + 16*(config.codePointAt(6)-0x30);
   let res = get("result");
   let coefAText = coefA.value.trim();
   let coefBText = coefB.value.trim();
@@ -100,7 +101,6 @@ function dowork(n)
   let coefDText = coefD.value.trim();
   let coefEText = coefE.value.trim();
   let coefFText = coefF.value.trim();
-  let digitGroup = get("digits").value.trim();
   hide("help");
   show("result");
   let missing = "";
@@ -138,8 +138,8 @@ function dowork(n)
   get("steps").disabled = true;
   get("stop").disabled = false;
   res.innerHTML = get("solving").textContent;
-  param = digitGroup + "," + app + "," + coefAText + zero + coefBText + zero + coefCText + zero +
-                                         coefDText + zero + coefEText + zero + coefFText + zero;
+  param = digits + "," + app + "," + coefAText + zero + coefBText + zero + coefCText + zero +
+                                     coefDText + zero + coefEText + zero + coefFText + zero;
   callWorker(param);
 }
 
@@ -313,7 +313,8 @@ function startUp()
     hexValue = config.charAt(4);
     get("digits").value = digits;
     history.pushState({id: 5}, "", location.href);
-    get("kbd")[+config.charAt(5)].selected = "selected";
+    get("kbd").selectedIndex = +config.charAt(5);
+    get("sep").selectedIndex = +config.charAt(6);
     show("modal-config");
   };
   get("close-config").onclick = function()

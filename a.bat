@@ -11,31 +11,31 @@ set wasmCommon=%commonLinkFlags% -s WASM=1 -D_USING64BITS_
 del *.wasm
 
 rem ===================== FILES TO USE DURING COMPILATION =====================
-set fsquaresFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c fftUtil.c
+set fsquaresFiles=expression.c exprstack.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c fftUtil.c
 set fsquaresOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']"
 set fsquaresJS=--js interface.js --js config.js --js common.js --js buttons.js --js feedback.js --js wizard.js
 
-set polfactFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c linkedbignbr.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c rootseq.c lineareq.c quadraticeq.c cubiceq.c quartics.c quintics.c quinticsData.c bigrational.c output.c polynomial.c polyexpr.c multpoly.c divpoly.c fftpoly.c intpolfact.c modpolfact.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c fftUtil.c
+set polfactFiles=expression.c exprstack.c parseexpr.c partition.c errors.c copyStr.c bigint.c linkedbignbr.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c rootseq.c lineareq.c quadraticeq.c cubiceq.c quartics.c quintics.c quinticsData.c bigrational.c output.c polynomial.c polyexpr.c multpoly.c divpoly.c fftpoly.c intpolfact.c modpolfact.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c fftUtil.c
 set polfactOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -DPOLYEXPR=1
-set polfactJS=--js polyfact.js --js common.js --js feedback.js
+set polfactJS=--js polyfact.js --js config.js --js common.js --js feedback.js
 
-set dilogFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c dilog.c bignbr.c showtime.c inputstr.c fft.c fftUtil.c
+set dilogFiles=expression.c exprstack.c parseexpr.c partition.c errors.c copyStr.c bigint.c linkedbignbr.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c dilog.c bignbr.c showtime.c inputstr.c fft.c fftUtil.c
 set dilogOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']"
 set dilogJS=--js dislog.js --js config.js --js common.js --js buttons.js --js feedback.js
 
-set quadmodFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quadmod.c quadmodLL.c bignbr.c showtime.c inputstr.c fft.c fftUtil.c
+set quadmodFiles=expression.c exprstack.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quadmod.c quadmodLL.c linkedbignbr.c bignbr.c showtime.c inputstr.c fft.c fftUtil.c
 set quadmodOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']"
 set quadmodJS=--js quadrmod.js --js config.js --js common.js --js buttons.js --js feedback.js
 
-set gaussianFiles=GaussExpr.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c gaussian.c output.c bignbr.c showtime.c inputstr.c gcdrings.c fft.c fftUtil.c
+set gaussianFiles=GaussExpr.c exprstack.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c gaussian.c output.c bignbr.c showtime.c inputstr.c gcdrings.c fft.c fftUtil.c
 set gaussianOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']"
 set gaussianJS=--js gauss.js --js config.js --js common.js --js buttons.js --js feedback.js
 
-set ecmFiles=batch.c fft.c fftUtil.c expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c gcdrings.c bignbr.c showtime.c inputstr.c fromBlockly.c linkedbignbr.c
+set ecmFiles=batch.c fft.c fftUtil.c expression.c exprstack.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c gcdrings.c bignbr.c showtime.c inputstr.c fromBlockly.c linkedbignbr.c
 set ecmOptions=-s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr','_getFactorsAsciiPtr']"
 set ecmJS=--js blocklyextern.js --js buttons.js --js ecmfront.js --js config.js --js common.js --js feedback.js --js wizard.js 
 
-set quadFiles=batch.c fft.c fftUtil.c expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quad.c quadmodLL.c output.c bignbr.c showtime.c inputstr.c
+set quadFiles=batch.c fft.c fftUtil.c expression.c exprstack.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quad.c quadmodLL.c linkedbignbr.c output.c bignbr.c showtime.c inputstr.c
 set quadOptions=-s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']"
 set quadJS=--js quadr.js --js config.js --js common.js --js buttons.js --js feedback.js
 

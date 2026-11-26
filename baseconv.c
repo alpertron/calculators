@@ -189,6 +189,45 @@ void int2hex(char **pOutput, int nbr)
 }
 #endif
 
+static void insertGroupSeparator(char** pptrDest)
+{
+  char *ptrDest = *pptrDest;
+  switch (groupSeparator)
+  {
+  case 0:
+    *ptrDest = ' ';
+    break;
+  case 1:
+    *ptrDest = ',';
+    ptrDest++;
+    *ptrDest = '<';
+    ptrDest++;
+    *ptrDest = 'w';
+    ptrDest++;
+    *ptrDest = 'b';
+    ptrDest++;
+    *ptrDest = 'r';
+    ptrDest++;
+    *ptrDest = '>';
+    break;
+  default:
+    *ptrDest = '.';
+    ptrDest++;
+    *ptrDest = '<';
+    ptrDest++;
+    *ptrDest = 'w';
+    ptrDest++;
+    *ptrDest = 'b';
+    ptrDest++;
+    *ptrDest = 'r';
+    ptrDest++;
+    *ptrDest = '>';
+    break;
+  }
+  ptrDest++;
+  *pptrDest = ptrDest;
+}
+
 static int Bin2HexLoop(char** ppDecimal, const limb* binary, 
   int currentGroupDigit, int nbrBits, int nbrLimbs, int mask, int grpLen)
 {
@@ -231,8 +270,7 @@ static int Bin2HexLoop(char** ppDecimal, const limb* binary,
     currentGroupDigit--;
     if ((currentGroupDigit == 0) && (nbrHexDigits != 1))
     {
-      *ptrDecimal = ' ';
-      ptrDecimal++;
+      insertGroupSeparator(&ptrDecimal);
       currentGroupDigit = grpLen;
     }
     nbrHexDigits--;
@@ -321,9 +359,8 @@ static void Bin2DecLoop(char** ppDest, bool *pSignificantZero,
       *ptrDest = (char)(digit + '0');
       ptrDest++;
       if ((groupCtr == 1) && (!last || (count != 0)))
-      {    // Do not insert space at the end of number.
-        *ptrDest = ' ';
-        ptrDest++;
+      {    // Do not insert group separator at the end of number.
+        insertGroupSeparator(&ptrDest);
       }
       significantZero = true;
     }

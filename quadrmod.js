@@ -72,7 +72,8 @@ function saveConfig()
            prettyValue +
            CunninghamValue +
            hexValue +
-           (get("kbd")[1].selected? "1" : "0");
+           get("kbd").selectedIndex +
+           get("sep").selectedIndex;
   digits = get("digits").value.trim();
   setStorage("ecmConfig", digits+","+config);
   changeInputmode(get("kbd")[1].selected);
@@ -91,7 +92,6 @@ function dowork()
   let linText = get("lin").value.trim();
   let constText = get("const").value.trim();
   let modText = get("mod").value.trim();
-  let digitGroup = digits;
   hide("help");
   show("result");
   let missing = "";
@@ -119,8 +119,8 @@ function dowork()
   get("solve").disabled = true;
   get("stop").disabled = false;
   res.innerHTML = get("solving").textContent;
-  param = digitGroup + ",0," + quadrText + String.fromCharCode(0) + linText +
-    String.fromCharCode(0) + constText +String.fromCharCode(0) + modText + String.fromCharCode(0);
+  let flags = 16*(config.charCodeAt(6)-0x30);
+  param = digits + "," + flags + "," + quadrText + String.fromCharCode(0) + linText + String.fromCharCode(0) + constText +String.fromCharCode(0) + modText + String.fromCharCode(0);
   callWorker(param);
 }
 
@@ -229,7 +229,8 @@ function startUp()
     hexValue = config.charAt(4);
     get("digits").value = digits;
     history.pushState({id: 5}, "", location.href);
-    get("kbd")[+config.charAt(5)].selected = "selected";
+    get("kbd").selectedIndex = +config.charAt(5);
+    get("sep").selectedIndex = +config.charAt(6);
     show("modal-config");
   };
   get("close-config").onclick = function()

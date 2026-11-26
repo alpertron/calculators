@@ -315,6 +315,7 @@ EXTERNALIZE void doWorkQuadMod(void)
 EXTERNALIZE void doWork(void)
 #endif
 {
+  int flags;
   char *ptrData = inputString;
   char* ptrQuadrCoeff;
   char* ptrLinearCoeff;
@@ -327,6 +328,13 @@ EXTERNALIZE void doWork(void)
     ptrData++;
   }
   ptrData++;                    // Skip comma.
+  flags = *ptrData - '0';
+  while (*(ptrData+1) != ',')
+  {
+    ptrData++;
+    flags = (flags * 10) + *ptrData - '0';
+  }
+  groupSeparator = flags >> 4;
   ptrQuadrCoeff = ptrData + 2;  // Skip flags and comma.
   ptrLinearCoeff = ptrQuadrCoeff + (int)strlen(ptrQuadrCoeff) + 1;
   ptrConstCoeff = ptrLinearCoeff + (int)strlen(ptrLinearCoeff) + 1;

@@ -281,7 +281,7 @@ EXTERNALIZE void doWork(void)
   }
   ptrData++;             // Skip comma.
   app = *ptrData - '0';
-  if (*(ptrData + 1) != ',')
+  while (*(ptrData + 1) != ',')
   {
     ptrData++;
     app = (app * 10) + *ptrData - '0';
@@ -294,6 +294,7 @@ EXTERNALIZE void doWork(void)
   {
     hexadecimal = false;
   }
+  groupSeparator = app >> 8;
   tsqcubesText(ptrData + 2, grpLen, expon);
   databack(output);
 }

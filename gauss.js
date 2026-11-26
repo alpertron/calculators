@@ -104,7 +104,8 @@ function saveConfig(fromWizard)
            prettyValue +
            CunninghamValue +
            (get("hex").checked? "1" : "0") +
-           (get("kbd")[1].selected? "1" : "0");
+           get("kbd").selectedIndex +
+           get("sep").selectedIndex;
   digits = get("digits").value.trim();
   setStorage("ecmConfig", digits+","+config);
   changeInputmode(get("kbd")[1].selected);
@@ -117,7 +118,8 @@ function comingFromWorker(e)
 
 function dowork(n)
 {
-  app = n + (config.charAt(4) === "1"? 16: 0);
+  app = n + ((config.codePointAt(4)-0x30) * 16) +
+            ((config.codePointAt(6)-0x30) * 256);
   let res = get("result");
   let valueText = get("value").value;
   let helphelp = get("helphelp");
@@ -211,15 +213,6 @@ function startUp()
   {
     show("modal-more");
   };
-  get("config").onclick = function()
-  {
-    get("digits").value = digits;
-    get("pretty").checked = (config.charAt(2) === "1");
-    get("cunnin").checked = (config.charAt(3) === "1");  
-    get("hex").checked = (config.charAt(4) === "1");  
-    get("kbd")[+config.charAt(5)].selected = "selected";
-    show("modal-config");
-  };
   get("close-config").onclick = function()
   {
     history.back();   // Close configuration mode.
@@ -289,7 +282,8 @@ function startUp()
     get("digits").value = digits;
     get("hex").checked = (config.charAt(4) === "1");
     history.pushState({id: 5}, "", location.href);
-    get("kbd")[+config.charAt(5)].selected = "selected";
+    get("kbd").selectedIndex = +config.charAt(5);
+    get("sep").selectedIndex = +config.charAt(6);
     show("modal-config");
   };
   getConfig();

@@ -17,18 +17,27 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global callWorker */
+/* global changeInputmode */
 /* global clickFormLink */
 /* global endCalculation */
 /* global endWorker */
 /* global formSend */
 /* global get */
 /* global getCalculatorCode */
+/* global getConfig */
 /* global hide */
 /* global registerServiceWorker */
+/* global setStorage */
 /* global show */
 /** @define {number} */ const android = 0;   // Use with Closure compiler.
 let busy = false;
 let workerParam;
+let verboseValue;
+let prettyValue;
+let CunninghamValue;
+let hexValue;
+let digits;
+let config;
 let fileContents = 0;
 
 function enableButtons(enable)
@@ -75,11 +84,12 @@ function comingFromWorker(e)
 
 function dowork(n)
 {
-  let app = n + (get("out").value.codePointAt(0)-48)*8;
+  let app = n + (get("out").value.codePointAt(0)-48)*8 +
+                 ((config.codePointAt(4)-48) * 32) +
+                 ((config.codePointAt(6)-48) * 256);
   let res = get("result");
   let polyText = get("poly").value;
   let modText = get("mod").value;
-  let digitGroup = get("digits").value;
   hide("help");
   show("result");
   if (polyText === "")
@@ -94,7 +104,7 @@ function dowork(n)
   }
   enableButtons(true);
   res.innerHTML = get("factoring").innerHTML;
-  let param = digitGroup + "," + app + "," + modText + String.fromCharCode(0) + polyText +
+  let param = digits + "," + app + "," + modText + String.fromCharCode(0) + polyText +
   String.fromCharCode(0);
   if (!fileContents)
   {
@@ -119,6 +129,20 @@ function getFormSendValue()
   get("userdata").value = get("poly").value + " (mod " + get("mod").value + ")";
 }
 
+function saveConfig()
+{
+  config = "1" +   // Batch mode
+           verboseValue +
+           prettyValue +
+           CunninghamValue +
+           (get("hex").checked? "1" : "0") +
+           config.charAt(5) +
+           get("sep").selectedIndex;
+  digits = get("digits").value.trim();
+  setStorage("ecmConfig", digits+","+config);
+  changeInputmode(true);
+}
+
 function popstate(event)
 {
   if (get("feedback").style.display === "block" ||
@@ -130,6 +154,10 @@ function popstate(event)
     hide("sentOK");
     hide("notSent");
     get("poly").focus();   
+  }
+  else if (get("modal-config").style.display === "block")
+  {     // End configuration mode.
+    hide("modal-config");
   }
 }
 
@@ -187,10 +215,35 @@ function startUp()
     get("poly").value = "";
     get("poly").focus();
   };
+  getConfig();
   get("formlink").onclick = clickFormLink;
   get("formcancel").onclick = function ()
   {
     history.back();
+  };
+  get("config").onclick = function()
+  {
+    verboseValue = config.charAt(1);
+    prettyValue = config.charAt(2);
+    CunninghamValue = config.charAt(3);
+    get("digits").value = digits;
+    get("hex").checked = (config.charAt(4) === "1");
+    get("sep").selectedIndex = +config.charAt(6);
+    history.pushState({id: 5}, "", location.href);
+    show("modal-config");
+  };
+  get("close-config").onclick = function()
+  {
+    history.back();   // Close configuration mode.
+  };
+  get("cancel-config").onclick = function()
+  {
+    history.back();   // Close configuration mode.
+  };
+  get("save-config").onclick = function()
+  {
+    saveConfig();
+    history.back();   // Close configuration mode.
   };
   get("comments").oninput = function(_event)
   {

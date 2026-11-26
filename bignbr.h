@@ -75,6 +75,7 @@ extern limb MontgomeryMultR1[MAX_LEN];
 extern int NumberLength;
 extern int NumberLengthR1;
 extern int groupLen;
+extern int groupSeparator;
 extern enum eNbrCached MontgomeryMultNCached;
 extern enum eNbrCached TestNbrCached;
 extern enum eNbrCached CustomNbrCached;

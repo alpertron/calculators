@@ -910,12 +910,13 @@ EXTERNALIZE void doWork(void)
   }
   ptrData++;             // Skip comma.
   flags = *ptrData - '0';
-  if (*(ptrData+1) != ',')
+  while (*(ptrData+1) != ',')
   {
     ptrData++;
     flags = (flags * 10) + *ptrData - '0';
   }
   hexadecimal = ((flags & 0x10) ? true : false);
+  groupSeparator = flags >> 8;
   ptrData += 2;          // Skip flags and comma.
   ptrPower = ptrData + (int)strlen(ptrData) + 1;
   ptrMod = ptrPower + (int)strlen(ptrPower) + 1;

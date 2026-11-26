@@ -428,6 +428,7 @@ EXTERNALIZE void doWork(void)
     app = (app * 10) + *ptrData - '0';
   }
   hex = ((app & 0x40) != 0);
+  groupSeparator = app >> 8;
   converg = ((app & 0x20) != 0);
   contfracText(ptrData + 2, grpLen, hex, converg);
   databack(output);

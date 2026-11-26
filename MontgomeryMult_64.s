@@ -1,7 +1,7 @@
 /*
  This file is part of Alpertron Calculators.
 
- Copyright 2025 Dario Alejandro Alpern
+ Copyright 2025-2026 Dario Alejandro Alpern
 
  Alpertron Calculators is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,183 +16,143 @@
  You should have received a copy of the GNU General Public License
  along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+
+/*
+ MontgomeryMult for AArch64, limbs of 31 bits stored in 32-bit words.
+ NumberLength must be in the range 2..16 (no range check is done).
+
+ On input:
+   x0: pointer to factor1 (Montgomery notation).
+   x1: pointer to factor2 (Montgomery notation).
+   x2: pointer to product (may alias x0 or x1).
+
+ Design:
+   * A jump table selects a version specialised for each NumberLength.
+   * Each version has the inner loop fully unrolled (immediate offsets, no
+     index registers). The outer loop (over the limbs of factor1) is a loop.
+     Fully unrolling both loops would be O(n^2) code (~50 KB), too big for L1I.
+   * Temporary result lives on the stack, except limb 0, which is kept in w11
+     (avoids a store->load forwarding stall on the critical path).
+   * Carry chain per limb is a single instruction:  add x10, x14, x10, asr #31
+     The products a*b[j] - m*N[j] + res[j] do not depend on the carry, so the
+     CPU can overlap them across iterations.
+   * Final "add N if negative" is branch-free (mask) and fused with the copy.
+
+ Registers:
+   x0  factor1 pointer (post-incremented)     w3  MontgomeryMultN
+   x1  factor2 pointer                        x4  TestNbr pointer
+   w5  NumberLength                           w6  outer loop counter
+   w8  MontDig                                w9  limb of factor1
+   x10 accumulator (carry chain)              w11 temporary result limb 0
+   x12,x13 loads of factor2/TestNbr limbs     x14 product accumulator
+   w15 scratch / sign mask
+
+ Temporary result: slot k (offset 4*k) holds limb k for k = 1..n-1.
+*/
     .text
     .arch armv8-a
     .global MontgomeryMult
     .type MontgomeryMult, %function
     .align 4
-/*
- On input:
- x0: Pointer to factor1 in Montgomery notation.
- x1: Pointer to factor2 in Montgomery notation.
- x2: Pointer to product in Montgomery notation.
- Other registers used in the code:
- w3: Value of MontgomeryMultN.
- x4: Pointer to TestNbr.
- w5: Value of NumberLength.
- w6: Index for multiplicand (0 to NumberLength - 1).
- w7: Index for inner loop (0 to NumberLength - 1).
- w9: Limb from multiplicand (index w6).
- x10: Accumulator for 32x32 bit multiplications.
- Multiply two numbers in Montgomery notation.
 
- For large numbers the REDC algorithm is:
- m <- ((T mod R)N') mod R
- t <- (T - mN) / R
- if t < 0 then
-   return t + N
- else
-   return t
- end if
+    .set MAX_LIMBS_MONTGOMERY, 16
+    .set STACK_SIZE_RESULT_BUFFER, MAX_LIMBS_MONTGOMERY * 4   /* 64 */
 
- Multilimb version when multiplying S*T:
- 1) P <- 0
- 2) for i from 0 to n-1
- 3)   t <- (S[i] * T[0]) mod R
- 4)   u <- (t * N') mod R (one limb)
- 5)   P <- (P + S[i] * T - u * N) / R
- 6) if P < 0 then
- 7)   return P - N
- 8) else
- 9)  return P
- 10)end if
-*/
-    .set MAX_LIMBS_MONTGOMERY, 14
-    .set STACK_SIZE_RESULT_BUFFER, (MAX_LIMBS_MONTGOMERY+3)/4 * 16
+/* ------------------------------------------------------------------ */
+/* Version for LIMBS limbs.                                             */
+/* ------------------------------------------------------------------ */
+    .macro MONTMUL LIMBS
+.Lmm\LIMBS:
+    mov   w11, #0                      /* Temporary result limb 0. */
+    mov   w6, #\LIMBS                  /* Outer loop counter. */
+.Louter\LIMBS:
+    ldr   w9, [x0], #4                 /* a[i]. */
+    ldr   w12, [x1]                    /* b[0]. */
+    ldr   w13, [x4]                    /* N[0]. */
+    smaddl x10, w9, w12, x11           /* Pr = res[0] + a[i]*b[0]. */
+    mul   w8, w10, w3
+    and   w8, w8, #0x7fffffff          /* MontDig. */
+    smsubl x10, w8, w13, x10           /* Pr -= MontDig*N[0] (low 31 bits = 0). */
+    .set  mm_j, 1
+    .rept \LIMBS - 1
+    ldr   w12, [x1, #(mm_j*4)]         /* b[j]. */
+    ldr   w13, [x4, #(mm_j*4)]         /* N[j]. */
+    .if mm_j == \LIMBS - 1
+    ldrsw x14, [sp, #(mm_j*4)]         /* Top limb: signed. */
+    .else
+    ldr   w14, [sp, #(mm_j*4)]         /* Other limbs: 31 bits, non-negative. */
+    .endif
+    smaddl x14, w9, w12, x14           /* res[j] + a*b[j]. */
+    smsubl x14, w8, w13, x14           /* - MontDig*N[j]. */
+    add   x10, x14, x10, asr #31       /* + carry (only serial dependency). */
+    .if mm_j == 1
+    and   w11, w10, #0x7fffffff        /* New res[0] stays in a register. */
+    .else
+    and   w15, w10, #0x7fffffff
+    str   w15, [sp, #((mm_j-1)*4)]     /* New res[j-1]. */
+    .endif
+    .set  mm_j, mm_j + 1
+    .endr
+    asr   x10, x10, #31
+    str   w10, [sp, #((\LIMBS-1)*4)]   /* New top limb. */
+    subs  w6, w6, #1
+    b.ne  .Louter\LIMBS
+
+    /* Branch-free correction: if top limb < 0 add N; fused with the copy. */
+    asr   w15, w10, #31                /* Mask: 0 or 0xFFFFFFFF. */
+    .set  mm_j, 0
+    .rept \LIMBS
+    .if mm_j == 0
+    mov   w12, w11
+    .else
+    ldr   w12, [sp, #(mm_j*4)]
+    .endif
+    ldr   w13, [x4, #(mm_j*4)]
+    and   w13, w13, w15                /* N or 0. */
+    add   w12, w12, w13
+    .if mm_j > 0
+    add   w12, w12, w14                /* Carry from previous limb. */
+    .endif
+    .if mm_j < \LIMBS - 1
+    lsr   w14, w12, #31                /* New carry. */
+    .endif
+    and   w12, w12, #0x7fffffff
+    str   w12, [x2, #(mm_j*4)]
+    .set  mm_j, mm_j + 1
+    .endr
+    add   sp, sp, #STACK_SIZE_RESULT_BUFFER
+    ret
+    .endm
+
 MontgomeryMult:
     .cfi_startproc
-    /* Get external values and pointers to buffers. */
-    adrp x3, :got:MontgomeryMultN
-    ldr x3, [x3, #:got_lo12:MontgomeryMultN]
-    ldr w3, [x3]               /* x3 <- MontgomeryMultN. */
-    adrp x4, :got:TestNbr
-    ldr x4, [x4, #:got_lo12:TestNbr]  /* x4 <- Pointer to TestNbr. */
-    adrp x5, :got:NumberLength@GOTPAGE
-    ldr x5, [x5, #:got_lo12:NumberLength]
-    ldr w5, [x5]               /* x5 <- NumberLength */
-    cmp w5, #2
-    bne more_than_two_limbs
-    
-    /* Montgomery multiplication with two limbs */
-    /* Optimizations: Do not use loops. Use registers. */
-    
-    ldr w5, [x4, #4]
-    ldr w4, [x4]               /* R5:R4 = TestNbr */
-    ldr w6, [x1, #4]
-    ldr w1, [x1]               /* R6:R1 = Multiplier */
-    /* Processing least significant limb of multiplicand */
-    ldr w9, [x0]               /* Get limb from multiplicand. */
-    smull x10, w9, w1          /* x10 <- multiplicand[0] * multiplier[0]. */
-    mul w8, w10, w3            /* w8 <- MontDig = Pr * MontgomeryMultN mod R */
-    bic w8, w8, #0x80000000    /* Clear bit 31. */
-    smsubl x10, w8, w4, x10    /* x10 = Pr <- Pr - MontDig * TestNbr[0] */
-    asr x10, x10, #31          /* Shift right Pr (x10) by 31 bits. */
-    smaddl x10, w9, w6, x10    /* Pr <- Pr + multiplicand[0] * multiplier[1]. */
-    smsubl x10, w8, w5, x10    /* Pr <- Pr - MontDig * TestNbr[1]. */
-    asr x7, x10, #31           /* Shift right Pr (x10) by 31 bits. */
-                               /* and store most significant limb of temp result. */
-    bic w10, w10, #0x80000000  /* R7:R10 = Temporary result. */
-    
-    /* Processing most significant limb of multiplicand */
-    ldr w9, [x0, #4]           /* Get limb from multiplicand. */
-    smaddl x10, w9, w1, x10    /* x10 <- Pr + multiplicand[1] * multiplier[0]. */
-    mul w8, w10, w3            /* w8 <- MontDig = Pr * MontgomeryMultN mod R */
-    bic w8, w8, #0x80000000    /* Clear bit 31. */
-    smsubl x10, w8, w4, x10    /* x10 = Pr <- Pr - MontDig * TestNbr[0] */
-    asr x10, x10, #31          /* Shift right Pr (x10) by 31 bits. */
-    smaddl x10, w9, w6, x10    /* Pr <- Pr + multiplicand[1] * multiplier[1]. */
-    smsubl x10, w8, w5, x10    /* Pr <- Pr - MontDig * TestNbr[1]. */
-    sxtw x12, w7               /* Get MS limb from temp result (sign extended). */
-    add x10, x10, x12          /* Pr <- Pr + result[j+1]. */
-    bic w6, w10, #0x80000000   /* Clear bit 31 and store limb to temp result[0]. */
-    asr x7, x10, #31           /* Shift right Pr (x10) by 31 bits */
-                               /* and store most significant limb of temp result. */
-    /* Test whether the result is positive. */
-    tst w7, #0x80000000        /* Is most significant limb of result positive? */
-    beq copy_temp_to_result_2L /* If so, copy temporary result to actual result. */
-    
-    /* Add TestNbr to result. */
-    add w8, w4, w6             /* TestNbr[0] + temporary result[0]. */
-    bic w6, w8, #0x80000000    /* Clear bit 31 and store into temp result. */   
-    add w8, w5, w8, lsr #31    /* Add TestNbr[1] + temp result[1] with carry. */
-    add w8, w8, w7
-    bic w7, w8, #0x80000000    /* Clear bit 31 and store into temp result. */
-    
-copy_temp_to_result_2L:
-    str w6, [x2]
-    str w7, [x2, #4]
-    ret
-    
-more_than_two_limbs:
-    /* Adjust stack to store temporary result there */
-    /* so the arguments are not overwritten with the result. */
-    sub sp, sp, #STACK_SIZE_RESULT_BUFFER
+    adrp  x3, :got:MontgomeryMultN
+    ldr   x3, [x3, #:got_lo12:MontgomeryMultN]
+    ldr   w3, [x3]                     /* w3 <- MontgomeryMultN. */
+    adrp  x4, :got:TestNbr
+    ldr   x4, [x4, #:got_lo12:TestNbr] /* x4 <- pointer to TestNbr. */
+    adrp  x5, :got:NumberLength
+    ldr   x5, [x5, #:got_lo12:NumberLength]
+    ldr   w5, [x5]                     /* w5 <- NumberLength (2..16). */
 
-    /* Clear result. */
-    mov w7, w5                 /* Clear NumberLength limbs. */
-    mov w6, #0                 /* Set all limbs to zero. */
-clear_result_loop:
-    subs w7, w7, #1
-    str w6, [sp, w7, uxtw #2]  /* Set limb of temporary result to zero. */
-    bne clear_result_loop
+    sub   w12, w5, #2
+    adr   x13, mm_jump_table
+    sub   sp, sp, #STACK_SIZE_RESULT_BUFFER
+    add   x13, x13, x12, lsl #2        /* Each table entry is one instruction. */
+    stp   xzr, xzr, [sp]               /* Clear temporary result (fixed size, */
+    stp   xzr, xzr, [sp, #16]          /* no loop). */
+    stp   xzr, xzr, [sp, #32]
+    stp   xzr, xzr, [sp, #48]
+    br    x13
 
-    /* Index for multiplicand (w6) is already zero. */
-outer_loop:
+mm_jump_table:
+    .irp size, 2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+    b     .Lmm\size
+    .endr
 
-    mov w7, #1                 /* Initialize index for result. */
-    ldr w9, [x0, w6, uxtw #2]  /* Get limb from multiplicand. */
-    ldr w10, [sp]              /* Get the least significant limb of temp result. */
-    ldr w12, [x1]              /* Get the least significant limb of multiplier. */
-    smaddl x10, w9, w12, x10   /* x10 <- Pr + multiplicand[i] * multiplier[0]. */
-    mul w8, w10, w3            /* w8 <- MontDig = Pr * MontgomeryMultN mod R */
-    bic w8, w8, #0x80000000    /* Clear bit 31. */
-    ldr w12, [x4]              /* Get least significant of TestNbr. */
-    smsubl x10, w8, w12, x10   /* x10 = Pr <- Pr - MontDig * TestNbr[0] */
-inner_loop:
-    asr x10, x10, #31          /* Shift right Pr (x10) by 31 bits. */
-    ldr w12, [x1, w7, uxtw #2] /* Get limb from multiplier */
-    smaddl x10, w9, w12, x10   /* Pr <- Pr + multiplicand[i] * multiplier[j+1]. */
-    ldr w12, [x4, w7, uxtw #2] /* Get limb from TestNbr */
-    smsubl x10, w8, w12, x10   /* Pr <- Pr - MontDig * TestNbr[j+1]. */
-    ldrsw x12, [sp, w7, uxtw #2] /* Get limb from temp result (sign extended). */
-    add x10, x10, x12          /* Pr <- Pr + result[j+1]. */
-    sub w7, w7, #1             /* Decrement index. */
-    bic w12, w10, #0x80000000  /* Clear bit 31. */
-    str w12, [sp, w7, uxtw #2] /* Store limb to temporary result[j]. */
-    add w7, w7, #2
-    cmp w7, w5
-    bne inner_loop
-    sub w7, w7, #1
-    asr x10, x10, #31          /* Shift right Pr (x10) by 31 bits. */
-    str w10, [sp, w7, uxtw #2] /* Store most significant limb of temp result. */
-    add w6, w6, #1             /* Increment index to multiplicand. */
-    cmp w6, w5
-    bne outer_loop
-    
-    /* Test whether the result is positive. */
-    tst w10, #0x80000000       /* Is most significant limb of result positive? */
-    beq copy_temp_to_result    /* If so, copy temporary result to actual result. */
-    
-    /* Add TestNbr to result. */
-    mov w6, #0                 /* Initialize index. */
-    mov w7, #0                 /* Initialize result of previous addition. */
-add_TestNbr_cycle:
-    ldr w8, [sp, w6, uxtw #2]  /* Get limb from temporary result. */
-    ldr w9, [x4, w6, uxtw #2]  /* Get limb from TestNbr. */
-    add w7, w8, w7, lsr #31    /* Add with carry. */
-    add w7, w7, w9
-    bic w8, w7, #0x80000000    /* Clear bit 31. */
-    str w8, [sp, w6, uxtw #2]  /* Store limb into temporary result. */
-    add w6, w6, #1
-    cmp w6, w5
-    bne add_TestNbr_cycle
-copy_temp_to_result:
-copy_temp_to_result_loop:
-    subs w5, w5, #1
-    ldr w8, [sp, w5, uxtw #2]  /* Get limb from temporary result. */
-    str w8, [x2, w5, uxtw #2]  /* Set limb to result. */
-    bne copy_temp_to_result_loop
-    add sp, sp, #STACK_SIZE_RESULT_BUFFER    
-    ret
+    .irp size, 2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+    MONTMUL \size
+    .endr
     .cfi_endproc
-    .end
+    .size MontgomeryMult, .-MontgomeryMult

@@ -36,6 +36,7 @@ extern char* ptrOutput;
 extern int eqNbr;
 int grpLen;
 bool teachMod;
+void showNbr(char **pptrOut, BigInteger *bigNbr, int groupLength);
 
 // Sort factors on ascending degree, and then by coefficient.
 void SortFactors(const BigInteger *modulus)
@@ -306,14 +307,7 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
           {
             copyStr(&ptrOutput, " &minus;");
           }
-          if (pretty == PRETTY_PRINT)
-          {          // Show number of digits if there are more than 30.
-            Bin2Dec(&ptrOutput, operand5.limbs, operand1.nbrLimbs, groupLength);
-          }
-          else
-          {         // Do not show number of digits.
-            Bin2Dec(&ptrOutput, operand5.limbs, operand1.nbrLimbs, -groupLength);
-          }
+          showNbr(&ptrOutput, &operand5, groupLength);
           showText("</li>");
         }
         for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)

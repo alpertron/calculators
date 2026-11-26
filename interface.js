@@ -168,7 +168,8 @@ function saveConfig(fromWizard)
            prettyValue +
            CunninghamValue +
            (get("hex").checked? "1" : "0") +
-           (get("kbd")[1].selected? "1" : "0");
+           get("kbd").selectedIndex +
+           get("sep").selectedIndex;
   digits = get("digits").value.trim();
   setStorage("ecmConfig", digits+","+config);
   changeInputmode(get("kbd")[1].selected);
@@ -176,7 +177,7 @@ function saveConfig(fromWizard)
 
 function performCalc(from)
 {
-  let valueA, valueB, valueC, digitGroup;
+  let valueA, valueB, valueC;
   let res = get("result");
   let id;
   show("result");
@@ -208,7 +209,6 @@ function performCalc(from)
       return;
     }
   }
-  digitGroup = get("digits").value;
   hide("help");
   if (app === 0)    // Closure compiler cannot optimize switch, so a series of "if" instructions is used.
   {
@@ -232,12 +232,13 @@ function performCalc(from)
   {         // Sum of two squares and a power.
     param = from + ",";
   }
-  let options = app + ((config.charAt(4) === "1")? 64: 0);
+  let options = app + ((config.codePointAt(4)-48) * 64) + 
+                      ((config.codePointAt(6)-48) * 256);
   if ((app === 4) || (app === 5))
   {         // Continued fractions.
     options += get("converg").checked? 32: 0;
   }
-  param += digitGroup + "," + options + "," + valueA + String.fromCharCode(0);
+  param += digits + "," + options + "," + valueA + String.fromCharCode(0);
   if ((app === 4) || (app === 5))
   {         // Continued fractions.
     param += valueB + String.fromCharCode(0) + valueC + String.fromCharCode(0);
@@ -322,7 +323,6 @@ function startUp()
     funcnames.push(get("btn9").textContent); 
     get("num").onkeydown = function(e)
     {
-      let digitGroup = get("digits").value;
       let res = get("result");
       show("result");
       let input = get("num").value;
@@ -338,7 +338,8 @@ function startUp()
         {
           res.innerHTML = get("computing").textContent;
         }
-        param = digitGroup + "," + app + "," + input + String.fromCharCode(0);
+        let flags = app + 256*(config.codePointAt(6)-48);
+        param = digits + "," + flags + "," + input + String.fromCharCode(0);
         styleButtons("none", "inline");  // Enable "stop" button
         callWorker(param);
       }
@@ -517,7 +518,8 @@ function startUp()
     get("digits").value = digits;
     get("hex").checked = (config.charAt(4) === "1");
     history.pushState({id: 5}, "", location.href);
-    get("kbd")[+config.charAt(5)].selected = "selected";
+    get("kbd").selectedIndex = +config.charAt(5);
+    get("sep").selectedIndex = +config.charAt(6);
     show("modal-config");
   };
   get("close-config").onclick = function()

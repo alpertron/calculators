@@ -18,7 +18,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
 <meta property="og:description" content="This factors numbers using ECM and SIQS algorithms.">
-<meta property="article:published_time" content="2026-10-18">
+<meta property="article:published_time" content="2026-11-25">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/ECMC.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/ECM.HTM">
@@ -84,6 +84,7 @@ button {border-radius:5px}
 .funcbtns {display:flex; justify-content:space-around; flex-flow:row wrap; margin-top:3px; margin-bottom:3px}
 .funcbtns button {margin:3px}
 fieldset {border-radius:10px}
+.inner_fset {display:inline}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;border-radius:10px}
 .newline {clear:both}
 .lf,.labels {padding:0.2em; clear:both}
@@ -134,7 +135,7 @@ fieldset button, fieldset input {margin:3px}
 }
 @media screen and (min-width: 500px) {#formleft {float:left;width:50%} #formright {float:right;width:50%}}
 .modal-header {padding: 2px 10px; background-color: #5cb85c; color: white}
-.modal-body {padding: 2px 10px}
+.modal-body {padding: 2px 10px;background-color:#c0c0c0;margin-left: auto;margin-right: auto; border: 0px none;text-align:center;}
 .modal-content {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   background-color: #fefefe;
@@ -708,7 +709,7 @@ opacity: .8;
 }
 @media screen and (prefers-color-scheme: dark) {
 body {color: #ddd; background-color: #121212}
-.applet {background-color:#606060; color: #fff}
+.applet, .modal-body {background-color:#606060; color: #fff}
 summary {background-color:#333; color:#eee}
 details[open]>summary, summary:hover {background-color:#555}
 summary:after {color:#777}
@@ -978,7 +979,8 @@ Since this method needs a large amount of your computer's memory to store relati
 <summary>Configuration</summary>
 <p>You can change settings for this application by pressing the Config button when a factorization is not in progress. A new window will pop up where you can select different settings:</p>
 <ul>
-<li><strong>Digits per group</strong>: In order to improve readability, big numbers are separated by spaces forming groups of a fixed number of digits. With this input box, you can determine the number of digits in a group.</li> 
+<li><strong>Digits per group</strong>: In order to improve readability, big numbers are separated by spaces, commas or dots forming groups of a fixed number of digits. With this input box, you can determine the number of digits in a group.</li>
+<li><strong>Separator</strong>: This allows the user to select the group separator type: space, comma or dot.</li>
 <li><strong>Verbose mode</strong>: It shows more information about the factors found.</li>
 <li><strong>Pretty print</strong>: If this checkbox is set, the exponents are shown in superscripts and the multiplication sign is &quot; &times; &quot;. The application also shows the number of digits for numbers with more than 30 digits.
 If the checkbox is not set, the exponents are preceded by the exponentiation sign &quot; ^ &quot; and the multiplication is indicated by asterisks. Also, the number of digits is never displayed. This mode eases copying the results to other mathematical programs.</li>
@@ -1033,7 +1035,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </details>
 </div>
-<p>Written by Dario Alpern. Last updated 18 October 2026.</p>
+<p>Written by Dario Alpern. Last updated 25 November 2026.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -1060,29 +1062,32 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <div class="modal-content">
 <div class="modal-header"><button type="button" id="close-more" aria-label="close" class="atright">×</button><p id="moreopt">More options</p></div>
 <div class="modal-body">
-<div class="applet">
 <p><label for="curve">New curve number or factor:</label></p><input type="number" id="curve" value="" class="input" min="0" step="1">
 <button type="button" id="ncurve" title="Change curve number for the algorithm ECM. Set to zero to change to algorithm SIQS.">New curve</button>
 <button type="button" id="nfactor" title="Enter a known factor">New factor</button>
-</div>
 </div></div></div>
 <div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
 <div class="modal-content">
 <div class="modal-header"><button id="close-config" aria-label="close" class="atright">×</button><p id="conf">Configuration</p></div>
 <div class="modal-body">
-<div class="applet">
-<fieldset>
-<legend>Configuration parameters</legend>
-<p><label for="digits">Digits per group</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"></p>
+<fieldset class="inner_fset">
+<legend>Groups</legend>
+<p><label for="digits">Digits</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"></p>
+<p><label for="sep">Separator:&nbsp;</label><select id="sep"><option value=" ">Space</option><option value=",">Comma</option><option value=".">Dot</option></select></p>
+</fieldset>
+<fieldset class="inner_fset">
+<legend>Output</legend>
 <p><input type="checkbox" id="verbose"><label for="verbose">Verbose mode</label></p>
 <p><input type="checkbox" id="pretty"><label for="pretty">Pretty print</label></p>
-<p><label for="kbd">Keyboard:&nbsp;</label><select id="kbd"><option value="numeric">Numeric</option><option value="comp">Complete</option></select>
 <p><input type="checkbox" id="hex"><label for="hex">Hexadecimal output</label></p>
-<p><input type="checkbox" id="cunnin"><label for="cunnin">Use Cunningham tables on server</label></p>
+</fieldset>
+<fieldset class="inner_fset">
+<legend>Other</legend>
+<p><label for="kbd">Keyboard:&nbsp;</label><select id="kbd"><option value="numeric">Numeric</option><option value="comp">Complete</option></select>
+<p><input type="checkbox" id="cunnin"><label for="cunnin">Use Cunningham<br>tables on server</label></p>
 </fieldset>
 <p><button type="button" id="save-config" title="Save configuration">Save</button>
 <button type="button" id="cancel-config" title="Discard changes to configuration">Cancel</button></p>
-</div>
 </div></div></div>
 <aside id="blockmode" class="pad" aria-label="Blockly mode">
 <div id="firstRow">
@@ -1326,8 +1331,8 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
   "name": "Integer factorization calculator",
   "description": "Web application that factors integers using ECM and SIQS algorithms.",
   "image": ["https://www.alpertron.com.ar/ecm.png"],
-  "datePublished": "2026-10-18",
-  "dateModified": "2026-10-18",
+  "datePublished": "2026-11-25",
+  "dateModified": "2026-11-25",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {

@@ -156,7 +156,8 @@ function saveConfig(fromWizard)
            (chkPretty.checked? "1" : "0") +
            (chkCunningham.checked? "1" : "0") +
            (chkHex.checked? "1" : "0") +
-           (get("kbd")[1].selected? "1" : "0");
+           get("kbd").selectedIndex +
+           get("sep").selectedIndex;
   digits = get("digits").value.trim();
   setStorage("ecmConfig", digits+","+config);
   changeInputmode(get("kbd")[1].selected);
@@ -589,7 +590,8 @@ function startUp()
     chkCunningham.checked = (config.charAt(3) === "1");  
     chkHex.checked = (config.charAt(4) === "1");
     history.pushState({id: 5}, "", location.href);
-    get("kbd")[+config.charAt(5)].selected = "selected";
+    get("kbd").selectedIndex = +config.charAt(5);
+    get("sep").selectedIndex = +config.charAt(6);
     show("modal-config");
   };
   btnFromFile.onclick = function()

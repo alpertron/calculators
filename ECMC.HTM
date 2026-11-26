@@ -18,7 +18,7 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:description" content="Factoriza números enteros utilizando los algoritmos ECM y SIQS.">
-<meta property="article:published_time" content="2026-10-18">
+<meta property="article:published_time" content="2026-11-25">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/ECMC.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/ECM.HTM">
@@ -83,6 +83,7 @@ button {border-radius:5px}
 .funcbtns {display:flex; justify-content:space-around; flex-flow:row wrap; margin-top:3px; margin-bottom:3px}
 .funcbtns button {margin:3px}
 fieldset {border-radius:10px}
+.inner_fset {display:inline}
 #inputs {grid-column:1/3; grid-row:1}
 #actions {grid-column:1; grid-row:2; width:320px}
 #functions {grid-column:2/3; grid-row:2}
@@ -130,7 +131,7 @@ fieldset button, fieldset input {margin:3px}
 }
 @media screen and (min-width: 500px) {#formleft {float:left;width:50%} #formright {float:right;width:50%}}
 .modal-header {padding: 2px 10px; background-color: #5cb85c; color: white}
-.modal-body {padding: 2px 10px}
+.modal-body {padding: 2px 10px;background-color:#c0c0c0;margin-left: auto;margin-right: auto; border: 0px none;text-align:center;}
 .modal-content {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   background-color: #fefefe;
@@ -704,7 +705,7 @@ opacity: .8;
 }
 @media screen and (prefers-color-scheme: dark) {
 body {color: #ddd; background-color: #121212}
-.applet {background-color:#606060; color: #fff}
+.applet, .modal-body {background-color:#606060; color: #fff}
 summary {background-color:#333; color:#eee}
 details[open]>summary, summary:hover {background-color:#555}
 summary:after {color:#777}
@@ -1015,8 +1016,8 @@ Para hacerlo, inicie el proceso de factorización en la primera computadora desd
 Al hacerlo, se abrirá una nueva ventana donde podrá seleccionar los siguientes ajustes:</p>
 <ul>
 <li><strong>Dígitos por grupo</strong>:  
-Para facilitar la lectura, los números grandes se dividen en grupos separados por espacios.  
-Con esta opción, usted puede especificar cuántos dígitos contendrá cada grupo.</li>
+Para facilitar la lectura, los números grandes se dividen en grupos separados por espacios, comas o puntos. Con esta opción, usted puede especificar cuántos dígitos contendrá cada grupo.</li>
+<li><strong>Separador</strong>: Esto permite seleccionar si los grupos se separan mediante espacios, comas o puntos.</li>
 <li><strong>Información</strong>:  
 Si está activada, la aplicación mostrará información adicional sobre los factores hallados.</li>
 <li><strong>Impresión bonita</strong>:  
@@ -1120,7 +1121,7 @@ El código está escrito en lenguaje C, por lo que es necesario utilizar
 <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar el código JavaScript correspondiente.</p>
 </details>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 18 de octubre de 2026.</p>
+<p>Escrito por Dario Alpern. Actualizado el 25 de noviembre de 2026.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -1155,29 +1156,32 @@ Continuar
 <div class="modal-content">
 <div class="modal-header"><button type="button" id="close-more" aria-label="close" class="atright">×</button><p id="moreopt">Más opciones</p></div>
 <div class="modal-body">
-<div class="applet">
 <p><label for="curve">Nuevo número de curva o factor:</label></p><input type="number" id="curve" value="" class="input" min="0" step="1">
 <button type="button" id="ncurve" title="Cambiar el número de curva para el algoritmo ECM. Ingrese cero para cambiar al algoritmo SIQS.">Nueva curva</button>
 <button type="button" id="nfactor" title="Ingrese factor conocido">Nuevo factor</button>
-</div>
 </div></div></div>
 <div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
 <div class="modal-content">
 <div class="modal-header"><button type="button" id="close-config" aria-label="close" class="atright">×</button><p id="conf">Configuración</p></div>
 <div class="modal-body">
-<div class="applet">
-<fieldset>
-<legend>Parámetros de configuración</legend>
-<p><label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"></p>
+<fieldset class="inner_fset">
+<legend>Grupos</legend>
+<p><label for="digits">Dígitos</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"></p>
+<p><label for="sep">Separador:&nbsp;</label><select id="sep"><option value=" ">espacio</option><option value=",">coma</option><option value=".">punto</option></select></p>
+</fieldset>
+<fieldset class="inner_fset">
+<legend>Salida</legend>
 <p><input type="checkbox" id="verbose"><label for="verbose">Información</label></p>
 <p><input type="checkbox" id="pretty"><label for="pretty">Impresión bonita</label></p>
-<p><label for="kbd">Teclado:&nbsp;</label><select id="kbd"><option value="numeric">Numérico</option><option value="comp">Completo</option></select>
 <p><input type="checkbox" id="hex"><label for="hex">Salida hexadecimal</label></p>
-<p><input type="checkbox" id="cunnin"><label for="cunnin">Usar tablas de Cunningham en el servidor</label></p>
+</fieldset>
+<fieldset class="inner_fset">
+<legend>Otros</legend>
+<p><label for="kbd">Teclado:&nbsp;</label><select id="kbd"><option value="numeric">Numérico</option><option value="comp">Completo</option></select></p>
+<p><input type="checkbox" id="cunnin"><label for="cunnin">Usar tablas de<br>Cunningham<br>en el servidor</label></p>
 </fieldset>
 <p><button type="button" id="save-config" title="Almacenar la nueva configuración">Aceptar</button>
 <button type="button" id="cancel-config" title="Descartar los cambios hechos a la configuración">Cancelar</button></p>
-</div>
 </div></div></div>
 <aside id="blockmode" class="pad" aria-label="Modo Blockly">
 <div id="firstRow">
@@ -1419,8 +1423,8 @@ Continuar
   "name": "Calculadora de factorización de números enteros",
   "description": "Aplicación Web que factoriza números enteros utilizando los algoritmos ECM y SIQS.",
   "image": ["https://www.alpertron.com.ar/ecmc.png"],
-  "datePublished": "2026-10-18",
-  "dateModified": "2026-10-18",
+  "datePublished": "2026-11-25",
+  "dateModified": "2026-11-25",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {

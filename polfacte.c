@@ -24,6 +24,7 @@
 #include "highlevel.h"
 #include "polynomial.h"
 #include "showtime.h"
+#include "factor.h"
 
 extern bool teach;
 #if defined(__EMSCRIPTEN__) && !defined(_MSC_VER)
@@ -48,7 +49,9 @@ EXTERNALIZE void doWork(void)
   } while (*(++ptrData) != ',');
   onlyEvaluate = ((flags & 2) != 0);
   teach = ((flags & 4) != 0);
-  switch (flags / 8)
+  hexadecimal = ((flags & 32) != 0);
+  groupSeparator = flags >> 8;
+  switch ((flags / 8) & 0x03)
   {
   case 0:
     pretty = PRETTY_PRINT;
